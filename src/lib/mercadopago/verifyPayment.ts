@@ -6,7 +6,7 @@ export function verifyApprovedPayment(payment: any) {
 
   if (status !== "approved") return { ok: false };
 
-  if (transaction_amount !== 8000) return { ok: false };
+  if (transaction_amount !== 100) return { ok: false };
   if (currency_id !== "ARS") return { ok: false };
 
   if (!external_reference) return { ok: false };

@@ -35,7 +35,7 @@ export async function POST(req: Request) {
             id: "evaluaempresa-informe",
             title: "Informe de riesgo empresarial",
             quantity: 1,
-            unit_price: 8000,
+            unit_price: 100,
             currency_id: "ARS",
           },
         ],
