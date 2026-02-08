@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ReportRequest {
+  id        String   @id @default(cuid())
+  email     String
+  formData  Json
+
+  // Estado del flujo
+  status    String   @default("PENDING_PAYMENT")
+  // PENDING_PAYMENT | PAID | GENERATING | DELIVERED | FAILED
+
+  // MercadoPago
+  mercadopagoPaymentId String? @unique
+  mercadopagoStatus    String?
+  paidAt               DateTime?
+
+  // Resultado
+  reportText String?
+  pdfPath    String?
+
+  // Debug / control
+  lastError  String?
+  attempts   Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+}
