@@ -129,7 +129,7 @@ export default function Home() {
         <h2 className="text-2xl font-semibold">Precio</h2>
 
         <p className="mt-4 text-lg">
-          Informe único desde <span className="font-semibold">$8.000 ARS</span>
+          Informe único desde <span className="font-semibold">$100 ARS</span>
         </p>
 
         <p className="mt-2 text-sm text-zinc-600">
