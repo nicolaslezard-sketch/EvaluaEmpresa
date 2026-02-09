@@ -1,36 +1,30 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
+import { ReportJson } from "@/lib/types/report";
 
 export async function GET(
-  request: NextRequest,
+  _req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  const { id: reportId } = await context.params;
+  const { id } = await context.params;
 
   const report = await prisma.reportRequest.findUnique({
-    where: { id: reportId },
-    select: {
-      status: true,
-      pdfPath: true,
-    },
+    where: { id },
   });
 
-  if (!report) {
-    return NextResponse.json(
-      { ok: false, error: "Report not found" },
-      { status: 404 },
-    );
+  if (!report?.reportText) {
+    return new Response("Reporte no encontrado", { status: 404 });
   }
 
-  if (report.status !== "PAID") {
-    return NextResponse.json(
-      { ok: false, error: "Payment required" },
-      { status: 403 },
-    );
-  }
+  const parsed = JSON.parse(report.reportText) as ReportJson;
 
-  return NextResponse.json({
-    ok: true,
-    pdfPath: report.pdfPath,
+  const pdfBuffer = await generateReportPdf(parsed);
+
+  return new Response(new Uint8Array(pdfBuffer), {
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename="informe-${id}.pdf"`,
+    },
   });
 }

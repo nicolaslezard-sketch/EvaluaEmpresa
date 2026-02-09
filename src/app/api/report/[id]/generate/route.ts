@@ -1,84 +1,103 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateReportText } from "@/lib/reports/generateReportText";
-import { renderPdf } from "@/lib/reports/renderPdf";
-import { uploadPdf } from "@/lib/reports/storage";
-import { sendReportEmail } from "@/lib/reports/email";
+import { buildEvaluaEmpresaPrompt } from "@/lib/prompts/evaluaEmpresa";
+import { openai } from "@/lib/openai";
+import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
+import { sendReportEmail } from "@/lib/mail/sendReportEmail";
 
 export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
+  _req: NextRequest,
+  context: { params: Promise<{ id: string }> },
 ) {
-  const { id: reportId } = await params;
+  const { id } = await context.params;
 
   const report = await prisma.reportRequest.findUnique({
-    where: { id: reportId },
+    where: { id },
   });
 
   if (!report) {
-    return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Reporte no encontrado" },
+      { status: 404 },
+    );
   }
 
-  // 🧱 Idempotencia dura
-  if (report.status === "DELIVERED" && report.pdfPath) {
+  if (report.status === "DELIVERED") {
     return NextResponse.json({ ok: true });
   }
 
-  if (report.status !== "PAID" && report.status !== "FAILED") {
-    return NextResponse.json({ ok: true });
+  if (report.status !== "PAID") {
+    return NextResponse.json({ error: "Reporte no pagado" }, { status: 400 });
   }
 
-  try {
+  if (
+    !report.formData ||
+    typeof report.formData !== "object" ||
+    Array.isArray(report.formData)
+  ) {
     await prisma.reportRequest.update({
-      where: { id: reportId },
+      where: { id },
       data: {
-        status: "GENERATING",
-        attempts: { increment: 1 },
-        lastError: null,
+        status: "FAILED",
+        lastError: "formData inválido",
       },
     });
 
-    // 1️⃣ IA
-    const reportText =
-      report.reportText ?? (await generateReportText(report.formData));
+    return NextResponse.json(
+      { error: "Datos de formulario inválidos" },
+      { status: 400 },
+    );
+  }
 
-    // 2️⃣ PDF
-    const pdfBuffer = await renderPdf({
-      reportText,
-      email: report.email,
+  const formData = report.formData as Record<string, unknown>;
+
+  await prisma.reportRequest.update({
+    where: { id },
+    data: { status: "GENERATING" },
+  });
+
+  try {
+    const prompt = buildEvaluaEmpresaPrompt(formData);
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
     });
 
-    // 3️⃣ Storage (R2)
-    const pdfPath = await uploadPdf(reportId, pdfBuffer);
+    const text = completion.choices[0].message.content;
+    if (!text) throw new Error("Respuesta vacía de OpenAI");
 
-    // 4️⃣ Email
-    await sendReportEmail({
-      to: report.email,
-      pdfUrl: pdfPath,
-    });
+    const parsed = JSON.parse(text);
+    const pdfBuffer = await generateReportPdf(parsed);
 
-    // 5️⃣ Persistencia final
     await prisma.reportRequest.update({
-      where: { id: reportId },
+      where: { id },
       data: {
-        reportText,
-        pdfPath,
+        reportText: text,
         status: "DELIVERED",
       },
     });
 
-    return NextResponse.json({ ok: true });
-  } catch (error: any) {
-    console.error("GENERATE REPORT ERROR", error);
+    await sendReportEmail({
+      to: report.email,
+      reportId: id,
+      pdfBuffer,
+    });
 
+    return NextResponse.json({ ok: true });
+  } catch (err) {
     await prisma.reportRequest.update({
-      where: { id: reportId },
+      where: { id },
       data: {
         status: "FAILED",
-        lastError: error?.message ?? "Unknown error",
+        lastError: err instanceof Error ? err.message : String(err),
       },
     });
 
-    return NextResponse.json({ ok: false });
+    return NextResponse.json(
+      { error: "Error generando informe" },
+      { status: 500 },
+    );
   }
 }

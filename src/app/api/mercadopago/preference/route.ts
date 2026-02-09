@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { MercadoPagoConfig, Preference } from "mercadopago";
+import { prisma } from "@/lib/prisma";
+
+function requireEnv(name: string) {
+  const v = process.env[name];
+  if (!v) throw new Error(`Falta env ${name}`);
+  return v;
+}
 
 const mp = new MercadoPagoConfig({
-  accessToken: process.env.MP_ACCESS_TOKEN!,
+  accessToken: requireEnv("MP_ACCESS_TOKEN"),
 });
 
 export async function POST(req: Request) {
   try {
+    const APP_URL = requireEnv("APP_URL");
+
     const { reportId } = await req.json();
 
     if (!reportId) {
@@ -33,26 +41,30 @@ export async function POST(req: Request) {
         items: [
           {
             id: "evaluaempresa-informe",
-            title: "Informe de riesgo empresarial",
+            title: "Informe de Riesgo Empresarial",
             quantity: 1,
             unit_price: 100,
             currency_id: "ARS",
           },
         ],
-        external_reference: report.id,
         back_urls: {
-          success: "https://example.com/success",
-          failure: "https://example.com/failure",
-          pending: "https://example.com/pending",
+          success: `${APP_URL}/api/mercadopago/return`,
+          failure: `${APP_URL}/success?status=failure`,
+          pending: `${APP_URL}/success?status=pending`,
         },
+        auto_return: "approved",
+        external_reference: reportId,
       },
     });
 
     return NextResponse.json({
       init_point: preference.init_point,
+      sandbox_init_point: preference.sandbox_init_point,
     });
-  } catch (error) {
-    console.error("MP preference error", error);
-    return NextResponse.json({ error: "Error MercadoPago" }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: "Error creando preferencia" },
+      { status: 500 },
+    );
   }
 }
