@@ -1,64 +1,13 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-
-enum ReportStatus {
-  PENDING_PAYMENT
-  PAID
-  GENERATING
-  DELIVERED
-  FAILED
-}
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  plan      String   @default("free")
-
-  reports   ReportRequest[]
-
-  createdAt DateTime @default(now())
-}
-
 model ReportRequest {
   id        String   @id @default(cuid())
 
-  email     String
-  title     String?
-  formData  Json
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
 
   status    ReportStatus @default(PENDING_PAYMENT)
-
-  mercadopagoPaymentId String? @unique
-  mercadopagoStatus    String?
-  paidAt               DateTime?
-
-  // 🧠 Contenido generado
-  reportText String?
-
-  // 📄 PDF en storage (R2)
-  pdfKey   String?
-  pdfSize  Int?
-  pdfMime  String?
-
-  // ⚠️ Control de errores
-  lastError String?
-  attempts  Int      @default(0)
-
-  // 🔐 Ownership
-  userId String?
-  user   User? @relation(fields: [userId], references: [id])
+  email     String
+  formData  Json
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([status])
-  @@index([email])
-  @@index([userId])
 }
