@@ -12,68 +12,96 @@ import { r2 } from "@/lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 export async function POST(
-  _req: NextRequest,
-  context: { params: Promise<{ id: string }> },
+  req: NextRequest,
+  { params }: { params: { id: string } },
 ) {
-  const { id } = await context.params;
+  const reportId = params.id;
 
-  const session = await getServerSession(authOptions);
+  console.log("[GENERATE] start", reportId);
 
-  // 🔐 Auth obligatoria
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  /* ===============================
+     🔐 AUTH: interno o usuario
+  =============================== */
+
+  const internalSecret = req.headers.get("x-internal-secret");
+  const isInternal =
+    internalSecret && internalSecret === process.env.INTERNAL_API_SECRET;
+
+  let userId: string | null = null;
+
+  if (!isInternal) {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      console.log("[GENERATE] unauthorized");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    userId = session.user.id;
   }
 
+  /* ===============================
+     📄 Buscar reporte
+  =============================== */
+
   const report = await prisma.reportRequest.findUnique({
-    where: { id },
+    where: { id: reportId },
   });
 
-  // ❌ No existe o no es del user
-  if (!report || report.userId !== session.user.id) {
+  if (!report) {
+    console.log("[GENERATE] report not found");
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // ✅ Idempotente
+  // Si es usuario, validar ownership
+  if (!isInternal && report.userId !== userId) {
+    console.log("[GENERATE] forbidden");
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Idempotencia fuerte
   if (report.status === "DELIVERED") {
+    console.log("[GENERATE] already delivered");
     return NextResponse.json({ ok: true });
   }
 
-  // 🔒 Estados válidos para generar
   if (!["PAID", "FAILED"].includes(report.status)) {
-    return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
+    console.log("[GENERATE] invalid status", report.status);
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  // 🧨 Límite de intentos
   if (report.attempts >= 3) {
+    console.log("[GENERATE] max attempts reached");
     return NextResponse.json(
-      { error: "Máximo de intentos alcanzado" },
+      { error: "Max attempts reached" },
       { status: 400 },
     );
   }
 
-  // 🧠 Validar formData
   if (
     !report.formData ||
     typeof report.formData !== "object" ||
     Array.isArray(report.formData)
   ) {
+    console.log("[GENERATE] invalid formData");
+
     await prisma.reportRequest.update({
-      where: { id },
+      where: { id: reportId },
       data: {
         status: "FAILED",
         lastError: "formData inválido",
       },
     });
 
-    return NextResponse.json(
-      { error: "Datos de formulario inválidos" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
   }
 
-  // 🔄 Marcar como GENERATING
+  /* ===============================
+     🔄 Marcar GENERATING
+  =============================== */
+
   await prisma.reportRequest.update({
-    where: { id },
+    where: { id: reportId },
     data: {
       status: "GENERATING",
       attempts: { increment: 1 },
@@ -81,13 +109,17 @@ export async function POST(
     },
   });
 
+  console.log("[GENERATE] generating…");
+
   try {
-    // 🧠 Prompt
+    /* ===============================
+       🤖 OpenAI
+    =============================== */
+
     const prompt = buildEvaluaEmpresaPrompt(
       report.formData as Record<string, unknown>,
     );
 
-    // 🤖 OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
@@ -99,10 +131,12 @@ export async function POST(
 
     const parsed = JSON.parse(text);
 
-    // 📄 Generar PDF (Buffer)
+    /* ===============================
+       📄 PDF
+    =============================== */
+
     const pdfBuffer = await generateReportPdf(parsed);
 
-    // ☁️ Subir a R2
     const pdfKey = `reports/${report.userId}/${report.id}.pdf`;
 
     await r2.send(
@@ -114,9 +148,12 @@ export async function POST(
       }),
     );
 
-    // ✅ Guardar estado final
+    /* ===============================
+       ✅ Finalizar
+    =============================== */
+
     await prisma.reportRequest.update({
-      where: { id },
+      where: { id: reportId },
       data: {
         reportText: text,
         status: "DELIVERED",
@@ -126,10 +163,14 @@ export async function POST(
       },
     });
 
+    console.log("[GENERATE] delivered", reportId);
+
     return NextResponse.json({ ok: true });
   } catch (err) {
+    console.error("[GENERATE] error", err);
+
     await prisma.reportRequest.update({
-      where: { id },
+      where: { id: reportId },
       data: {
         status: "FAILED",
         lastError: err instanceof Error ? err.message : String(err),
