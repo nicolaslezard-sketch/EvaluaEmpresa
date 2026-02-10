@@ -1,4 +1,5 @@
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
