@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "ReportRequest" ALTER COLUMN "status" SET DEFAULT 'PENDING_PAYMENT';
