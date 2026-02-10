@@ -1,6 +1,3 @@
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -15,7 +12,11 @@ export async function GET() {
 
   const reports = await prisma.reportRequest.findMany({
     where: {
-      userId: session.user.id,
+      user: {
+        is: {
+          id: session.user.id,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
