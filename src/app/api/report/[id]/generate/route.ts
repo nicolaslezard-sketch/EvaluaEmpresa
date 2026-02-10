@@ -11,11 +11,16 @@ import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
 import { r2 } from "@/lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const reportId = params.id;
+/* ===============================
+   ✅ TIPO CORRECTO DE CONTEXT
+   (Next.js App Router build-safe)
+================================ */
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function POST(req: NextRequest, context: RouteContext) {
+  const { id: reportId } = await context.params;
 
   console.log("[GENERATE] start", reportId);
 
@@ -53,13 +58,13 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Si es usuario, validar ownership
+  // Ownership
   if (!isInternal && report.userId !== userId) {
     console.log("[GENERATE] forbidden");
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Idempotencia fuerte
+  // Idempotencia
   if (report.status === "DELIVERED") {
     console.log("[GENERATE] already delivered");
     return NextResponse.json({ ok: true });
@@ -130,6 +135,10 @@ export async function POST(
     if (!text) throw new Error("Respuesta vacía de OpenAI");
 
     const parsed = JSON.parse(text);
+
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Formato inválido del informe");
+    }
 
     /* ===============================
        📄 PDF
