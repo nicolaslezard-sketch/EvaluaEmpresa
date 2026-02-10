@@ -12,11 +12,7 @@ export async function GET() {
 
   const reports = await prisma.reportRequest.findMany({
     where: {
-      user: {
-        is: {
-          id: session.user.id,
-        },
-      },
+      userId: session.user.id, // ← ESTE ES EL FIX
     },
     orderBy: {
       createdAt: "desc",
