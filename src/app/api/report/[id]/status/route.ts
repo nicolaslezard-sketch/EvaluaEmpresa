@@ -11,7 +11,6 @@ export async function GET(
     where: { id },
     select: {
       status: true,
-      pdfPath: true,
       lastError: true,
     },
   });
@@ -22,7 +21,6 @@ export async function GET(
 
   return NextResponse.json({
     status: report.status,
-    downloadUrl: report.pdfPath ?? null,
     error: report.lastError ?? null,
   });
 }

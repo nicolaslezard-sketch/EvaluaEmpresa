@@ -22,6 +22,8 @@
       "@/*": ["src/*"]
     },
 
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+
     "plugins": [
       {
         "name": "next"

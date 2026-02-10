@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { buildEvaluaEmpresaPrompt } from "@/lib/prompts/evaluaEmpresa";
 import { openai } from "@/lib/openai";
 import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
-import { sendReportEmail } from "@/lib/mail/sendReportEmail";
+import { r2 } from "@/lib/r2";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+
+export const runtime = "nodejs";
 
 export async function POST(
   _req: NextRequest,
@@ -11,25 +16,41 @@ export async function POST(
 ) {
   const { id } = await context.params;
 
+  const session = await getServerSession(authOptions);
+
+  // 🔐 Auth obligatoria
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const report = await prisma.reportRequest.findUnique({
     where: { id },
   });
 
-  if (!report) {
-    return NextResponse.json(
-      { error: "Reporte no encontrado" },
-      { status: 404 },
-    );
+  // ❌ No existe o no es del user
+  if (!report || report.userId !== session.user.id) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // ✅ Idempotente
   if (report.status === "DELIVERED") {
     return NextResponse.json({ ok: true });
   }
 
-  if (report.status !== "PAID") {
-    return NextResponse.json({ error: "Reporte no pagado" }, { status: 400 });
+  // 🔒 Estados válidos para generar
+  if (!["PAID", "FAILED"].includes(report.status)) {
+    return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
   }
 
+  // 🧨 Límite de intentos
+  if (report.attempts >= 3) {
+    return NextResponse.json(
+      { error: "Máximo de intentos alcanzado" },
+      { status: 400 },
+    );
+  }
+
+  // 🧠 Validar formData
   if (
     !report.formData ||
     typeof report.formData !== "object" ||
@@ -49,16 +70,23 @@ export async function POST(
     );
   }
 
-  const formData = report.formData as Record<string, unknown>;
-
+  // 🔄 Marcar como GENERATING
   await prisma.reportRequest.update({
     where: { id },
-    data: { status: "GENERATING" },
+    data: {
+      status: "GENERATING",
+      attempts: { increment: 1 },
+      lastError: null,
+    },
   });
 
   try {
-    const prompt = buildEvaluaEmpresaPrompt(formData);
+    // 🧠 Prompt
+    const prompt = buildEvaluaEmpresaPrompt(
+      report.formData as Record<string, unknown>,
+    );
 
+    // 🤖 OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
@@ -69,20 +97,32 @@ export async function POST(
     if (!text) throw new Error("Respuesta vacía de OpenAI");
 
     const parsed = JSON.parse(text);
+
+    // 📄 Generar PDF (Buffer)
     const pdfBuffer = await generateReportPdf(parsed);
 
+    // ☁️ Subir a R2
+    const pdfKey = `reports/${report.userId}/${report.id}.pdf`;
+
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME!,
+        Key: pdfKey,
+        Body: pdfBuffer,
+        ContentType: "application/pdf",
+      }),
+    );
+
+    // ✅ Guardar estado final
     await prisma.reportRequest.update({
       where: { id },
       data: {
         reportText: text,
         status: "DELIVERED",
+        pdfKey,
+        pdfSize: pdfBuffer.length,
+        pdfMime: "application/pdf",
       },
-    });
-
-    await sendReportEmail({
-      to: report.email,
-      reportId: id,
-      pdfBuffer,
     });
 
     return NextResponse.json({ ok: true });
