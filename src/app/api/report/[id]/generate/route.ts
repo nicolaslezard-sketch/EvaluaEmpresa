@@ -1,3 +1,6 @@
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -7,8 +10,6 @@ import { openai } from "@/lib/openai";
 import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
 import { r2 } from "@/lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-
-export const runtime = "nodejs";
 
 export async function POST(
   _req: NextRequest,
