@@ -148,7 +148,7 @@ export default async function AnalysisPage({
   let data: ReportJson | null = null;
 
   if (report.reportData) {
-    data = report.reportData as any;
+    data = report.reportData as ReportJson;
   } else if (report.reportText) {
     try {
       const raw = safeJsonParse(report.reportText);
