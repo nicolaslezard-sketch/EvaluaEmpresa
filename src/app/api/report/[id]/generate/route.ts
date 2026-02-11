@@ -11,22 +11,16 @@ import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
 import { r2 } from "@/lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 
-/* ===============================
-   ✅ TIPO CORRECTO DE CONTEXT
-   (Next.js App Router build-safe)
-================================ */
-type RouteContext = {
-  params: Promise<{ id: string }>;
-};
+import { safeJsonParse } from "@/lib/analysis/parseReport";
+import { validateAndNormalizeReport } from "@/lib/analysis/validateReport";
+
+/* build-safe */
+type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, context: RouteContext) {
   const { id: reportId } = await context.params;
 
   console.log("[GENERATE] start", reportId);
-
-  /* ===============================
-     🔐 AUTH: interno o usuario
-  =============================== */
 
   const internalSecret = req.headers.get("x-internal-secret");
   const isInternal =
@@ -36,18 +30,12 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   if (!isInternal) {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.id) {
       console.log("[GENERATE] unauthorized");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     userId = session.user.id;
   }
-
-  /* ===============================
-     📄 Buscar reporte
-  =============================== */
 
   const report = await prisma.reportRequest.findUnique({
     where: { id: reportId },
@@ -58,13 +46,11 @@ export async function POST(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Ownership
   if (!isInternal && report.userId !== userId) {
     console.log("[GENERATE] forbidden");
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Idempotencia
   if (report.status === "DELIVERED") {
     console.log("[GENERATE] already delivered");
     return NextResponse.json({ ok: true });
@@ -88,22 +74,12 @@ export async function POST(req: NextRequest, context: RouteContext) {
     typeof report.formData !== "object" ||
     Array.isArray(report.formData)
   ) {
-    console.log("[GENERATE] invalid formData");
-
     await prisma.reportRequest.update({
       where: { id: reportId },
-      data: {
-        status: "FAILED",
-        lastError: "formData inválido",
-      },
+      data: { status: "FAILED", lastError: "formData inválido" },
     });
-
     return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
   }
-
-  /* ===============================
-     🔄 Marcar GENERATING
-  =============================== */
 
   await prisma.reportRequest.update({
     where: { id: reportId },
@@ -114,13 +90,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     },
   });
 
-  console.log("[GENERATE] generating…");
-
   try {
-    /* ===============================
-       🤖 OpenAI
-    =============================== */
-
     const prompt = buildEvaluaEmpresaPrompt(
       report.formData as Record<string, unknown>,
     );
@@ -134,17 +104,11 @@ export async function POST(req: NextRequest, context: RouteContext) {
     const text = completion.choices[0].message.content;
     if (!text) throw new Error("Respuesta vacía de OpenAI");
 
-    const parsed = JSON.parse(text);
+    const rawJson = safeJsonParse(text);
+    const { report: reportData, extracted } =
+      validateAndNormalizeReport(rawJson);
 
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error("Formato inválido del informe");
-    }
-
-    /* ===============================
-       📄 PDF
-    =============================== */
-
-    const pdfBuffer = await generateReportPdf(parsed);
+    const pdfBuffer = await generateReportPdf(reportData);
 
     const pdfKey = `reports/${report.userId}/${report.id}.pdf`;
 
@@ -157,14 +121,22 @@ export async function POST(req: NextRequest, context: RouteContext) {
       }),
     );
 
-    /* ===============================
-       ✅ Finalizar
-    =============================== */
-
     await prisma.reportRequest.update({
       where: { id: reportId },
       data: {
+        // legacy
         reportText: text,
+
+        // ✅ nuevo
+        reportData: reportData as any,
+        overallScore: extracted.overallScore,
+        riskLevel: extracted.riskLevel,
+        financialScore: extracted.financialScore,
+        commercialScore: extracted.commercialScore,
+        operationalScore: extracted.operationalScore,
+        legalScore: extracted.legalScore,
+        strategicScore: extracted.strategicScore,
+
         status: "DELIVERED",
         pdfKey,
         pdfSize: pdfBuffer.length,
@@ -173,7 +145,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
     });
 
     console.log("[GENERATE] delivered", reportId);
-
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[GENERATE] error", err);

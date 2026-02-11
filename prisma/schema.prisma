@@ -38,14 +38,28 @@ model ReportRequest {
   mercadopagoStatus    String?
   paidAt               DateTime?
 
+  // ✅ legacy (no romper)
   reportText String?
+
+  // ✅ NUEVO: JSON estructurado obligatorio (cuando DELIVERED)
+  reportData Json?
+
+  // ✅ NUEVO: scores persistidos para UX premium + ordenamientos
+  overallScore     Float?
+  riskLevel        String?
+
+  financialScore   Float?
+  commercialScore  Float?
+  operationalScore Float?
+  legalScore       Float?
+  strategicScore   Float?
 
   pdfKey   String?
   pdfSize  Int?
   pdfMime  String?
 
   lastError String?
-  attempts  Int      @default(0)
+  attempts  Int    @default(0)
 
   userId String?
   user   User? @relation(fields: [userId], references: [id])
@@ -56,4 +70,5 @@ model ReportRequest {
   @@index([status])
   @@index([email])
   @@index([userId])
+  @@index([overallScore])
 }
