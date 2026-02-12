@@ -1,6 +1,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -10,7 +11,6 @@ import { openai } from "@/lib/openai";
 import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
 import { r2 } from "@/lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-
 import { safeJsonParse } from "@/lib/analysis/parseReport";
 import { validateAndNormalizeReport } from "@/lib/analysis/validateReport";
 
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
         reportText: text,
 
         // ✅ nuevo
-        reportData: reportData as any,
+        reportData: reportData as Prisma.JsonObject,
         overallScore: extracted.overallScore,
         riskLevel: extracted.riskLevel,
         financialScore: extracted.financialScore,

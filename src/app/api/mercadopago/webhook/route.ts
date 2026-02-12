@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    const { reportRequestId, amount, currency, status } = verification;
+    const { reportRequestId, status } = verification;
 
     // 🧱 Idempotencia: ya procesado
     const existing = await prisma.reportRequest.findFirst({
