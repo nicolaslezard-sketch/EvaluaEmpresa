@@ -17,10 +17,12 @@ function Pill({ children }: { children: React.ReactNode }) {
 export default async function AnalysisPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
+
   const report = await prisma.reportRequest.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!report) notFound();
