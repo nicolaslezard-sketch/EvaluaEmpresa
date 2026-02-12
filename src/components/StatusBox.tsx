@@ -26,7 +26,7 @@ export default function StatusBox({
             className="btn btn-primary"
             onClick={async () => {
               try {
-                const res = await fetch("/api/mp/preference", {
+                const res = await fetch("/api/mercadopago/preference", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
