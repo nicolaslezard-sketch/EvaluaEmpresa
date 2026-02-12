@@ -52,8 +52,15 @@ export async function POST(req: Request) {
     // 🔔 Disparo interno (no await)
     fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/report/${reportRequestId}/generate`,
-      { method: "POST" },
-    ).catch(() => {});
+      {
+        method: "POST",
+        headers: {
+          "x-internal-secret": process.env.INTERNAL_API_SECRET!,
+        },
+      },
+    ).catch((err) => {
+      console.error("Error disparando generate", err);
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
