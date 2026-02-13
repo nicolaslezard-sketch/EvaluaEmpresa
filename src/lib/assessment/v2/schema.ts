@@ -46,9 +46,9 @@ export const AssessmentV2Schema = z
       socios: z.number().int().min(1).max(50),
       liderazgo: z.enum(["DUENO_OPERADOR", "GERENCIA_PROFESIONAL", "MIXTO"]),
       dependenciaFundador: z.enum(["ALTA", "MEDIA", "BAJA"]),
-      descripcionNegocio: z.preprocess(trim, z.string().min(250).max(5000)),
+      descripcionNegocio: z.preprocess(trim, z.string().min(150).max(1000)),
       topClientes: z.preprocess(trim, z.string().min(120).max(2000)),
-      proveedoresCriticos: z.preprocess(trim, z.string().min(120).max(2000)),
+      proveedoresCriticos: z.preprocess(trim, z.string().min(120).max(1000)),
       sitioWeb: z
         .preprocess(trim, z.string().url("URL inválida"))
         .optional()

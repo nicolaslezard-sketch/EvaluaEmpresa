@@ -30,6 +30,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [plan, setPlan] = useState<"free" | "pro">("free");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +40,10 @@ export default function DashboardPage() {
         if (!r.ok) throw new Error("Error cargando dashboard");
         return r.json();
       })
-      .then((d) => setReports(d.reports))
+      .then((d) => {
+        setReports(d.reports);
+        setPlan(d.plan === "pro" ? "pro" : "free");
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
@@ -68,6 +72,25 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-10 grid gap-6 md:grid-cols-2">
+        {plan !== "pro" && (
+          <div className="card p-6 md:col-span-2">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-zinc-900">
+                  Estás en plan FREE
+                </p>
+                <p className="mt-1 text-sm text-zinc-600">
+                  Desbloqueá seguimiento histórico completo, dashboard extendido
+                  y comparativas.
+                </p>
+              </div>
+              <Link href="/app/upgrade" className="btn btn-secondary">
+                Ver Plan PRO
+              </Link>
+            </div>
+          </div>
+        )}
+
         {reports.length === 0 && (
           <div className="card p-6">
             <p className="text-sm text-zinc-600">

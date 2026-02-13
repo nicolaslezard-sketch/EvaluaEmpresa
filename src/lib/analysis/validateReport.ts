@@ -1,5 +1,5 @@
 import { ReportJson } from "@/lib/types/report";
-import { clampScore, normalizeRiskLevel, scoreToRiskLevel } from "./score";
+import { clampScore } from "./score";
 
 function isObj(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
@@ -13,11 +13,18 @@ function isNum(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
 }
 
+function scoreToExecutiveCategory(score: number) {
+  if (score >= 80) return "SOLIDO";
+  if (score >= 65) return "ESTABLE";
+  if (score >= 50) return "VULNERABLE";
+  return "CRITICO";
+}
+
 export type NormalizedReport = {
   report: ReportJson;
   extracted: {
     overallScore: number;
-    riskLevel: "BAJO" | "MEDIO" | "ALTO" | "CRITICO";
+    executiveCategory: "SOLIDO" | "ESTABLE" | "VULNERABLE" | "CRITICO";
     financialScore: number;
     commercialScore: number;
     operationalScore: number;
@@ -66,11 +73,8 @@ export function validateAndNormalizeReport(raw: unknown): NormalizedReport {
   const est = clampScore(Number(grafico.estrategico));
 
   const overallScore = clampScore(Number(escore.score_total));
-  const riskLevel =
-    normalizeRiskLevel(String(escore.nivel_general || "")) ||
-    scoreToRiskLevel(overallScore);
+  const executiveCategory = scoreToExecutiveCategory(overallScore);
 
-  // devolvemos el mismo JSON pero con scores “clamped” en radar
   const normalized = raw as unknown as ReportJson;
   normalized.portada.e_score_general.score_total = overallScore;
   normalized.grafico_radar.financiero = fin;
@@ -83,7 +87,7 @@ export function validateAndNormalizeReport(raw: unknown): NormalizedReport {
     report: normalized,
     extracted: {
       overallScore,
-      riskLevel,
+      executiveCategory,
       financialScore: fin,
       commercialScore: com,
       operationalScore: ope,

@@ -13,6 +13,7 @@ import { r2 } from "@/lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { safeJsonParse } from "@/lib/analysis/parseReport";
 import { validateAndNormalizeReport } from "@/lib/analysis/validateReport";
+import { generateFormalId, generateVerifyCode } from "@/lib/domain/identifiers";
 
 /* build-safe */
 type RouteContext = { params: Promise<{ id: string }> };
@@ -52,8 +53,11 @@ export async function POST(req: NextRequest, context: RouteContext) {
   }
 
   if (report.status === "DELIVERED") {
-    console.log("[GENERATE] already delivered");
-    return NextResponse.json({ ok: true });
+    console.log("[GENERATE] immutable report");
+    return NextResponse.json(
+      { error: "Report is immutable once delivered." },
+      { status: 400 },
+    );
   }
 
   if (!["PAID", "FAILED"].includes(report.status)) {
@@ -121,23 +125,43 @@ export async function POST(req: NextRequest, context: RouteContext) {
       }),
     );
 
+    // 🔥 Generar identificadores institucionales
+    let formalId = report.formalId;
+    let verifyCode = report.verifyCode;
+
+    if (!formalId) {
+      if (!report.companyId) {
+        throw new Error("Company not associated with report");
+      }
+
+      formalId = await generateFormalId(report.companyId);
+      verifyCode = generateVerifyCode();
+    }
+
     await prisma.reportRequest.update({
       where: { id: reportId },
       data: {
         // legacy
         reportText: text,
 
-        // ✅ nuevo
+        // estructurado
         reportData: reportData as Prisma.JsonObject,
         overallScore: extracted.overallScore,
-        riskLevel: extracted.riskLevel,
+        executiveCategory: extracted.executiveCategory,
+
         financialScore: extracted.financialScore,
         commercialScore: extracted.commercialScore,
         operationalScore: extracted.operationalScore,
         legalScore: extracted.legalScore,
         strategicScore: extracted.strategicScore,
 
+        // institucional
+        formalId,
+        verifyCode,
+        deliveredAt: new Date(),
+
         status: "DELIVERED",
+
         pdfKey,
         pdfSize: pdfBuffer.length,
         pdfMime: "application/pdf",

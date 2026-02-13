@@ -213,18 +213,20 @@ export default function NewAssessmentWizard() {
   function back() {
     setStep((s) => Math.max(s - 1, 1));
   }
+  const DESC_MIN = 150;
+  const DESC_MAX = 1000;
 
   function validateCurrentStep(): { ok: boolean; message?: string } {
     // Validación parcial por step (simple): usamos el schema global,
     // pero para UX, verificamos mínimos del step actual.
     try {
       if (step === 1) {
-        if (data.perfil.descripcionNegocio.trim().length < 250)
+        if (data.perfil.descripcionNegocio.trim().length < DESC_MIN)
           return {
             ok: false,
-            message:
-              "Descripción del negocio es obligatoria (mín. 250 caracteres).",
+            message: `Descripción del negocio es obligatoria (mín. ${DESC_MIN} caracteres).`,
           };
+
         if (data.perfil.topClientes.trim().length < 120)
           return {
             ok: false,
@@ -649,15 +651,22 @@ export default function NewAssessmentWizard() {
               <Textarea
                 rows={6}
                 value={data.perfil.descripcionNegocio}
-                onChange={(e) =>
-                  update(["perfil", "descripcionNegocio"], e.target.value)
-                }
+                maxLength={DESC_MAX}
+                onChange={(e) => {
+                  const v = e.target.value.slice(0, DESC_MAX);
+                  update(["perfil", "descripcionNegocio"], v);
+                }}
                 placeholder="Qué hace la empresa, a quién vende, cómo entrega valor, qué la hace funcionar."
               />
-              <Help>
-                Mínimo 250 caracteres. Esto alimenta análisis técnico, no
-                marketing.
-              </Help>
+              <div className="flex items-center justify-between">
+                <Help>
+                  Mínimo {DESC_MIN} y máximo {DESC_MAX}. Escribí en forma
+                  concreta (operación, clientes, cómo entrega, equipo).
+                </Help>
+                <div className="ml-4 whitespace-nowrap text-xs text-zinc-500">
+                  {data.perfil.descripcionNegocio.length}/{DESC_MAX}
+                </div>
+              </div>
             </Field>
 
             <Field>

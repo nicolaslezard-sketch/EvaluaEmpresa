@@ -15,18 +15,81 @@ enum ReportStatus {
   FAILED
 }
 
+enum SubscriptionStatus {
+  PENDING
+  AUTHORIZED
+  PAUSED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum ExecutiveCategory {
+  SOLIDO
+  ESTABLE
+  VULNERABLE
+  CRITICO
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  plan      String   @default("free")
+
+  plan      Plan     @default(FREE)
+
+  subscription Subscription?
+  companies  Company[]
+  reports    ReportRequest[] // legacy compatibility
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
 
   reports   ReportRequest[]
 
   createdAt DateTime @default(now())
 }
 
+model Subscription {
+  id        String   @id @default(cuid())
+  status    SubscriptionStatus @default(PENDING)
+
+  mpPreapprovalId String? @unique
+  mpStatus        String?
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([status])
+}
+
 model ReportRequest {
   id        String   @id @default(cuid())
+
+  // 👇 NUEVO: vínculo institucional
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // legacy fallback
+  userId String?
+  user   User? @relation(fields: [userId], references: [id])
 
   email     String
   title     String?
@@ -38,21 +101,23 @@ model ReportRequest {
   mercadopagoStatus    String?
   paidAt               DateTime?
 
-  // ✅ legacy (no romper)
-  reportText String?
-
-  // ✅ NUEVO: JSON estructurado obligatorio (cuando DELIVERED)
+  reportText String? // legacy
   reportData Json?
 
-  // ✅ NUEVO: scores persistidos para UX premium + ordenamientos
+  // Persistencia institucional de scores
   overallScore     Float?
-  riskLevel        String?
+  executiveCategory ExecutiveCategory?
 
   financialScore   Float?
   commercialScore  Float?
   operationalScore Float?
   legalScore       Float?
   strategicScore   Float?
+
+  // 👇 NUEVO: institucional
+  formalId   String? @unique
+  verifyCode String? @unique
+  deliveredAt DateTime?
 
   pdfKey   String?
   pdfSize  Int?
@@ -61,14 +126,12 @@ model ReportRequest {
   lastError String?
   attempts  Int    @default(0)
 
-  userId String?
-  user   User? @relation(fields: [userId], references: [id])
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([email])
   @@index([userId])
+  @@index([companyId])
   @@index([overallScore])
 }

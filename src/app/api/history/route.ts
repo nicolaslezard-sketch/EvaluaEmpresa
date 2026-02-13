@@ -10,6 +10,11 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+
   const reports = await prisma.reportRequest.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
@@ -19,10 +24,10 @@ export async function GET() {
       createdAt: true,
       title: true,
       overallScore: true,
-      riskLevel: true,
+      executiveCategory: true,
       pdfKey: true,
     },
   });
 
-  return NextResponse.json({ reports });
+  return NextResponse.json({ reports, plan: user?.plan ?? "free" });
 }
