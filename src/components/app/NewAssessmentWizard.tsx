@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import { useEffect } from "react";
+
+const STORAGE_KEY = "ee_v2_draft";
 
 type AssessmentV2 = z.infer<typeof AssessmentV2Schema>;
 
@@ -167,6 +170,23 @@ export default function NewAssessmentWizard() {
   const [data, setData] = useState<AssessmentV2>(initialData);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved);
+      setData(parsed);
+    } catch {
+      // si hay basura, limpiamos
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [data]);
 
   const steps = useMemo(
     () => [
@@ -342,6 +362,8 @@ export default function NewAssessmentWizard() {
 
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "Error creando evaluación");
+
+      localStorage.removeItem(STORAGE_KEY);
 
       router.push(`/app/analysis/${json.id}`);
     } catch (e) {
