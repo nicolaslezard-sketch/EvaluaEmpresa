@@ -5,6 +5,7 @@ import { ReportJson } from "@/lib/types/report";
 import { safeJsonParse } from "@/lib/analysis/parseReport";
 import { validateAndNormalizeReport } from "@/lib/analysis/validateReport";
 import StatusBox from "@/components/StatusBox";
+import type { PreScore } from "@/types/preScore";
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +27,28 @@ export default async function AnalysisPage({
   });
 
   if (!report) notFound();
+  let preScore: PreScore | null = null;
+
+  if (
+    report.formData &&
+    typeof report.formData === "object" &&
+    !Array.isArray(report.formData) &&
+    "preScore" in report.formData
+  ) {
+    const value = (report.formData as { preScore?: unknown }).preScore;
+
+    if (
+      value &&
+      typeof value === "object" &&
+      "overallScore" in value &&
+      "riskLevel" in value &&
+      "pillarScores" in value &&
+      "oneStrength" in value &&
+      "oneWeakness" in value
+    ) {
+      preScore = value as PreScore;
+    }
+  }
 
   // si no está DELIVERED, mostramos pantalla de estado premium
   if (report.status !== "DELIVERED") {
@@ -53,6 +76,7 @@ export default async function AnalysisPage({
             reportId={report.id}
             lastError={report.lastError}
             attempts={report.attempts}
+            preScore={preScore}
           />
         </div>
       </div>

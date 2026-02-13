@@ -8,13 +8,13 @@ export default function HomePage() {
         <div className="grid items-center gap-16 md:grid-cols-2">
           <div>
             <h1 className="text-4xl font-semibold tracking-tight text-zinc-900 md:text-5xl">
-              Evaluación estructurada de riesgo antes de incorporar un proveedor
-              o socio estratégico.
+              Diagnóstico empresarial estructurado para reducir riesgo en
+              decisiones comerciales.
             </h1>
 
             <p className="mt-6 text-lg text-zinc-600">
-              E-Score™ analiza 5 pilares críticos y sintetiza el perfil de
-              riesgo en un score ejecutivo claro, comparable y accionable.
+              E-Score™ evalúa 5 pilares críticos, genera un score ejecutivo y
+              permite seguimiento en el tiempo. No es un PDF: es un sistema.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -26,80 +26,72 @@ export default function HomePage() {
               </Link>
 
               <Link
-                href="/informe-modelo"
+                href="/demo"
                 className="btn btn-secondary px-6 py-3 text-base"
               >
-                Ver informe modelo
+                Ver demo del sistema
+              </Link>
+
+              <Link
+                href="/informe-modelo"
+                className="text-sm font-medium text-zinc-600 hover:text-zinc-900 self-center"
+              >
+                Ver informe modelo →
               </Link>
             </div>
 
-            <p className="mt-6 text-sm text-zinc-500">
-              Diseñado para decisiones comerciales relevantes: proveedores
-              críticos, socios, acuerdos estratégicos e inversiones.
-            </p>
+            <div className="mt-10 grid gap-3 text-sm text-zinc-600">
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                <p>
+                  Score global + scores por pilar (financiero, comercial,
+                  operativo, legal, estratégico).
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                <p>Fortalezas, debilidades y recomendaciones accionables.</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                <p>Historial y evolución para decisiones recurrentes.</p>
+              </div>
+            </div>
           </div>
 
           <div className="card p-8">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  E-Score™ General
-                </p>
-                <p className="text-3xl font-semibold text-zinc-900">3.6 / 5</p>
-              </div>
-              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                Riesgo Medio
-              </span>
-            </div>
-
             <RadarPreview />
-            <p className="mt-4 text-xs text-zinc-500">
-              Ejemplo ilustrativo. El score real se calcula según la información
-              provista.
-            </p>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-zinc-200 bg-white py-20">
-        <div className="container-page">
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
-            Reducí incertidumbre antes de firmar, pagar o delegar.
-          </h2>
+      <section className="container-page pb-20">
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              t: "1) Completás el formulario",
+              d: "Recopilamos información clave por pilar y consistencia de respuestas.",
+            },
+            {
+              t: "2) Recibís tu score",
+              d: "Obtenés un diagnóstico estructurado y un nivel de riesgo claro.",
+            },
+            {
+              t: "3) Hacés seguimiento",
+              d: "Comparás evaluaciones y medís evolución en el tiempo.",
+            },
+          ].map((x) => (
+            <div key={x.t} className="card p-6">
+              <p className="text-sm font-semibold text-zinc-900">{x.t}</p>
+              <p className="mt-2 text-sm text-zinc-600">{x.d}</p>
+            </div>
+          ))}
+        </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <div className="card p-6">
-              <p className="text-sm font-medium text-zinc-900">Estructura</p>
-              <p className="mt-2 text-sm text-zinc-600">
-                Un marco único de evaluación para comparar empresas bajo el
-                mismo estándar.
-              </p>
-            </div>
-            <div className="card p-6">
-              <p className="text-sm font-medium text-zinc-900">
-                Síntesis ejecutiva
-              </p>
-              <p className="mt-2 text-sm text-zinc-600">
-                Señales críticas, escenarios y recomendaciones accionables, sin
-                ruido.
-              </p>
-            </div>
-            <div className="card p-6">
-              <p className="text-sm font-medium text-zinc-900">Decisión</p>
-              <p className="mt-2 text-sm text-zinc-600">
-                Un score claro para decidir si avanzar, mitigar o frenar.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-col gap-3 sm:flex-row">
-            <Link href="/metodologia" className="btn btn-secondary">
-              Conocer la metodología
-            </Link>
-            <Link href="/pricing" className="btn btn-primary">
-              Ver pricing
-            </Link>
-          </div>
+        <div className="mt-10 flex justify-center">
+          <Link href="/como-funciona" className="btn btn-secondary">
+            Ver cómo funciona
+          </Link>
         </div>
       </section>
     </div>

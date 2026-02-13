@@ -15,6 +15,9 @@ export async function SiteHeader() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-zinc-600 md:flex">
+            <Link href="/demo" className="hover:text-zinc-900">
+              Ver demo
+            </Link>
             <Link href="/como-funciona" className="hover:text-zinc-900">
               Cómo funciona
             </Link>
@@ -37,7 +40,7 @@ export async function SiteHeader() {
           {session?.user?.id ? (
             <>
               <Link
-                href="/history"
+                href="/app/dashboard"
                 className="hidden rounded-xl px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 md:inline-flex"
               >
                 Dashboard
@@ -51,6 +54,12 @@ export async function SiteHeader() {
             </>
           ) : (
             <>
+              <Link
+                href="/demo"
+                className="rounded-xl px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+              >
+                Ver demo
+              </Link>
               <Link
                 href="/login"
                 className="rounded-xl px-3 py-2 text-sm text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
