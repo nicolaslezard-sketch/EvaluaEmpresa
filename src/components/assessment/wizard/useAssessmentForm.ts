@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
 import type { FieldErrors } from "./ui";
+import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
 
 const STORAGE_KEY = "ee_v2_draft";
 
