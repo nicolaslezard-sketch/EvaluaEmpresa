@@ -226,17 +226,54 @@ export function useAssessmentForm() {
   }
 
   function validateAndGoNext() {
-    // validación simple: validamos TODO (sin parciales) para evitar inconsistencias.
-    // Si querés parcial por step, lo hacemos después con picks, pero hoy priorizamos confiabilidad.
-    const v = validateAll();
-    if (v.ok) {
+    let result;
+
+    switch (step) {
+      case 1:
+        result = AssessmentV2Schema.pick({
+          email: true,
+          perfil: true,
+        }).safeParse(data);
+        break;
+
+      case 2:
+        result = AssessmentV2Schema.pick({
+          finanzas: true,
+        }).safeParse(data);
+        break;
+
+      case 3:
+        result = AssessmentV2Schema.pick({
+          comercial: true,
+        }).safeParse(data);
+        break;
+
+      case 4:
+        result = AssessmentV2Schema.pick({
+          riesgos: true,
+        }).safeParse(data);
+        break;
+
+      case 5:
+        result = AssessmentV2Schema.pick({
+          estrategia: true,
+          confirmaciones: true,
+        }).safeParse(data);
+        break;
+
+      default:
+        result = AssessmentV2Schema.safeParse(data);
+    }
+
+    if (result.success) {
       setFieldErrors({});
       setStep((s) => Math.min(s + 1, 5));
       return true;
     }
 
-    setFieldErrors(v.errors);
-    scrollToFirstError(v.errors);
+    const errors = zodErrorsToFieldErrors(result.error.issues);
+    setFieldErrors(errors);
+    scrollToFirstError(errors);
     return false;
   }
 
