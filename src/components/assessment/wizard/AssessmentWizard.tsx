@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import WizardLayout from "./WizardLayout";
 import { focusFirstError, useAssessmentForm } from "./useAssessmentForm";
+import { useSession, signIn } from "next-auth/react";
 
 import Step1Perfil from "./steps/Step1Perfil";
 import Step2Finanzas from "./steps/Step2Finanzas";
@@ -15,6 +16,7 @@ export type EvaluationTier = "PYME" | "EMPRESA";
 
 export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const {
     steps,
@@ -38,6 +40,14 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
     if (!final.ok) {
       setFieldErrors(final.errors);
       focusFirstError(final.errors);
+      return;
+    }
+
+    // 🔒 Si no está logueado → obligar login
+    if (!session) {
+      await signIn("google", {
+        callbackUrl: window.location.href,
+      });
       return;
     }
 
