@@ -20,7 +20,7 @@ export default function EvaluarPage({
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-5xl px-6 py-10">
         <TierHeader tier={tier} />
-        <NewAssessmentWizard tier={tier} />
+        <NewAssessmentWizard key={tier} tier={tier} />
       </div>
     </div>
   );

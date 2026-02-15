@@ -34,7 +34,7 @@ export default function MarketingHomePage() {
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
-                  href="/evaluar?tier=pyme"
+                  href="/app/new?tier=pyme"
                   className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
                 >
                   Comenzar evaluación
@@ -110,13 +110,13 @@ export default function MarketingHomePage() {
 
                 <div className="mt-6 flex gap-2">
                   <Link
-                    href="/evaluar?tier=pyme"
+                    href="/app/new?tier=pyme"
                     className="flex-1 rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-medium text-white hover:bg-slate-800"
                   >
                     PYME
                   </Link>
                   <Link
-                    href="/evaluar?tier=empresa"
+                    href="/app/new?tier=empresa"
                     className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-center text-xs font-medium text-slate-900 hover:bg-slate-50"
                   >
                     Empresa
@@ -140,7 +140,7 @@ export default function MarketingHomePage() {
               "Desbloqueo por informe o suscripción PYME",
             ]}
             badge="Recomendada para empezar"
-            href="/evaluar?tier=pyme"
+            href="/app/new?tier=pyme"
             cta="Comenzar PYME"
           />
 
@@ -153,7 +153,7 @@ export default function MarketingHomePage() {
               "Roadmap 30/60/90 días (más detallado)",
             ]}
             badge="Mayor profundidad"
-            href="/evaluar?tier=empresa"
+            href="/app/new?tier=empresa"
             cta="Comenzar Empresa"
             variant="outline"
           />
@@ -303,7 +303,7 @@ export default function MarketingHomePage() {
                 "1 fortaleza + 1 riesgo",
                 "Sin PDF ni informe completo",
               ]}
-              ctaHref="/evaluar?tier=pyme"
+              ctaHref="/app/new?tier=empresa"
               ctaText="Empezar gratis"
             />
             <PlanCard
@@ -315,7 +315,7 @@ export default function MarketingHomePage() {
                 "Descarga PDF premium",
                 "Sin histórico ni dashboard",
               ]}
-              ctaHref="/evaluar?tier=pyme"
+              ctaHref="/app/new?tier=pyme"
               ctaText="Generar y desbloquear"
               highlight
             />
@@ -328,7 +328,7 @@ export default function MarketingHomePage() {
                 "Histórico + evolución básica",
                 "Ideal para seguimiento mensual",
               ]}
-              ctaHref="/evaluar?tier=pyme"
+              ctaHref="/app/new?tier=pyme"
               ctaText="Comenzar PYME"
             />
             <PlanCard
@@ -340,7 +340,7 @@ export default function MarketingHomePage() {
                 "Dashboard + evolución avanzada",
                 "Alertas (fase posterior)",
               ]}
-              ctaHref="/evaluar?tier=empresa"
+              ctaHref="/app/new?tier=empresa"
               ctaText="Comenzar Empresa"
             />
           </div>
@@ -395,7 +395,7 @@ function Header() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/evaluar?tier=pyme"
+            href="/app/new?tier=pyme"
             className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-medium text-white shadow-sm hover:bg-slate-800"
           >
             Comenzar
