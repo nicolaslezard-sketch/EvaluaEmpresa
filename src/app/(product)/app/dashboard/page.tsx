@@ -66,7 +66,10 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Link href="/app/new" className="btn btn-primary">
+        <Link
+          href={`/app/new/${tier === "EMPRESA" ? "empresa" : "pyme"}`}
+          className="btn btn-primary"
+        >
           Nueva evaluación
         </Link>
       </div>
