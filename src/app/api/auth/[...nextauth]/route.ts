@@ -3,9 +3,6 @@ import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
-console.log("VERCEL DATABASE_URL:", process.env.DATABASE_URL);
-console.log("VERCEL DIRECT_URL:", process.env.DIRECT_URL);
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
 

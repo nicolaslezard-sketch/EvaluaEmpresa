@@ -1,8 +1,12 @@
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { type NextAuthOptions } from "next-auth";
 import Google from "next-auth/providers/google";
+
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -15,30 +19,10 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async signIn({ user }) {
-      if (!user.email) return false;
-
-      await prisma.user.upsert({
-        where: { email: user.email },
-        update: {},
-        create: { email: user.email },
-      });
-
-      return true;
-    },
-
     async jwt({ token, user }) {
-      if (user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-          select: { id: true },
-        });
-
-        if (dbUser) {
-          token.id = dbUser.id;
-        }
+      if (user) {
+        token.id = user.id;
       }
-
       return token;
     },
 
@@ -46,7 +30,6 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
       }
-
       return session;
     },
   },
