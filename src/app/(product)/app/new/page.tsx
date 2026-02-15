@@ -1,10 +1,13 @@
+// src/app/(product)/app/new/page.tsx
+
 import NewAssessmentWizard from "@/components/app/NewAssessmentWizard";
-import type { EvaluationTier } from "@prisma/client";
+
+type EvaluationTier = "PYME" | "EMPRESA";
 
 export default function NewPage({
   searchParams,
 }: {
-  searchParams: { tier?: string };
+  searchParams?: { tier?: string };
 }) {
   const tierParam = searchParams?.tier?.toUpperCase();
   const tier: EvaluationTier = tierParam === "EMPRESA" ? "EMPRESA" : "PYME";
