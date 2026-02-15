@@ -1,21 +1,43 @@
-export function verifyApprovedPayment(payment: any) {
-  if (!payment) return { ok: false };
+type MpPaymentRaw = {
+  status?: unknown;
+  transaction_amount?: unknown;
+  currency_id?: unknown;
+  external_reference?: unknown;
+};
 
-  const { status, transaction_amount, currency_id, external_reference } =
-    payment;
+type VerifyApprovedPaymentResult =
+  | { ok: false }
+  | {
+      ok: true;
+      reportRequestId: string;
+      amount: number;
+      currency: string;
+      status: string;
+    };
 
-  if (status !== "approved") return { ok: false };
+export function verifyApprovedPayment(
+  payment: unknown,
+): VerifyApprovedPaymentResult {
+  if (!payment || typeof payment !== "object") {
+    return { ok: false };
+  }
 
-  if (transaction_amount !== 100) return { ok: false };
-  if (currency_id !== "ARS") return { ok: false };
+  const p = payment as MpPaymentRaw;
 
-  if (!external_reference) return { ok: false };
+  if (p.status !== "approved") return { ok: false };
+
+  if (typeof p.transaction_amount !== "number") return { ok: false };
+  if (p.transaction_amount !== 100) return { ok: false };
+
+  if (p.currency_id !== "ARS") return { ok: false };
+
+  if (typeof p.external_reference !== "string") return { ok: false };
 
   return {
     ok: true,
-    reportRequestId: external_reference,
-    amount: transaction_amount,
-    currency: currency_id,
-    status,
+    reportRequestId: p.external_reference,
+    amount: p.transaction_amount,
+    currency: p.currency_id as string,
+    status: p.status as string,
   };
 }

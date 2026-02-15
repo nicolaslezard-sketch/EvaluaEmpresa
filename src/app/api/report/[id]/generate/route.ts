@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import type { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildEvaluaEmpresaPrompt } from "@/lib/prompts/evaluaEmpresa";
@@ -141,9 +141,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
     await prisma.reportRequest.update({
       where: { id: reportId },
       data: {
-        // legacy
-        reportText: text,
-
         // estructurado
         reportData: reportData as Prisma.JsonObject,
         overallScore: extracted.overallScore,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -12,8 +12,15 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { plan: true },
+    include: {
+      subscription: true,
+    },
   });
+
+  const tier =
+    user?.subscription?.status === "AUTHORIZED"
+      ? user.subscription.tier
+      : "FREE";
 
   const reports = await prisma.reportRequest.findMany({
     where: { userId: session.user.id },
@@ -29,5 +36,5 @@ export async function GET() {
     },
   });
 
-  return NextResponse.json({ reports, plan: user?.plan ?? "free" });
+  return NextResponse.json({ reports, tier });
 }

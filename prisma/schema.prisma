@@ -3,9 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+
 
 enum ReportStatus {
   PENDING_PAYMENT
@@ -24,11 +26,6 @@ enum SubscriptionStatus {
   FAILED
 }
 
-enum Plan {
-  FREE
-  PRO
-}
-
 enum ExecutiveCategory {
   SOLIDO
   ESTABLE
@@ -36,15 +33,25 @@ enum ExecutiveCategory {
   CRITICO
 }
 
+enum EvaluationTier {
+  PYME
+  EMPRESA
+}
+
+enum EntitlementSource {
+  REPORT_UNLOCK
+  SUBSCRIPTION
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
 
-  plan      Plan     @default(FREE)
-
   subscription Subscription?
   companies  Company[]
-  reports    ReportRequest[] // legacy compatibility
+  reports    ReportRequest[]
+
+  reportUnlocks ReportUnlock[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -65,6 +72,8 @@ model Subscription {
   id        String   @id @default(cuid())
   status    SubscriptionStatus @default(PENDING)
 
+  tier      EvaluationTier
+
   mpPreapprovalId String? @unique
   mpStatus        String?
 
@@ -78,22 +87,42 @@ model Subscription {
   user   User   @relation(fields: [userId], references: [id])
 
   @@index([status])
+  @@index([tier])
+}
+
+model ReportUnlock {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  reportId  String
+  report    ReportRequest @relation(fields: [reportId], references: [id])
+
+  source    EntitlementSource @default(REPORT_UNLOCK)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, reportId])
+  @@index([reportId])
 }
 
 model ReportRequest {
   id        String   @id @default(cuid())
 
-  // 👇 NUEVO: vínculo institucional
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id])
 
-  // legacy fallback
   userId String?
   user   User? @relation(fields: [userId], references: [id])
 
   email     String
   title     String?
+
+  tier      EvaluationTier
+
   formData  Json
+  reportData Json?
 
   status    ReportStatus @default(PENDING_PAYMENT)
 
@@ -101,22 +130,17 @@ model ReportRequest {
   mercadopagoStatus    String?
   paidAt               DateTime?
 
-  reportText String? // legacy
-  reportData Json?
-
-  // Persistencia institucional de scores
-  overallScore     Float?
+  overallScore      Float?
   executiveCategory ExecutiveCategory?
 
-  financialScore   Float?
-  commercialScore  Float?
-  operationalScore Float?
-  legalScore       Float?
-  strategicScore   Float?
+  financialScore    Float?
+  commercialScore   Float?
+  operationalScore  Float?
+  legalScore        Float?
+  strategicScore    Float?
 
-  // 👇 NUEVO: institucional
-  formalId   String? @unique
-  verifyCode String? @unique
+  formalId    String? @unique
+  verifyCode  String? @unique
   deliveredAt DateTime?
 
   pdfKey   String?
@@ -126,6 +150,8 @@ model ReportRequest {
   lastError String?
   attempts  Int    @default(0)
 
+  unlocks ReportUnlock[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -133,5 +159,6 @@ model ReportRequest {
   @@index([email])
   @@index([userId])
   @@index([companyId])
+  @@index([tier])
   @@index([overallScore])
 }

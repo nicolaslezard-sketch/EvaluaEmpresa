@@ -29,8 +29,12 @@ export default function UpgradePage() {
         throw new Error("Respuesta inválida: falta init_point");
 
       window.location.href = data.init_point;
-    } catch (e: any) {
-      setError(e.message || "Error iniciando suscripción");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("Error iniciando suscripción");
+      }
     } finally {
       setLoading(false);
     }

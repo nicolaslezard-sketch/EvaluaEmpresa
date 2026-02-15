@@ -14,13 +14,16 @@ export async function GET(
 
   const report = await prisma.reportRequest.findUnique({
     where: { id },
+    select: {
+      reportData: true,
+    },
   });
 
-  if (!report?.reportText) {
+  if (!report?.reportData) {
     return new Response("Reporte no encontrado", { status: 404 });
   }
 
-  const parsed = JSON.parse(report.reportText) as ReportJson;
+  const parsed = report.reportData as ReportJson;
 
   const pdfBuffer = await generateReportPdf(parsed);
 

@@ -1,49 +1,50 @@
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-function PlanBadge({ plan }: { plan: "free" | "pro" }) {
-  if (plan === "pro") {
+function PlanBadge({ tier }: { tier: "FREE" | "PYME" | "EMPRESA" }) {
+  if (tier === "EMPRESA") {
     return (
       <span className="inline-flex items-center rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">
-        PRO
+        EMPRESA
+      </span>
+    );
+  }
+
+  if (tier === "PYME") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-zinc-700 px-3 py-1 text-xs font-semibold text-white">
+        PYME
       </span>
     );
   }
 
   return (
-    <Link
-      href="/app/upgrade"
-      className="btn btn-secondary"
-      title="Desbloquear seguimiento histórico y dashboard extendido"
-    >
-      Ver Plan PRO
+    <Link href="/app/upgrade" className="btn btn-secondary">
+      Ver Planes
     </Link>
   );
 }
 
 function Shell({
   children,
-  plan,
+  tier,
 }: {
   children: React.ReactNode;
-  plan: "free" | "pro";
+  tier: "FREE" | "PYME" | "EMPRESA";
 }) {
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="border-b border-zinc-200 bg-white">
         <div className="container-page flex h-16 items-center justify-between">
-          <Link
-            href="/app/dashboard"
-            className="font-semibold tracking-tight text-zinc-900"
-          >
-            EvaluaEmpresa <span className="text-zinc-400">•</span>{" "}
-            <span className="text-zinc-700">E-Score™</span>
+          <Link href="/app/dashboard" className="font-semibold text-zinc-900">
+            EvaluaEmpresa
           </Link>
 
           <div className="flex items-center gap-3">
-            <PlanBadge plan={plan} />
+            <PlanBadge tier={tier} />
             <Link href="/app/new" className="btn btn-primary">
               Nueva evaluación
             </Link>
@@ -64,5 +65,16 @@ export default async function ProductLayout({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  return <Shell plan={session.user.plan}>{children}</Shell>;
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId: session.user.id },
+    select: { tier: true, status: true },
+  });
+
+  let tier: "FREE" | "PYME" | "EMPRESA" = "FREE";
+
+  if (subscription?.status === "AUTHORIZED") {
+    tier = subscription.tier;
+  }
+
+  return <Shell tier={tier}>{children}</Shell>;
 }

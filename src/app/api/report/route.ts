@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
 import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
@@ -11,29 +11,39 @@ import { normalizeAssessmentV2 } from "@/lib/assessment/v2/normalize";
 
 export async function POST(req: Request) {
   try {
-    const raw = await req.json();
+    const body = await req.json();
+
+    const { assessment, tier } = body;
+
+    // Validación básica de tier
+    if (tier !== "PYME" && tier !== "EMPRESA") {
+      return NextResponse.json({ error: "Tier inválido" }, { status: 400 });
+    }
 
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Email: prioridad body, fallback session
+    // Email: prioridad assessment, fallback session
     const emailFromBody =
-      typeof raw?.email === "string" ? raw.email.trim() : "";
+      typeof assessment?.email === "string" ? assessment.email.trim() : "";
+
     const email = emailFromBody || session.user.email || "";
+
     if (!email) {
       return NextResponse.json({ error: "Email requerido" }, { status: 400 });
     }
 
-    // Armamos payload v2 (forzamos version + email)
+    // Armamos payload v2
     const payload = {
-      ...raw,
+      ...assessment,
       version: "v2",
       email,
     };
 
     const parsed = AssessmentV2Schema.safeParse(payload);
+
     if (!parsed.success) {
       return NextResponse.json(
         {
@@ -46,14 +56,13 @@ export async function POST(req: Request) {
 
     const { metrics, inconsistencies } = normalizeAssessmentV2(parsed.data);
 
-    // Guardamos TODO dentro de formData (sin migraciones)
     const formData = {
       version: "v2",
+      tier, // 👈 guardamos tier en snapshot
       submittedAt: new Date().toISOString(),
       answers: parsed.data,
       metrics,
       inconsistencies,
-      // scoring vendrá después (Fase 2)
       preScore: null,
     };
 
@@ -61,11 +70,10 @@ export async function POST(req: Request) {
       data: {
         userId: session.user.id,
         email,
-        title:
-          `Evaluación ${parsed.data.perfil.nombreComercial || parsed.data.perfil.razonSocial}`.slice(
-            0,
-            120,
-          ),
+        tier, // 👈 NUEVO CAMPO EN DB
+        title: `Evaluación ${
+          parsed.data.perfil.nombreComercial || parsed.data.perfil.razonSocial
+        }`.slice(0, 120),
         formData,
       },
     });

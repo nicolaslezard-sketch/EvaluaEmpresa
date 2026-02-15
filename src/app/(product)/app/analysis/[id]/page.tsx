@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ReportJson } from "@/lib/types/report";
-import { safeJsonParse } from "@/lib/analysis/parseReport";
-import { validateAndNormalizeReport } from "@/lib/analysis/validateReport";
 import StatusBox from "@/components/StatusBox";
 import type { PreScore } from "@/types/preScore";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { resolveEntitlement } from "@/lib/entitlements/resolveEntitlement";
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
@@ -18,15 +19,25 @@ function Pill({ children }: { children: React.ReactNode }) {
 export default async function AnalysisPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
+  const { id } = params;
 
   const report = await prisma.reportRequest.findUnique({
     where: { id },
   });
 
   if (!report) notFound();
+  const session = await getServerSession(authOptions);
+
+  const entitlement = await resolveEntitlement({
+    userId: session?.user?.id ?? null,
+    reportId: report.id,
+    reportTier: report.tier,
+  });
+
+  const isFree = !entitlement.canViewFull;
+
   let preScore: PreScore | null = null;
 
   if (
@@ -88,13 +99,6 @@ export default async function AnalysisPage({
 
   if (report.reportData) {
     data = report.reportData as ReportJson;
-  } else if (report.reportText) {
-    try {
-      const raw = safeJsonParse(report.reportText);
-      data = validateAndNormalizeReport(raw).report;
-    } catch {
-      data = null;
-    }
   }
 
   if (!data) {
@@ -112,6 +116,48 @@ export default async function AnalysisPage({
             <form action={`/api/report/${report.id}/generate`} method="post">
               <button className="btn btn-primary" type="submit">
                 Reintentar generación
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (isFree) {
+    const overall = data.portada.e_score_general.score_total;
+    const risk = data.portada.e_score_general.nivel_general;
+
+    return (
+      <div className="mx-auto max-w-4xl">
+        <div className="card p-6">
+          <p className="text-sm font-medium text-zinc-900">
+            Vista parcial del informe
+          </p>
+
+          <p className="mt-2 text-sm text-zinc-600">
+            Este es un resumen ejecutivo. Desbloqueá el informe completo para
+            acceder a:
+          </p>
+
+          <ul className="mt-4 list-disc pl-5 text-sm text-zinc-700 space-y-1">
+            <li>Factores críticos detallados</li>
+            <li>Escenarios potenciales</li>
+            <li>Recomendaciones estratégicas completas</li>
+            <li>Conclusión ejecutiva</li>
+          </ul>
+
+          <div className="mt-8 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <p className="text-xs text-zinc-500">E-Score™ General</p>
+            <p className="mt-2 text-4xl font-semibold text-zinc-900">
+              {overall.toFixed(1)}
+            </p>
+            <p className="mt-2 text-sm text-zinc-700">{risk}</p>
+          </div>
+
+          <div className="mt-8">
+            <form action={`/api/report/${report.id}/unlock`} method="post">
+              <button className="btn btn-primary" type="submit">
+                Desbloquear informe completo
               </button>
             </form>
           </div>
@@ -148,7 +194,7 @@ export default async function AnalysisPage({
           <Link className="btn btn-secondary" href="/app/dashboard">
             Dashboard
           </Link>
-          {report.pdfKey && (
+          {report.pdfKey && entitlement.canDownloadPdf && (
             <a
               className="btn btn-primary"
               href={`/api/report/download/${report.id}`}

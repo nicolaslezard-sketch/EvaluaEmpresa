@@ -11,8 +11,11 @@ import Step3Comercial from "./steps/Step3Comercial";
 import Step4Riesgos from "./steps/Step4Riesgos";
 import Step5Estrategia from "./steps/Step5Estrategia";
 
-export default function AssessmentWizard() {
+export type EvaluationTier = "PYME" | "EMPRESA";
+
+export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
   const router = useRouter();
+
   const {
     steps,
     step,
@@ -29,8 +32,9 @@ export default function AssessmentWizard() {
 
   async function submit() {
     setGlobalError(null);
-    // validación final
-    const ok = validateAndGoNext(); // si está en step 5, esto no avanza pero valida todo
+
+    // Validación final
+    const ok = validateAndGoNext();
     if (!ok) return;
 
     try {
@@ -39,7 +43,10 @@ export default function AssessmentWizard() {
       const res = await fetch("/api/report", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ assessment: data }),
+        body: JSON.stringify({
+          assessment: data,
+          tier, // 👈 nuevo: enviamos tier al backend
+        }),
       });
 
       const json = await res.json().catch(() => null);
@@ -49,8 +56,8 @@ export default function AssessmentWizard() {
         return;
       }
 
-      // asumo que devuelve { id }
       const id = json?.id;
+
       if (id) {
         router.push(`/report/${id}`);
       } else {
@@ -63,14 +70,20 @@ export default function AssessmentWizard() {
     }
   }
 
-  const title = steps.find((s) => s.n === step)?.title ?? "Evaluación";
+  const title =
+    steps.find((s) => s.n === step)?.title ??
+    (tier === "EMPRESA" ? "Evaluación Empresa" : "Evaluación PYME");
 
   return (
     <WizardLayout
       steps={steps}
       step={step}
       title={title}
-      subtitle="Completá los datos con precisión. El informe es orientativo, pero el método es estricto."
+      subtitle={
+        tier === "EMPRESA"
+          ? "Validación estricta. Todos los campos clave son obligatorios."
+          : "Podés avanzar con menos datos. Más información mejora la precisión del análisis."
+      }
       submitting={submitting}
       canBack={step > 1}
       onBack={() => {
@@ -90,21 +103,25 @@ export default function AssessmentWizard() {
         </div>
       ) : null}
 
-      {step === 1 ? (
+      {step === 1 && (
         <Step1Perfil data={data} update={update} errors={fieldErrors} />
-      ) : null}
-      {step === 2 ? (
+      )}
+
+      {step === 2 && (
         <Step2Finanzas data={data} update={update} errors={fieldErrors} />
-      ) : null}
-      {step === 3 ? (
+      )}
+
+      {step === 3 && (
         <Step3Comercial data={data} update={update} errors={fieldErrors} />
-      ) : null}
-      {step === 4 ? (
+      )}
+
+      {step === 4 && (
         <Step4Riesgos data={data} update={update} errors={fieldErrors} />
-      ) : null}
-      {step === 5 ? (
+      )}
+
+      {step === 5 && (
         <Step5Estrategia data={data} update={update} errors={fieldErrors} />
-      ) : null}
+      )}
     </WizardLayout>
   );
 }

@@ -17,9 +17,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    // 🔎 Consultamos MP (fuente de verdad)
+    // 🔎 Fuente de verdad
     const payment = await getPaymentById(paymentId);
-
     const verification = verifyApprovedPayment(payment);
 
     if (!verification.ok) {
@@ -28,28 +27,77 @@ export async function POST(req: Request) {
 
     const { reportRequestId, status } = verification;
 
-    // 🧱 Idempotencia: ya procesado
-    const existing = await prisma.reportRequest.findFirst({
+    type MpPaymentMetadata = {
+      type?: "REPORT_UNLOCK" | "REPORT_GENERATION";
+      reportId?: string;
+      userId?: string;
+    };
+
+    type MpPayment = {
+      metadata?: MpPaymentMetadata;
+    };
+
+    const mpPayment = payment as MpPayment;
+
+    const metadata = mpPayment.metadata ?? {};
+    const type = metadata.type;
+
+    // Idempotencia general
+    const existingReport = await prisma.reportRequest.findFirst({
       where: { mercadopagoPaymentId: paymentId },
     });
 
-    if (existing) {
+    if (existingReport) {
       return NextResponse.json({ ok: true });
     }
 
-    // ✅ Actualizamos reporte
+    // ===============================
+    // 🔓 UNLOCK INDIVIDUAL
+    // ===============================
+    if (type === "REPORT_UNLOCK") {
+      const userId = metadata.userId;
+
+      if (!userId) {
+        return NextResponse.json({ ok: true });
+      }
+
+      // Evitar duplicados
+      const existingUnlock = await prisma.reportUnlock.findUnique({
+        where: {
+          userId_reportId: {
+            userId,
+            reportId: reportRequestId,
+          },
+        },
+      });
+
+      if (!existingUnlock) {
+        await prisma.reportUnlock.create({
+          data: {
+            userId,
+            reportId: reportRequestId,
+          },
+        });
+      }
+
+      return NextResponse.json({ ok: true });
+    }
+
+    // ===============================
+    // 📄 GENERACIÓN INFORME (flujo original)
+    // ===============================
+
     await prisma.reportRequest.update({
       where: { id: reportRequestId },
       data: {
         status: "PAID",
         mercadopagoPaymentId: paymentId,
         mercadopagoStatus: status,
-
         paidAt: new Date(),
       },
     });
 
-    // 🔔 Disparo interno (no await)
+    // Disparar generación
     fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/report/${reportRequestId}/generate`,
       {

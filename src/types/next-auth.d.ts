@@ -4,7 +4,6 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      plan: "free" | "pro";
     } & DefaultSession["user"];
   }
 }
@@ -12,7 +11,5 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     id: string;
-    plan: "free" | "pro";
-    planCheckedAt?: number;
   }
 }

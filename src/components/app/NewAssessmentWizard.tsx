@@ -2,6 +2,12 @@
 
 import AssessmentWizard from "@/components/assessment/wizard/AssessmentWizard";
 
-export default function NewAssessmentWizard() {
-  return <AssessmentWizard />;
+export type EvaluationTier = "PYME" | "EMPRESA";
+
+export default function NewAssessmentWizard({
+  tier,
+}: {
+  tier: EvaluationTier;
+}) {
+  return <AssessmentWizard tier={tier} />;
 }
