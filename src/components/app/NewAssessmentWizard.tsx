@@ -9,5 +9,5 @@ export default function NewAssessmentWizard({
 }: {
   tier: EvaluationTier;
 }) {
-  return <AssessmentWizard tier={tier} />;
+  return <AssessmentWizard key={tier} tier={tier} />;
 }
