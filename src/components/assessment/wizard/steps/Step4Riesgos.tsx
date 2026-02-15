@@ -1,21 +1,29 @@
 "use client";
 
 import { z } from "zod";
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import {
+  AssessmentV2Schema,
+  type EvaluationTier,
+} from "@/lib/assessment/v2/schema";
+import { getTextLimits } from "@/lib/assessment/v2/limits";
 import type { FieldErrors } from "../ui";
 import { CheckboxGroup, Field, Select, TextareaField } from "../ui";
 
 type AssessmentV2 = z.infer<typeof AssessmentV2Schema>;
 
 export default function Step4Riesgos({
+  tier,
   data,
   update,
   errors,
 }: {
+  tier: EvaluationTier;
   data: AssessmentV2;
   update: (path: [keyof AssessmentV2, string], value: unknown) => void;
   errors: FieldErrors;
 }) {
+  const limits = getTextLimits(tier);
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
@@ -60,7 +68,7 @@ export default function Step4Riesgos({
         <Field
           fieldKey="riesgos.depEmpleadoClave"
           label="Dependencia empleado clave"
-          hint="Impacto si esa persona se va."
+          hint="Impacto si esa persona se va o falla."
           errors={errors}
         >
           <Select
@@ -80,9 +88,8 @@ export default function Step4Riesgos({
       <CheckboxGroup
         fieldKey="riesgos.herramientasGestion"
         label="Herramientas de gestión"
-        hint="Elegí todas las que aplican."
+        hint="Seleccioná lo que usan hoy para operar y controlar el negocio."
         value={data.riesgos.herramientasGestion}
-        errors={errors}
         options={[
           { value: "ERP", label: "ERP" },
           { value: "CRM", label: "CRM" },
@@ -90,34 +97,34 @@ export default function Step4Riesgos({
           { value: "NINGUNA", label: "Ninguna" },
           { value: "OTRO", label: "Otro" },
         ]}
-        onChange={(next) => update(["riesgos", "herramientasGestion"], next)}
+        onChange={(v) => update(["riesgos", "herramientasGestion"], v)}
+        errors={errors}
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         <CheckboxGroup
           fieldKey="riesgos.incidentes12m"
           label="Incidentes últimos 12 meses"
-          hint="Marcá lo que haya ocurrido."
+          hint="Seleccioná incidentes relevantes (si aplica)."
           value={data.riesgos.incidentes12m}
-          errors={errors}
           options={[
             { value: "CORTE_OPERATIVO", label: "Corte operativo" },
             { value: "RECLAMOS_LEGALES", label: "Reclamos legales" },
             { value: "INSPECCIONES", label: "Inspecciones" },
             { value: "MULTAS", label: "Multas" },
-            { value: "SEGURIDAD", label: "Incidentes de seguridad" },
+            { value: "SEGURIDAD", label: "Seguridad" },
             { value: "FRAUDE", label: "Fraude" },
             { value: "NINGUNO", label: "Ninguno" },
           ]}
-          onChange={(next) => update(["riesgos", "incidentes12m"], next)}
+          onChange={(v) => update(["riesgos", "incidentes12m"], v)}
+          errors={errors}
         />
 
         <CheckboxGroup
           fieldKey="riesgos.seguros"
-          label="Seguros vigentes"
-          hint="Marcá coberturas vigentes."
+          label="Seguros"
+          hint="Seleccioná los seguros vigentes."
           value={data.riesgos.seguros}
-          errors={errors}
           options={[
             { value: "RC", label: "Responsabilidad civil" },
             { value: "ART", label: "ART" },
@@ -126,7 +133,8 @@ export default function Step4Riesgos({
             { value: "TRANSPORTE", label: "Transporte" },
             { value: "NINGUNO", label: "Ninguno" },
           ]}
-          onChange={(next) => update(["riesgos", "seguros"], next)}
+          onChange={(v) => update(["riesgos", "seguros"], v)}
+          errors={errors}
         />
       </div>
 
@@ -189,11 +197,11 @@ export default function Step4Riesgos({
       <TextareaField
         fieldKey="riesgos.notaCumplimiento"
         label="Nota de cumplimiento"
-        hint="Contá evidencia concreta: pagos, atrasos, inspecciones, sanciones, etc."
+        hint="Describe estado fiscal/laboral, riesgos, controles, y documentación."
         value={data.riesgos.notaCumplimiento}
         onChange={(v) => update(["riesgos", "notaCumplimiento"], v)}
-        min={160}
-        max={4000}
+        min={limits.riesgos.notaCumplimiento.min}
+        max={limits.riesgos.notaCumplimiento.max}
         errors={errors}
       />
 
@@ -229,8 +237,8 @@ export default function Step4Riesgos({
           hint="Tipo, monto estimado, estado, probabilidad, impacto."
           value={data.riesgos.detalleLitigios ?? ""}
           onChange={(v) => update(["riesgos", "detalleLitigios"], v)}
-          min={200}
-          max={4000}
+          min={limits.riesgos.detalleLitigios.min}
+          max={limits.riesgos.detalleLitigios.max}
           errors={errors}
         />
       ) : null}
@@ -247,20 +255,20 @@ export default function Step4Riesgos({
             update(["riesgos", "riesgoRegulatorio"], e.target.value)
           }
         >
-          <option value="BAJO">Bajo</option>
-          <option value="MEDIO">Medio</option>
           <option value="ALTO">Alto</option>
+          <option value="MEDIO">Medio</option>
+          <option value="BAJO">Bajo</option>
         </Select>
       </Field>
 
       <TextareaField
         fieldKey="riesgos.notaRegulatorio"
         label="Nota regulatoria"
-        hint="Permisos, habilitaciones, inspecciones, normativa específica del rubro."
+        hint="Normativas relevantes, habilitaciones, riesgos y situación actual."
         value={data.riesgos.notaRegulatorio}
         onChange={(v) => update(["riesgos", "notaRegulatorio"], v)}
-        min={120}
-        max={2500}
+        min={limits.riesgos.notaRegulatorio.min}
+        max={limits.riesgos.notaRegulatorio.max}
         errors={errors}
       />
     </div>

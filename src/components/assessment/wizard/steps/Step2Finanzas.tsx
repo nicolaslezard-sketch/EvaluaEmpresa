@@ -1,7 +1,11 @@
 "use client";
 
 import { z } from "zod";
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import {
+  AssessmentV2Schema,
+  type EvaluationTier,
+} from "@/lib/assessment/v2/schema";
+import { getTextLimits } from "@/lib/assessment/v2/limits";
 import type { FieldErrors } from "../ui";
 import { Field, Input, Select, TextareaField } from "../ui";
 
@@ -10,14 +14,18 @@ type AssessmentV2 = z.infer<typeof AssessmentV2Schema>;
 type UpdateFn = (path: [keyof AssessmentV2, string], value: unknown) => void;
 
 export default function Step2Finanzas({
+  tier,
   data,
   update,
   errors,
 }: {
+  tier: EvaluationTier;
   data: AssessmentV2;
   update: UpdateFn;
   errors: FieldErrors;
 }) {
+  const limits = getTextLimits(tier);
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
@@ -279,8 +287,8 @@ export default function Step2Finanzas({
         hint="Contá de dónde salen estos números (sistema, contador, balances, extractos) y qué tan confiables son."
         value={data.finanzas.evidenciaNumeros}
         onChange={(v) => update(["finanzas", "evidenciaNumeros"], v)}
-        min={200}
-        max={5000}
+        min={limits.finanzas.evidenciaNumeros.min}
+        max={limits.finanzas.evidenciaNumeros.max}
         errors={errors}
       />
     </div>

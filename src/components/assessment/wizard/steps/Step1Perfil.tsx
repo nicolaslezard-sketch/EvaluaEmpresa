@@ -1,7 +1,11 @@
 "use client";
 
 import { z } from "zod";
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import {
+  AssessmentV2Schema,
+  type EvaluationTier,
+} from "@/lib/assessment/v2/schema";
+import { getTextLimits } from "@/lib/assessment/v2/limits";
 import type { FieldErrors } from "../ui";
 import { Field, Input, Select, TextareaField } from "../ui";
 
@@ -13,17 +17,20 @@ type UpdateFn = (
 ) => void;
 
 export default function Step1Perfil({
+  tier,
   data,
   update,
   errors,
 }: {
+  tier: EvaluationTier;
   data: AssessmentV2;
   update: UpdateFn;
   errors: FieldErrors;
 }) {
+  const limits = getTextLimits(tier);
+
   return (
     <div className="space-y-8">
-      {/* EMAIL */}
       <Field fieldKey="email" label="Email" errors={errors}>
         <Input
           value={data.email}
@@ -32,7 +39,6 @@ export default function Step1Perfil({
         />
       </Field>
 
-      {/* DATOS LEGALES */}
       <div className="grid gap-4 md:grid-cols-2">
         <Field
           fieldKey="perfil.razonSocial"
@@ -84,7 +90,6 @@ export default function Step1Perfil({
         </Field>
       </div>
 
-      {/* UBICACIÓN */}
       <div className="grid gap-4 md:grid-cols-3">
         <Field fieldKey="perfil.pais" label="País" errors={errors}>
           <Select
@@ -121,7 +126,6 @@ export default function Step1Perfil({
         </Field>
       </div>
 
-      {/* ESTRUCTURA */}
       <div className="grid gap-4 md:grid-cols-3">
         <Field fieldKey="perfil.industria" label="Industria" errors={errors}>
           <Select
@@ -162,7 +166,6 @@ export default function Step1Perfil({
         </Field>
       </div>
 
-      {/* RECURSOS */}
       <div className="grid gap-4 md:grid-cols-3">
         <Field fieldKey="perfil.empleados" label="Empleados" errors={errors}>
           <Input
@@ -199,7 +202,6 @@ export default function Step1Perfil({
         </Field>
       </div>
 
-      {/* DEPENDENCIA */}
       <Field
         fieldKey="perfil.dependenciaFundador"
         label="Dependencia del fundador"
@@ -218,14 +220,13 @@ export default function Step1Perfil({
         </Select>
       </Field>
 
-      {/* DESCRIPCIONES */}
       <TextareaField
         fieldKey="perfil.descripcionNegocio"
         label="Descripción del negocio"
         value={data.perfil.descripcionNegocio}
         onChange={(v) => update(["perfil", "descripcionNegocio"], v)}
-        min={150}
-        max={1000}
+        min={limits.perfil.descripcionNegocio.min}
+        max={limits.perfil.descripcionNegocio.max}
         errors={errors}
       />
 
@@ -234,8 +235,8 @@ export default function Step1Perfil({
         label="Top clientes"
         value={data.perfil.topClientes}
         onChange={(v) => update(["perfil", "topClientes"], v)}
-        min={120}
-        max={2000}
+        min={limits.perfil.topClientes.min}
+        max={limits.perfil.topClientes.max}
         errors={errors}
       />
 
@@ -244,8 +245,8 @@ export default function Step1Perfil({
         label="Proveedores críticos"
         value={data.perfil.proveedoresCriticos}
         onChange={(v) => update(["perfil", "proveedoresCriticos"], v)}
-        min={120}
-        max={1000}
+        min={limits.perfil.proveedoresCriticos.min}
+        max={limits.perfil.proveedoresCriticos.max}
         errors={errors}
       />
 
@@ -254,8 +255,8 @@ export default function Step1Perfil({
         label="Nota contable"
         value={data.perfil.notaContable}
         onChange={(v) => update(["perfil", "notaContable"], v)}
-        min={80}
-        max={3000}
+        min={limits.perfil.notaContable.min}
+        max={limits.perfil.notaContable.max}
         errors={errors}
       />
     </div>

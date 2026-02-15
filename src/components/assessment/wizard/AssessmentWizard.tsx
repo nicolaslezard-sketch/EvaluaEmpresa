@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import WizardLayout from "./WizardLayout";
-import { useAssessmentForm } from "./useAssessmentForm";
+import { focusFirstError, useAssessmentForm } from "./useAssessmentForm";
 
 import Step1Perfil from "./steps/Step1Perfil";
 import Step2Finanzas from "./steps/Step2Finanzas";
@@ -37,6 +37,7 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
     const final = validateAll();
     if (!final.ok) {
       setFieldErrors(final.errors);
+      focusFirstError(final.errors);
       return;
     }
 
@@ -99,19 +100,48 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
       ) : null}
 
       {step === 1 && (
-        <Step1Perfil data={data} update={update} errors={fieldErrors} />
+        <Step1Perfil
+          tier={tier}
+          data={data}
+          update={update}
+          errors={fieldErrors}
+        />
       )}
+
       {step === 2 && (
-        <Step2Finanzas data={data} update={update} errors={fieldErrors} />
+        <Step2Finanzas
+          tier={tier}
+          data={data}
+          update={update}
+          errors={fieldErrors}
+        />
       )}
+
       {step === 3 && (
-        <Step3Comercial data={data} update={update} errors={fieldErrors} />
+        <Step3Comercial
+          tier={tier}
+          data={data}
+          update={update}
+          errors={fieldErrors}
+        />
       )}
+
       {step === 4 && (
-        <Step4Riesgos data={data} update={update} errors={fieldErrors} />
+        <Step4Riesgos
+          tier={tier}
+          data={data}
+          update={update}
+          errors={fieldErrors}
+        />
       )}
+
       {step === 5 && (
-        <Step5Estrategia data={data} update={update} errors={fieldErrors} />
+        <Step5Estrategia
+          tier={tier}
+          data={data}
+          update={update}
+          errors={fieldErrors}
+        />
       )}
     </WizardLayout>
   );

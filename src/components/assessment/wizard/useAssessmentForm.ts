@@ -124,10 +124,34 @@ function zodErrorsToFieldErrors(issues: z.ZodIssue[]): FieldErrors {
   const out: FieldErrors = {};
   for (const it of issues) {
     const k = issuePathToKey(it.path);
-    // quedate con el primer mensaje por campo
     if (!out[k]) out[k] = it.message;
   }
   return out;
+}
+
+function safeStructuredClone<T>(value: T): T {
+  // structuredClone no existe en algunos entornos/older browsers.
+  // Para este payload (JSON-ish), el fallback es seguro.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sc = (globalThis as any).structuredClone as undefined | ((v: T) => T);
+  if (typeof sc === "function") return sc(value);
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+export function focusFirstError(errors: FieldErrors) {
+  const firstKey = Object.keys(errors)[0];
+  if (!firstKey) return;
+
+  const el = document.querySelector(`[data-field="${firstKey}"]`);
+  if (el && "scrollIntoView" in el) {
+    (el as HTMLElement).scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    return;
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 export function useAssessmentForm(tier: EvaluationTier) {
@@ -137,31 +161,35 @@ export function useAssessmentForm(tier: EvaluationTier) {
   const [data, setData] = useState<AssessmentV2>(initialData);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
-  // draft load
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-
-    if (!saved) {
-      setData(initialData);
-      return;
-    }
-
     try {
-      const parsed = JSON.parse(saved);
-      setData(parsed);
+      const saved = localStorage.getItem(STORAGE_KEY);
+
+      if (!saved) {
+        setData(initialData);
+      } else {
+        const parsed = JSON.parse(saved);
+        setData(parsed);
+      }
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
       setData(initialData);
     }
 
-    // reset visual states
     setFieldErrors({});
     setStep(1);
   }, [STORAGE_KEY]);
 
-  // draft save
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // si falla el storage (quota / safari private), no rompemos el wizard
+    }
   }, [data, STORAGE_KEY]);
 
   const steps = useMemo(
@@ -180,7 +208,7 @@ export function useAssessmentForm(tier: EvaluationTier) {
     value: unknown,
   ) {
     setData((prev) => {
-      const copy = structuredClone(prev);
+      const copy = safeStructuredClone(prev);
 
       if (path.length === 1) {
         const [k1] = path;
@@ -211,23 +239,6 @@ export function useAssessmentForm(tier: EvaluationTier) {
     });
   }
 
-  function scrollToFirstError(errors: FieldErrors) {
-    const firstKey = Object.keys(errors)[0];
-    if (!firstKey) return;
-
-    const el = document.querySelector(`[data-field="${firstKey}"]`);
-    if (el && "scrollIntoView" in el) {
-      (el as HTMLElement).scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-      return;
-    }
-
-    // fallback: top
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
   function validateAll(): { ok: true } | { ok: false; errors: FieldErrors } {
     const schema = getAssessmentSchemaForTier(tier);
     const res = schema.safeParse(data);
@@ -244,47 +255,22 @@ export function useAssessmentForm(tier: EvaluationTier) {
 
     switch (step) {
       case 1:
-        result = base
-          .pick({
-            email: true,
-            perfil: true,
-          })
-          .safeParse(data);
+        result = base.pick({ email: true, perfil: true }).safeParse(data);
         break;
-
       case 2:
-        result = base
-          .pick({
-            finanzas: true,
-          })
-          .safeParse(data);
+        result = base.pick({ finanzas: true }).safeParse(data);
         break;
-
       case 3:
-        result = base
-          .pick({
-            comercial: true,
-          })
-          .safeParse(data);
+        result = base.pick({ comercial: true }).safeParse(data);
         break;
-
       case 4:
-        result = base
-          .pick({
-            riesgos: true,
-          })
-          .safeParse(data);
+        result = base.pick({ riesgos: true }).safeParse(data);
         break;
-
       case 5:
         result = base
-          .pick({
-            estrategia: true,
-            confirmaciones: true,
-          })
+          .pick({ estrategia: true, confirmaciones: true })
           .safeParse(data);
         break;
-
       default:
         result = base.safeParse(data);
     }
@@ -297,7 +283,7 @@ export function useAssessmentForm(tier: EvaluationTier) {
 
     const errors = zodErrorsToFieldErrors(result.error.issues);
     setFieldErrors(errors);
-    scrollToFirstError(errors);
+    focusFirstError(errors);
     return false;
   }
 

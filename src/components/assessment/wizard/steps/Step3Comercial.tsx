@@ -1,24 +1,31 @@
 "use client";
 
 import { z } from "zod";
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import {
+  AssessmentV2Schema,
+  type EvaluationTier,
+} from "@/lib/assessment/v2/schema";
+import { getTextLimits } from "@/lib/assessment/v2/limits";
 import type { FieldErrors } from "../ui";
 import { CheckboxGroup, Field, Input, Select, TextareaField } from "../ui";
 
 type AssessmentV2 = z.infer<typeof AssessmentV2Schema>;
+
 type UpdateFn = (path: [keyof AssessmentV2, string], value: unknown) => void;
 
-type Canal = AssessmentV2["comercial"]["canalesTop3"][number];
-
 export default function Step3Comercial({
+  tier,
   data,
   update,
   errors,
 }: {
+  tier: EvaluationTier;
   data: AssessmentV2;
   update: UpdateFn;
   errors: FieldErrors;
 }) {
+  const limits = getTextLimits(tier);
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
@@ -65,22 +72,22 @@ export default function Step3Comercial({
       <TextareaField
         fieldKey="comercial.ofertaPrincipal"
         label="Oferta principal"
-        hint="Qué vendés (productos/servicios), para quién y con qué resultados."
+        hint="Describí qué vendés, a quién y cómo se entrega."
         value={data.comercial.ofertaPrincipal}
         onChange={(v) => update(["comercial", "ofertaPrincipal"], v)}
-        min={200}
-        max={4000}
+        min={limits.comercial.ofertaPrincipal.min}
+        max={limits.comercial.ofertaPrincipal.max}
         errors={errors}
       />
 
       <TextareaField
         fieldKey="comercial.propuestaValor"
         label="Propuesta de valor"
-        hint="Por qué te eligen a vos y no a otro. Diferencial real."
+        hint="¿Por qué te eligen? ¿Qué problema resolvés mejor que la alternativa?"
         value={data.comercial.propuestaValor}
         onChange={(v) => update(["comercial", "propuestaValor"], v)}
-        min={160}
-        max={2000}
+        min={limits.comercial.propuestaValor.min}
+        max={limits.comercial.propuestaValor.max}
         errors={errors}
       />
 
@@ -153,13 +160,13 @@ export default function Step3Comercial({
             <option value="LT7">&lt; 7 días</option>
             <option value="D8_30">8–30 días</option>
             <option value="D31_90">31–90 días</option>
-            <option value="GT90">+90 días</option>
+            <option value="GT90">&gt; 90 días</option>
           </Select>
         </Field>
 
         <Field
           fieldKey="comercial.dependenciaCanal"
-          label="Dependencia del canal principal"
+          label="Dependencia del canal"
           errors={errors}
         >
           <Select
@@ -176,13 +183,11 @@ export default function Step3Comercial({
         </Field>
       </div>
 
-      {/* canalesTop3 es array con min 1 max 3, lo manejamos con CheckboxGroup */}
-      <CheckboxGroup<Canal>
+      <CheckboxGroup
         fieldKey="comercial.canalesTop3"
-        label="Canales top (1 a 3)"
-        hint="Elegí los 3 más importantes."
+        label="Canales (top 1–3)"
+        hint="Elegí los principales canales de adquisición."
         value={data.comercial.canalesTop3}
-        errors={errors}
         options={[
           { value: "REFERIDOS", label: "Referidos" },
           { value: "ADS", label: "Ads" },
@@ -194,11 +199,8 @@ export default function Step3Comercial({
           { value: "LICITACIONES", label: "Licitaciones" },
           { value: "OTRO", label: "Otro" },
         ]}
-        onChange={(next) => {
-          // enforce max 3 sin romper UX
-          const clipped = next.slice(0, 3);
-          update(["comercial", "canalesTop3"], clipped);
-        }}
+        onChange={(v) => update(["comercial", "canalesTop3"], v)}
+        errors={errors}
       />
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -251,22 +253,22 @@ export default function Step3Comercial({
       <TextareaField
         fieldKey="comercial.competidores"
         label="Competidores"
-        hint="Quién compite, cómo compiten (precio, calidad, marca, distribución)."
+        hint="Mencioná competidores principales (directos e indirectos)."
         value={data.comercial.competidores}
         onChange={(v) => update(["comercial", "competidores"], v)}
-        min={120}
-        max={2000}
+        min={limits.comercial.competidores.min}
+        max={limits.comercial.competidores.max}
         errors={errors}
       />
 
       <TextareaField
         fieldKey="comercial.diferenciacion"
         label="Diferenciación"
-        hint="Por qué ganás cuando ganás. Pruebas, casos, ventajas reales."
+        hint="¿Qué te hace distinto? Producto, servicio, distribución, marca, precio, etc."
         value={data.comercial.diferenciacion}
         onChange={(v) => update(["comercial", "diferenciacion"], v)}
-        min={180}
-        max={2500}
+        min={limits.comercial.diferenciacion.min}
+        max={limits.comercial.diferenciacion.max}
         errors={errors}
       />
     </div>

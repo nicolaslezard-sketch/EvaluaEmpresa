@@ -1,5 +1,3 @@
-// src/app/(product)/app/new/page.tsx
-
 import NewAssessmentWizard from "@/components/app/NewAssessmentWizard";
 
 type EvaluationTier = "PYME" | "EMPRESA";
@@ -10,6 +8,7 @@ export default function NewPage({
   searchParams?: { tier?: string };
 }) {
   const tierParam = searchParams?.tier?.toUpperCase();
+
   const tier: EvaluationTier = tierParam === "EMPRESA" ? "EMPRESA" : "PYME";
 
   return <NewAssessmentWizard tier={tier} />;
