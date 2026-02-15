@@ -52,7 +52,7 @@ export function UserMenu({ email, name, image }: Props) {
             {initials(name ?? email)}
           </span>
         )}
-        <span className="hidden sm:block max-w-[180px] truncate">
+        <span className="hidden sm:block max-w-45 truncate">
           {name ?? email ?? "Cuenta"}
         </span>
         <span className="text-zinc-400">▾</span>

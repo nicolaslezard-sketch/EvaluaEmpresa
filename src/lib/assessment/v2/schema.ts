@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export type EvaluationTier = "PYME" | "EMPRESA";
+
 const trim = (v: unknown) => (typeof v === "string" ? v.trim() : v);
 
 // 1) Base schema SIN refinements globales (esto permite .pick())
@@ -211,8 +213,10 @@ export const AssessmentV2BaseSchema = z.object({
   }),
 });
 
-// 2) Schema final CON reglas cruzadas (superRefine)
-export const AssessmentV2Schema = AssessmentV2BaseSchema.superRefine(
+// ===============================
+// 2) EMPRESA: schema estricto + reglas cruzadas (superRefine)
+// ===============================
+export const AssessmentV2EmpresaSchema = AssessmentV2BaseSchema.superRefine(
   (val, ctx) => {
     if (val.finanzas.margenNetoPct > val.finanzas.margenBrutoPct) {
       ctx.addIssue({
@@ -256,4 +260,103 @@ export const AssessmentV2Schema = AssessmentV2BaseSchema.superRefine(
   },
 );
 
-export type AssessmentV2 = z.infer<typeof AssessmentV2Schema>;
+// ===============================
+// 3) PYME: schema relajado (menos fricción en el wizard)
+// ===============================
+
+const relaxedLongText = (min: number, max: number) =>
+  z.preprocess(trim, z.string().min(min).max(max));
+
+export const AssessmentV2PymeBaseSchema = AssessmentV2BaseSchema.extend({
+  perfil: AssessmentV2BaseSchema.shape.perfil.extend({
+    descripcionNegocio: relaxedLongText(80, 1000),
+    topClientes: relaxedLongText(60, 2000),
+    proveedoresCriticos: relaxedLongText(60, 1000),
+    notaContable: relaxedLongText(40, 3000),
+  }),
+  finanzas: AssessmentV2BaseSchema.shape.finanzas.extend({
+    evidenciaNumeros: relaxedLongText(120, 5000),
+  }),
+  comercial: AssessmentV2BaseSchema.shape.comercial.extend({
+    ofertaPrincipal: relaxedLongText(120, 4000),
+    propuestaValor: relaxedLongText(100, 2000),
+    competidores: relaxedLongText(60, 2000),
+    diferenciacion: relaxedLongText(100, 2500),
+  }),
+  riesgos: AssessmentV2BaseSchema.shape.riesgos.extend({
+    notaCumplimiento: relaxedLongText(80, 4000),
+    notaRegulatorio: relaxedLongText(60, 2500),
+    detalleLitigios: z
+      .preprocess(trim, z.string().min(120).max(4000))
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+  }),
+  estrategia: AssessmentV2BaseSchema.shape.estrategia.extend({
+    objetivo12m: relaxedLongText(100, 2500),
+    planAccion: relaxedLongText(120, 3500),
+    inversiones6m: relaxedLongText(80, 3000),
+    riesgosDueno: relaxedLongText(120, 4000),
+    mitigaciones: relaxedLongText(100, 3500),
+  }),
+});
+
+export const AssessmentV2PymeSchema = AssessmentV2PymeBaseSchema.superRefine(
+  (val, ctx) => {
+    if (val.finanzas.margenNetoPct > val.finanzas.margenBrutoPct) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["finanzas", "margenNetoPct"],
+        message: "Margen neto no puede ser mayor al margen bruto",
+      });
+    }
+
+    if (val.comercial.ventas30d > val.comercial.reuniones30d) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["comercial", "ventas30d"],
+        message: "Ventas no pueden superar reuniones",
+      });
+    }
+
+    if (val.comercial.reuniones30d > val.comercial.leads30d) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["comercial", "reuniones30d"],
+        message: "Reuniones no pueden superar leads",
+      });
+    }
+
+    if (val.finanzas.deudaVencida > val.finanzas.deudaTotal) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["finanzas", "deudaVencida"],
+        message: "Deuda vencida no puede superar deuda total",
+      });
+    }
+
+    if (val.riesgos.litigios === "SI" && !val.riesgos.detalleLitigios) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["riesgos", "detalleLitigios"],
+        message: "Debes detallar litigios/contingencias",
+      });
+    }
+  },
+);
+
+// Mantener export legacy para no romper imports viejos
+export const AssessmentV2Schema = AssessmentV2EmpresaSchema;
+
+export function getAssessmentSchemaForTier(tier: EvaluationTier) {
+  return tier === "EMPRESA"
+    ? AssessmentV2EmpresaSchema
+    : AssessmentV2PymeSchema;
+}
+
+export function getAssessmentBaseSchemaForTier(tier: EvaluationTier) {
+  return tier === "EMPRESA"
+    ? AssessmentV2BaseSchema
+    : AssessmentV2PymeBaseSchema;
+}
+
+export type AssessmentV2 = z.infer<typeof AssessmentV2EmpresaSchema>;

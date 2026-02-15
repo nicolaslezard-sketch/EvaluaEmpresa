@@ -22,10 +22,11 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
     data,
     update,
     fieldErrors,
+    validateAll,
     validateAndGoNext,
     back,
     setFieldErrors,
-  } = useAssessmentForm();
+  } = useAssessmentForm(tier);
 
   const [submitting, setSubmitting] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
@@ -33,9 +34,11 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
   async function submit() {
     setGlobalError(null);
 
-    // Validación final
-    const ok = validateAndGoNext();
-    if (!ok) return;
+    const final = validateAll();
+    if (!final.ok) {
+      setFieldErrors(final.errors);
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -43,10 +46,7 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
       const res = await fetch("/api/report", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          assessment: data,
-          tier, // 👈 nuevo: enviamos tier al backend
-        }),
+        body: JSON.stringify({ assessment: data, tier }),
       });
 
       const json = await res.json().catch(() => null);
@@ -57,12 +57,7 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
       }
 
       const id = json?.id;
-
-      if (id) {
-        router.push(`/report/${id}`);
-      } else {
-        router.push("/app/dashboard");
-      }
+      router.push(id ? `/report/${id}` : "/app/dashboard");
     } catch {
       setGlobalError("Error de red. Probá de nuevo.");
     } finally {
@@ -106,19 +101,15 @@ export default function AssessmentWizard({ tier }: { tier: EvaluationTier }) {
       {step === 1 && (
         <Step1Perfil data={data} update={update} errors={fieldErrors} />
       )}
-
       {step === 2 && (
         <Step2Finanzas data={data} update={update} errors={fieldErrors} />
       )}
-
       {step === 3 && (
         <Step3Comercial data={data} update={update} errors={fieldErrors} />
       )}
-
       {step === 4 && (
         <Step4Riesgos data={data} update={update} errors={fieldErrors} />
       )}
-
       {step === 5 && (
         <Step5Estrategia data={data} update={update} errors={fieldErrors} />
       )}

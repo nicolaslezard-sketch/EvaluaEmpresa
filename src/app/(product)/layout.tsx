@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { UserMenu } from "@/components/app/UserMenu";
 
 function PlanBadge({ tier }: { tier: "FREE" | "PYME" | "EMPRESA" }) {
   if (tier === "EMPRESA") {
@@ -31,9 +32,11 @@ function PlanBadge({ tier }: { tier: "FREE" | "PYME" | "EMPRESA" }) {
 function Shell({
   children,
   tier,
+  user,
 }: {
   children: React.ReactNode;
   tier: "FREE" | "PYME" | "EMPRESA";
+  user: { email?: string | null; name?: string | null; image?: string | null };
 }) {
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -48,6 +51,7 @@ function Shell({
             <Link href="/app/new" className="btn btn-primary">
               Nueva evaluación
             </Link>
+            <UserMenu email={user.email} name={user.name} image={user.image} />
           </div>
         </div>
       </div>
@@ -71,10 +75,18 @@ export default async function ProductLayout({
   });
 
   let tier: "FREE" | "PYME" | "EMPRESA" = "FREE";
+  if (subscription?.status === "AUTHORIZED") tier = subscription.tier;
 
-  if (subscription?.status === "AUTHORIZED") {
-    tier = subscription.tier;
-  }
-
-  return <Shell tier={tier}>{children}</Shell>;
+  return (
+    <Shell
+      tier={tier}
+      user={{
+        email: session.user.email,
+        name: session.user.name,
+        image: session.user.image,
+      }}
+    >
+      {children}
+    </Shell>
+  );
 }

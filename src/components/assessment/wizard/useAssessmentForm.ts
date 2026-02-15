@@ -1,13 +1,17 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import type { FieldErrors } from "./ui";
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import {
+  getAssessmentBaseSchemaForTier,
+  getAssessmentSchemaForTier,
+  type EvaluationTier,
+} from "@/lib/assessment/v2/schema";
 
-const STORAGE_KEY = "ee_v2_draft";
-
-type AssessmentV2 = z.infer<typeof AssessmentV2Schema>;
+type AssessmentV2 = z.infer<ReturnType<typeof getAssessmentSchemaForTier>>;
 
 export const initialData: AssessmentV2 = {
   version: "v2",
@@ -126,7 +130,9 @@ function zodErrorsToFieldErrors(issues: z.ZodIssue[]): FieldErrors {
   return out;
 }
 
-export function useAssessmentForm() {
+export function useAssessmentForm(tier: EvaluationTier) {
+  const STORAGE_KEY = `ee_v2_draft_${tier}`;
+
   const [step, setStep] = useState(1);
   const [data, setData] = useState<AssessmentV2>(initialData);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -134,24 +140,29 @@ export function useAssessmentForm() {
   // draft load
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return;
+
+    if (!saved) {
+      setData(initialData);
+      return;
+    }
 
     try {
       const parsed = JSON.parse(saved);
-
-      // usar microtask para evitar setState síncrono en effect
-      queueMicrotask(() => {
-        setData(parsed);
-      });
+      setData(parsed);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
+      setData(initialData);
     }
-  }, []);
+
+    // reset visual states
+    setFieldErrors({});
+    setStep(1);
+  }, [STORAGE_KEY]);
 
   // draft save
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
+  }, [data, STORAGE_KEY]);
 
   const steps = useMemo(
     () => [
@@ -218,7 +229,9 @@ export function useAssessmentForm() {
   }
 
   function validateAll(): { ok: true } | { ok: false; errors: FieldErrors } {
-    const res = AssessmentV2Schema.safeParse(data);
+    const schema = getAssessmentSchemaForTier(tier);
+    const res = schema.safeParse(data);
+
     if (res.success) return { ok: true };
 
     const errors = zodErrorsToFieldErrors(res.error.issues);
@@ -226,43 +239,54 @@ export function useAssessmentForm() {
   }
 
   function validateAndGoNext() {
+    const base = getAssessmentBaseSchemaForTier(tier);
     let result;
 
     switch (step) {
       case 1:
-        result = AssessmentV2Schema.pick({
-          email: true,
-          perfil: true,
-        }).safeParse(data);
+        result = base
+          .pick({
+            email: true,
+            perfil: true,
+          })
+          .safeParse(data);
         break;
 
       case 2:
-        result = AssessmentV2Schema.pick({
-          finanzas: true,
-        }).safeParse(data);
+        result = base
+          .pick({
+            finanzas: true,
+          })
+          .safeParse(data);
         break;
 
       case 3:
-        result = AssessmentV2Schema.pick({
-          comercial: true,
-        }).safeParse(data);
+        result = base
+          .pick({
+            comercial: true,
+          })
+          .safeParse(data);
         break;
 
       case 4:
-        result = AssessmentV2Schema.pick({
-          riesgos: true,
-        }).safeParse(data);
+        result = base
+          .pick({
+            riesgos: true,
+          })
+          .safeParse(data);
         break;
 
       case 5:
-        result = AssessmentV2Schema.pick({
-          estrategia: true,
-          confirmaciones: true,
-        }).safeParse(data);
+        result = base
+          .pick({
+            estrategia: true,
+            confirmaciones: true,
+          })
+          .safeParse(data);
         break;
 
       default:
-        result = AssessmentV2Schema.safeParse(data);
+        result = base.safeParse(data);
     }
 
     if (result.success) {

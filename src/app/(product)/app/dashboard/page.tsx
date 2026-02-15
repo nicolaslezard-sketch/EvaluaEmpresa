@@ -9,7 +9,7 @@ type Report = {
   createdAt: string;
   title: string | null;
   overallScore: number | null;
-  riskLevel: string | null;
+  executiveCategory: string | null;
 };
 
 function StatusBadge({ status }: { status: string }) {
@@ -30,7 +30,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function DashboardPage() {
   const [reports, setReports] = useState<Report[]>([]);
-  const [plan, setPlan] = useState<"free" | "pro">("free");
+  const [tier, setTier] = useState<"FREE" | "PYME" | "EMPRESA">("FREE");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,7 +42,7 @@ export default function DashboardPage() {
       })
       .then((d) => {
         setReports(d.reports);
-        setPlan(d.plan === "pro" ? "pro" : "free");
+        setTier(d.tier === "PYME" || d.tier === "EMPRESA" ? d.tier : "FREE");
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -72,7 +72,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-10 grid gap-6 md:grid-cols-2">
-        {plan !== "pro" && (
+        {tier === "FREE" && (
           <div className="card p-6 md:col-span-2">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <Link href="/app/upgrade" className="btn btn-secondary">
-                Ver Plan PRO
+                Ver Planes
               </Link>
             </div>
           </div>
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                   Riesgo
                 </p>
                 <p className="mt-1 text-sm font-medium text-zinc-800">
-                  {r.riskLevel ?? "—"}
+                  {r.executiveCategory ?? "—"}
                 </p>
               </div>
             </div>

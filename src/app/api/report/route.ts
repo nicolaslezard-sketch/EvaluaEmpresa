@@ -6,16 +6,14 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-import { AssessmentV2Schema } from "@/lib/assessment/v2/schema";
+import { getAssessmentSchemaForTier } from "@/lib/assessment/v2/schema";
 import { normalizeAssessmentV2 } from "@/lib/assessment/v2/normalize";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const { assessment, tier } = body;
 
-    // Validación básica de tier
     if (tier !== "PYME" && tier !== "EMPRESA") {
       return NextResponse.json({ error: "Tier inválido" }, { status: 400 });
     }
@@ -25,31 +23,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Email: prioridad assessment, fallback session
     const emailFromBody =
       typeof assessment?.email === "string" ? assessment.email.trim() : "";
-
     const email = emailFromBody || session.user.email || "";
-
     if (!email) {
       return NextResponse.json({ error: "Email requerido" }, { status: 400 });
     }
 
-    // Armamos payload v2
-    const payload = {
-      ...assessment,
-      version: "v2",
-      email,
-    };
+    const payload = { ...assessment, version: "v2", email };
 
-    const parsed = AssessmentV2Schema.safeParse(payload);
+    const schema = getAssessmentSchemaForTier(tier);
+    const parsed = schema.safeParse(payload);
 
     if (!parsed.success) {
       return NextResponse.json(
-        {
-          error: "Formulario inválido",
-          issues: parsed.error.flatten(),
-        },
+        { error: "Formulario inválido", issues: parsed.error.flatten() },
         { status: 400 },
       );
     }
@@ -58,7 +46,7 @@ export async function POST(req: Request) {
 
     const formData = {
       version: "v2",
-      tier, // 👈 guardamos tier en snapshot
+      tier,
       submittedAt: new Date().toISOString(),
       answers: parsed.data,
       metrics,
@@ -70,7 +58,7 @@ export async function POST(req: Request) {
       data: {
         userId: session.user.id,
         email,
-        tier, // 👈 NUEVO CAMPO EN DB
+        tier,
         title: `Evaluación ${
           parsed.data.perfil.nombreComercial || parsed.data.perfil.razonSocial
         }`.slice(0, 120),

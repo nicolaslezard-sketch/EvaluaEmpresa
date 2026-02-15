@@ -1,6 +1,5 @@
 import NewAssessmentWizard from "@/components/app/NewAssessmentWizard";
-import { EvaluationTier } from "@prisma/client";
-import { notFound } from "next/navigation";
+import type { EvaluationTier } from "@prisma/client";
 
 export default function NewPage({
   searchParams,
@@ -8,12 +7,7 @@ export default function NewPage({
   searchParams: { tier?: string };
 }) {
   const tierParam = searchParams?.tier?.toUpperCase();
-
-  if (tierParam !== "PYME" && tierParam !== "EMPRESA") {
-    notFound();
-  }
-
-  const tier = tierParam as EvaluationTier;
+  const tier: EvaluationTier = tierParam === "EMPRESA" ? "EMPRESA" : "PYME";
 
   return <NewAssessmentWizard tier={tier} />;
 }
