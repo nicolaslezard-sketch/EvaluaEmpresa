@@ -20,7 +20,10 @@ export default function DemoPage() {
         </div>
 
         <div className="mt-14 text-center">
-          <Link href="/app/new" className="btn btn-primary px-6 py-3 text-base">
+          <Link
+            href="/app/new/pyme"
+            className="btn btn-primary px-6 py-3 text-base"
+          >
             Evaluar mi empresa
           </Link>
           <p className="mt-3 text-sm text-zinc-500">

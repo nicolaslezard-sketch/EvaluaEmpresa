@@ -23,7 +23,6 @@ export default async function NewEvaluationPage({
 
   const tier = tierParam as EvaluationTier;
 
-  // 🔥 BUSCAR draft SOLO de ese tier
   let draft = await prisma.reportRequest.findFirst({
     where: {
       userId: session.user.id,
@@ -35,7 +34,6 @@ export default async function NewEvaluationPage({
     },
   });
 
-  // Si no existe, crearlo
   if (!draft) {
     draft = await prisma.reportRequest.create({
       data: {

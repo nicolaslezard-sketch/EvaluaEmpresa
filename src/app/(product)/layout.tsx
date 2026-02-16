@@ -20,7 +20,7 @@ function Shell({
           </Link>
 
           <div className="flex items-center gap-3">
-            <Link href="/app/new" className="btn btn-primary">
+            <Link href="/app/new/pyme" className="btn btn-primary">
               Nueva evaluación
             </Link>
             <UserMenu email={user.email} name={user.name} image={user.image} />

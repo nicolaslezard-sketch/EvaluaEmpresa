@@ -57,7 +57,7 @@ export default function ComoFuncionaPage() {
         <Link href="/demo" className="btn btn-secondary">
           Ver demo del sistema
         </Link>
-        <Link href="/app/new" className="btn btn-primary">
+        <Link href="/app/new/pyme" className="btn btn-primary">
           Iniciar evaluación
         </Link>
       </div>

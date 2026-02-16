@@ -77,7 +77,7 @@ export function ScoreHeroCard({
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/app/new" className="btn btn-primary">
+          <Link href="/app/new/pyme" className="btn btn-primary">
             Nueva evaluación
           </Link>
           <Link

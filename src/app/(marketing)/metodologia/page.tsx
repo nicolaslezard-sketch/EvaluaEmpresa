@@ -55,7 +55,7 @@ export default function MetodologiaPage() {
         <Link href="/informe-modelo" className="btn btn-secondary">
           Ver informe modelo
         </Link>
-        <Link href="/app/new" className="btn btn-primary">
+        <Link href="/app/new/pyme" className="btn btn-primary">
           Iniciar evaluación
         </Link>
       </div>
