@@ -1,49 +1,20 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { EvaluationTier } from "@prisma/client";
+import NewAssessmentWizard from "@/components/app/NewAssessmentWizard";
 
-export default async function NewEvaluationPage({
-  params,
-}: {
-  params: { tier: string };
-}) {
-  const session = await getServerSession(authOptions);
+type Tier = "PYME" | "EMPRESA";
 
-  if (!session?.user?.id) {
-    redirect("/");
-  }
+function parseTier(tier?: string): Tier | null {
+  const t = (tier ?? "").toLowerCase();
+  if (t === "pyme") return "PYME";
+  if (t === "empresa") return "EMPRESA";
+  return null;
+}
 
-  const tierParam = params.tier.toUpperCase();
+export default function NewTierPage({ params }: { params: { tier: string } }) {
+  const tier = parseTier(params.tier);
 
-  if (tierParam !== "PYME" && tierParam !== "EMPRESA") {
-    redirect("/app/dashboard");
-  }
+  // Si alguien entra a /app/new/cualquiercosa => lo mandamos a PYME
+  if (!tier) redirect("/app/new/pyme");
 
-  const tier = tierParam as EvaluationTier;
-
-  let draft = await prisma.reportRequest.findFirst({
-    where: {
-      userId: session.user.id,
-      tier,
-      status: "PENDING_PAYMENT",
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  if (!draft) {
-    draft = await prisma.reportRequest.create({
-      data: {
-        userId: session.user.id,
-        email: session.user.email ?? "",
-        tier,
-        formData: {},
-      },
-    });
-  }
-
-  redirect(`/app/analysis/${draft.id}`);
+  return <NewAssessmentWizard tier={tier} />;
 }

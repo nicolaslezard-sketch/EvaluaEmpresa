@@ -6,13 +6,13 @@ function parseTier(param?: string) {
   return "pyme";
 }
 
-export default function EvaluarPage({
+export default function NewPage({
   searchParams,
 }: {
   searchParams?: { tier?: string };
 }) {
   const tier = parseTier(searchParams?.tier);
 
-  // Legacy route => nueva ruta canónica
+  // Mantiene compatibilidad con /app/new?tier=pyme|empresa
   redirect(`/app/new/${tier}`);
 }
