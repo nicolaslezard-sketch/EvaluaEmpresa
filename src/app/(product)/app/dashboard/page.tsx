@@ -66,10 +66,7 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <Link
-          href={`/app/new/${tier === "EMPRESA" ? "empresa" : "pyme"}`}
-          className="btn btn-primary"
-        >
+        <Link href="/app/evaluations/new" className="btn btn-primary">
           Nueva evaluación
         </Link>
       </div>
@@ -87,7 +84,7 @@ export default function DashboardPage() {
                   y comparativas.
                 </p>
               </div>
-              <Link href="/app/upgrade" className="btn btn-secondary">
+              <Link href="/app/billing" className="btn btn-secondary">
                 Ver Planes
               </Link>
             </div>
@@ -105,7 +102,7 @@ export default function DashboardPage() {
         {reports.map((r) => (
           <Link
             key={r.id}
-            href={`/app/analysis/${r.id}`}
+            href={`/app/evaluations/${r.id}/report`}
             className="card block p-6 hover:border-zinc-300 transition"
           >
             <div className="flex items-start justify-between gap-4">
@@ -125,19 +122,16 @@ export default function DashboardPage() {
 
             <div className="mt-6 flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  E-Score™
-                </p>
+                <p className="text-xs text-zinc-500">Score</p>
                 <p className="mt-1 text-2xl font-semibold text-zinc-900">
-                  {r.overallScore ? r.overallScore.toFixed(1) : "—"}
+                  {typeof r.overallScore === "number"
+                    ? r.overallScore.toFixed(1)
+                    : "—"}
                 </p>
               </div>
-
               <div className="text-right">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  Riesgo
-                </p>
-                <p className="mt-1 text-sm font-medium text-zinc-800">
+                <p className="text-xs text-zinc-500">Categoría</p>
+                <p className="mt-1 text-sm font-medium text-zinc-700">
                   {r.executiveCategory ?? "—"}
                 </p>
               </div>

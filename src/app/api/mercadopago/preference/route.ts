@@ -42,11 +42,7 @@ export async function POST(req: Request) {
 
     const report = await prisma.reportRequest.findUnique({
       where: { id: reportId },
-      select: {
-        id: true,
-        status: true,
-        userId: true,
-      },
+      select: { id: true, status: true, userId: true },
     });
 
     if (!report) {
@@ -55,10 +51,6 @@ export async function POST(req: Request) {
         { status: 404 },
       );
     }
-
-    // ===============================
-    // VALIDACIONES SEGÚN TIPO
-    // ===============================
 
     if (type === "REPORT_GENERATION") {
       if (report.status !== "PENDING_PAYMENT") {
@@ -70,13 +62,9 @@ export async function POST(req: Request) {
     }
 
     if (type === "REPORT_UNLOCK") {
-      // Evitar doble unlock
       const existingUnlock = await prisma.reportUnlock.findUnique({
         where: {
-          userId_reportId: {
-            userId: session.user.id,
-            reportId,
-          },
+          userId_reportId: { userId: session.user.id, reportId },
         },
       });
 
@@ -84,10 +72,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Ya desbloqueado" }, { status: 400 });
       }
     }
-
-    // ===============================
-    // CREAR PREFERENCE
-    // ===============================
 
     const preference = await new Preference(mp).create({
       body: {
@@ -99,28 +83,22 @@ export async function POST(req: Request) {
                 : "evaluaempresa-informe",
             title:
               type === "REPORT_UNLOCK"
-                ? "Desbloqueo de Informe Empresarial"
-                : "Generación de Informe Empresarial",
+                ? "Desbloqueo de Informe (EvaluaEmpresa)"
+                : "Informe de Riesgo (EvaluaEmpresa)",
             quantity: 1,
-            unit_price: 100, // Ajustar precio dinámicamente si querés
-            currency_id: "ARS",
+            unit_price: type === "REPORT_UNLOCK" ? 7900 : 12900,
           },
         ],
-
-        external_reference: reportId,
-
         metadata: {
-          type,
           reportId,
+          type,
           userId: session.user.id,
         },
-
         back_urls: {
-          success: `${APP_URL}/app/analysis/${reportId}`,
-          failure: `${APP_URL}/app/analysis/${reportId}`,
-          pending: `${APP_URL}/app/analysis/${reportId}`,
+          success: `${APP_URL}/app/evaluations/${reportId}/report`,
+          failure: `${APP_URL}/app/evaluations/${reportId}/report`,
+          pending: `${APP_URL}/app/evaluations/${reportId}/report`,
         },
-
         auto_return: "approved",
       },
     });
@@ -131,7 +109,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("[MP_PREFERENCE_ERROR]", error);
-
     return NextResponse.json(
       { error: "Error creando preferencia" },
       { status: 500 },

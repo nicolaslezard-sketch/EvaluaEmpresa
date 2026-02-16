@@ -37,7 +37,7 @@ export async function POST(
 
     if (existingUnlock) {
       return NextResponse.redirect(
-        new URL(`/app/analysis/${report.id}`, req.url),
+        new URL(`/app/evaluations/${report.id}/report`, req.url),
       );
     }
 

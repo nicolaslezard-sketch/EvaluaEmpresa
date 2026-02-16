@@ -43,48 +43,29 @@ export function ScoreHeroCard({
             <div className="text-5xl font-semibold tracking-tight text-zinc-900">
               {score.toFixed(1)}
             </div>
-            <div className="pb-2 text-sm text-zinc-500">/ 100</div>
+            {hasPrev ? (
+              <div
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${deltaTone}`}
+              >
+                {formatDelta(delta)}
+              </div>
+            ) : null}
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${deltaTone}`}
-              title={
-                hasPrev
-                  ? "Comparación con evaluación anterior"
-                  : "Necesitás al menos 2 evaluaciones"
-              }
-            >
-              {hasPrev ? (
-                <>
-                  {formatDelta(delta)}{" "}
-                  <span className="text-zinc-400">&nbsp;•&nbsp;</span>
-                  vs evaluación anterior
-                </>
-              ) : (
-                "Sin delta (primera evaluación)"
-              )}
-            </span>
-
-            <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-              Riesgo: {riskLevel ?? "—"}
-            </span>
-
-            <span className="text-xs text-zinc-500">
-              {new Date(createdAt).toLocaleString()}
-            </span>
-          </div>
+          <p className="mt-2 text-sm text-zinc-600">
+            {riskLevel ?? "—"} • {new Date(createdAt).toLocaleString()}
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link href="/app/new/pyme" className="btn btn-primary">
+        <div className="flex gap-2">
+          <Link href="/app/evaluations/new" className="btn btn-secondary">
             Nueva evaluación
           </Link>
           <Link
-            href={`/app/analysis/${reportId}`}
-            className="btn btn-secondary"
+            href={`/app/evaluations/${reportId}/report`}
+            className="btn btn-primary"
           >
-            Ver detalle
+            Ver informe
           </Link>
         </div>
       </div>

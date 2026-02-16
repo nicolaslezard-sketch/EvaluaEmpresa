@@ -45,7 +45,7 @@ export default function MarketingLayout({
             <Link href="/login" className="btn btn-secondary">
               Ingresar
             </Link>
-            <Link href="/app/new/pyme" className="btn btn-primary">
+            <Link href="/app/evaluations/new" className="btn btn-primary">
               Iniciar evaluación
             </Link>
           </div>
@@ -76,12 +76,6 @@ export default function MarketingLayout({
               </Link>
             </div>
           </div>
-
-          <p className="mt-4 text-xs text-zinc-500">
-            Informe orientativo basado en información provista por el
-            solicitante. No constituye asesoramiento legal, contable ni
-            financiero.
-          </p>
         </div>
       </footer>
     </div>

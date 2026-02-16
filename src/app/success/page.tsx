@@ -13,14 +13,19 @@ export default function SuccessPage({
 
   useEffect(() => {
     if (!reportId) return;
-    router.replace(`/app/analysis/${reportId}`);
+    router.replace(`/app/evaluations/${reportId}/report`);
   }, [reportId, router]);
 
   return (
-    <main className="container-page py-20">
-      <div className="card p-6">
-        <p className="text-sm text-zinc-700">Redirigiendo a tu evaluación…</p>
+    <div className="container-page py-16">
+      <div className="mx-auto max-w-lg text-center">
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+          Pago recibido
+        </h1>
+        <p className="mt-2 text-sm text-zinc-600">
+          Estamos redirigiéndote al informe…
+        </p>
       </div>
-    </main>
+    </div>
   );
 }

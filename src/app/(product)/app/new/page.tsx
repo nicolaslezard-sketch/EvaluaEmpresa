@@ -1,18 +1,19 @@
 import { redirect } from "next/navigation";
 
-function parseTier(param?: string) {
+function parseIntent(param?: string) {
   const t = (param ?? "").toLowerCase();
   if (t === "empresa") return "empresa";
-  return "pyme";
+  if (t === "pyme") return "pyme";
+  return null;
 }
 
-export default function NewPage({
+export default function LegacyNewPage({
   searchParams,
 }: {
   searchParams?: { tier?: string };
 }) {
-  const tier = parseTier(searchParams?.tier);
-
-  // Mantiene compatibilidad con /app/new?tier=pyme|empresa
-  redirect(`/app/new/${tier}`);
+  const intent = parseIntent(searchParams?.tier);
+  redirect(
+    intent ? `/app/evaluations/new?intent=${intent}` : "/app/evaluations/new",
+  );
 }

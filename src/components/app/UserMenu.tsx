@@ -33,40 +33,40 @@ export function UserMenu({ email, name, image }: Props) {
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-2 py-1.5 text-sm text-zinc-800 shadow-sm hover:border-zinc-300"
+        className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm hover:bg-zinc-50"
       >
         {image ? (
           <Image
-            src={image}
             alt={name ?? email ?? "Usuario"}
+            src={image}
             width={28}
             height={28}
             className="h-7 w-7 rounded-full"
           />
         ) : (
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-zinc-900 text-[11px] font-semibold text-white">
+          <div className="grid h-7 w-7 place-items-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
             {initials(name ?? email)}
-          </span>
+          </div>
         )}
-        <span className="hidden sm:block max-w-45 truncate">
+
+        <span className="hidden text-zinc-700 md:inline">
           {name ?? email ?? "Cuenta"}
         </span>
-        <span className="text-zinc-400">▾</span>
       </button>
 
-      {open && (
-        <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg">
-          <div className="px-4 py-3">
-            <p className="truncate text-sm font-semibold text-zinc-900">
-              {name ?? "Cuenta"}
+      {open ? (
+        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg">
+          <div className="border-b border-zinc-100 px-4 py-3">
+            <p className="text-xs font-medium text-zinc-900">
+              {name ?? "Usuario"}
             </p>
-            <p className="truncate text-xs text-zinc-500">{email ?? ""}</p>
+            <p className="mt-1 text-xs text-zinc-500">{email ?? ""}</p>
           </div>
-          <div className="h-px bg-zinc-100" />
+
           <div className="p-2">
             <Link
               href="/app/dashboard"
@@ -75,23 +75,25 @@ export function UserMenu({ email, name, image }: Props) {
             >
               Dashboard
             </Link>
+
             <Link
-              href="/app/new"
+              href="/app/evaluations/new"
               className="block rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
               onClick={() => setOpen(false)}
             >
               Nueva evaluación
             </Link>
+
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/" })}
-              className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+              className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
             >
               Cerrar sesión
             </button>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

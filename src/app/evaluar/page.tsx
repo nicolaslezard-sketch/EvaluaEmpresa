@@ -1,18 +1,19 @@
 import { redirect } from "next/navigation";
 
-function parseTier(param?: string) {
+function parseIntent(param?: string) {
   const t = (param ?? "").toLowerCase();
   if (t === "empresa") return "empresa";
-  return "pyme";
+  if (t === "pyme") return "pyme";
+  return null;
 }
 
-export default function EvaluarPage({
+export default function EvaluarLegacy({
   searchParams,
 }: {
   searchParams?: { tier?: string };
 }) {
-  const tier = parseTier(searchParams?.tier);
-
-  // Legacy route => nueva ruta canónica
-  redirect(`/app/new/${tier}`);
+  const intent = parseIntent(searchParams?.tier);
+  redirect(
+    intent ? `/app/evaluations/new?intent=${intent}` : "/app/evaluations/new",
+  );
 }
