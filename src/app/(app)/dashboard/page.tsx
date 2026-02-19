@@ -58,11 +58,24 @@ function deltaStyles(delta: number) {
 ========================= */
 
 async function getDashboardData(): Promise<DashboardResponse | null> {
-  const res = await fetch("/api/dashboard", {
+  const baseUrl =
+    process.env.NEXTAUTH_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+
+  if (!baseUrl) {
+    console.error("Missing NEXTAUTH_URL / VERCEL_URL");
+    return null;
+  }
+
+  const res = await fetch(`${baseUrl}/api/dashboard`, {
     cache: "no-store",
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    console.error("Dashboard fetch failed", res.status);
+    return null;
+  }
+
   return res.json();
 }
 
