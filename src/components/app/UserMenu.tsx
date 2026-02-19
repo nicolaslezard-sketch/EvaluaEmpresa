@@ -69,7 +69,7 @@ export function UserMenu({ email, name, image }: Props) {
 
           <div className="p-2">
             <Link
-              href="/app/dashboard"
+              href="/dashboard"
               className="block rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
               onClick={() => setOpen(false)}
             >
@@ -77,7 +77,7 @@ export function UserMenu({ email, name, image }: Props) {
             </Link>
 
             <Link
-              href="/app/evaluations/new"
+              href="/new"
               className="block rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
               onClick={() => setOpen(false)}
             >

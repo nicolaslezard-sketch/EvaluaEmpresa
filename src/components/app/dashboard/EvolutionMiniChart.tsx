@@ -76,7 +76,7 @@ export function EvolutionMiniChart({
             </p>
             <div className="mt-4">
               <Link
-                href="/app/upgrade"
+                href="/upgrade"
                 className="inline-flex items-center rounded-xl bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800"
               >
                 Ver Plan PRO

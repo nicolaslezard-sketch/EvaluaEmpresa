@@ -22,7 +22,7 @@ export default async function NewEvaluationPage({
 
   if (!res.ok) {
     // si plan no permite, mandalo al billing
-    redirect("/app/billing");
+    redirect("/billing");
   }
 
   const draft = await res.json();

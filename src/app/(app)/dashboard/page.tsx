@@ -92,7 +92,7 @@ export default async function DashboardPage() {
       {!data.canCreateEvaluation && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
           Tu plan actual no permite crear nuevas evaluaciones.
-          <a href="/app/billing" className="ml-2 font-medium underline">
+          <a href="/billing" className="ml-2 font-medium underline">
             Actualizar plan
           </a>
         </div>
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
               Aún no tienes empresas monitoreadas.
             </div>
             <a
-              href="/app/companies/new"
+              href="/companies/new"
               className="mt-4 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
             >
               Agregar empresa

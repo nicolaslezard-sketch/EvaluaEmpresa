@@ -13,7 +13,7 @@ export default function NewCompanyPlaceholder() {
         </p>
 
         <div className="mt-6 flex gap-2">
-          <Link href="/app/dashboard" className="btn btn-secondary">
+          <Link href="/dashboard" className="btn btn-secondary">
             Volver al dashboard
           </Link>
         </div>

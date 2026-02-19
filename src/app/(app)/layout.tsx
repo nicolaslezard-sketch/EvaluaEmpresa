@@ -17,13 +17,13 @@ function Shell({
         {" "}
         <div className="container-page flex h-16 items-center justify-between">
           {" "}
-          <Link href="/app/dashboard" className="font-semibold text-zinc-900">
+          <Link href="/dashboard" className="font-semibold text-zinc-900">
             {" "}
             EvaluaEmpresa{" "}
           </Link>{" "}
           <div className="flex items-center gap-3">
             {" "}
-            <Link href="/app/companies/new" className="btn btn-primary">
+            <Link href="/companies/new" className="btn btn-primary">
               {" "}
               Nueva empresa{" "}
             </Link>{" "}

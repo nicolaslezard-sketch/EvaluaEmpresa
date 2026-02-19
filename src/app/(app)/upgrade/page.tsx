@@ -21,7 +21,7 @@ export default function UpgradePage() {
         throw new Error(data?.error || "No se pudo iniciar la suscripción");
 
       if (data?.alreadyPro) {
-        router.push("/app/dashboard?upgrade=alreadyPro");
+        router.push("/dashboard?upgrade=alreadyPro");
         return;
       }
 

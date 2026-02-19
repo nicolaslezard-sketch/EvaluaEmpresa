@@ -16,7 +16,7 @@ export function HistoryCompact({ reports }: { reports: Report[] }) {
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-zinc-900">Historial</p>
         <Link
-          href="/app/dashboard"
+          href="/dashboard"
           className="text-sm text-zinc-600 hover:text-zinc-900"
         >
           Ver todo
@@ -58,7 +58,7 @@ export function HistoryCompact({ reports }: { reports: Report[] }) {
       </div>
 
       <div className="mt-6">
-        <Link href="/app/evaluations/new" className="btn btn-secondary w-full">
+        <Link href="/new" className="btn btn-secondary w-full">
           Nueva evaluación
         </Link>
       </div>

@@ -5,7 +5,7 @@ import LoginCard from "@/components/LoginCard";
 
 export default async function LoginPage() {
   const session = await getServerSession(authOptions);
-  if (session?.user?.id) redirect("/app/dashboard");
+  if (session?.user?.id) redirect("/dashboard");
 
   return (
     <div className="container-page py-16">

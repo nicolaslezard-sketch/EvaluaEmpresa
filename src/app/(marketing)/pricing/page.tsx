@@ -25,10 +25,7 @@ export default function PricingPage() {
             <li>• Vista parcial</li>
           </ul>
 
-          <Link
-            href="/app/evaluations/new"
-            className="btn btn-secondary mt-8 w-full"
-          >
+          <Link href="/new" className="btn btn-secondary mt-8 w-full">
             Comenzar gratis
           </Link>
         </div>
@@ -48,10 +45,7 @@ export default function PricingPage() {
             <li>• Sin suscripción</li>
           </ul>
 
-          <Link
-            href="/app/evaluations/new"
-            className="btn btn-primary mt-8 w-full"
-          >
+          <Link href="/new" className="btn btn-primary mt-8 w-full">
             Generar informe
           </Link>
         </div>
@@ -69,7 +63,7 @@ export default function PricingPage() {
             <li>• Comparación evolutiva</li>
           </ul>
 
-          <Link href="/app/billing" className="btn btn-secondary mt-8 w-full">
+          <Link href="/billing" className="btn btn-secondary mt-8 w-full">
             Ver suscripción
           </Link>
         </div>

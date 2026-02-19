@@ -67,7 +67,7 @@ export default function InformeModeloPage() {
         <Link href="/pricing" className="btn btn-secondary">
           Ver pricing
         </Link>
-        <Link href="/app/new/pyme" className="btn btn-primary">
+        <Link href="/new?intent=pyme" className="btn btn-primary">
           Iniciar evaluación
         </Link>
       </div>

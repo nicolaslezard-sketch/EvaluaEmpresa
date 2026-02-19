@@ -187,7 +187,7 @@ export default async function CompanyPage({
             {!data.alerts && (
               <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500">
                 Las alertas están disponibles en el plan Business.
-                <a href="/app/billing" className="ml-2 font-medium underline">
+                <a href="/billing" className="ml-2 font-medium underline">
                   Actualizar plan
                 </a>
               </div>

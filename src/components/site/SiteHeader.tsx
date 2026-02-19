@@ -38,10 +38,10 @@ export async function SiteHeader() {
         <div className="flex items-center gap-3">
           {session?.user?.id ? (
             <>
-              <Link href="/app/dashboard" className="btn btn-secondary">
+              <Link href="/dashboard" className="btn btn-secondary">
                 Dashboard
               </Link>
-              <Link href="/app/evaluations/new" className="btn btn-primary">
+              <Link href="/new" className="btn btn-primary">
                 Nueva evaluación
               </Link>
             </>
