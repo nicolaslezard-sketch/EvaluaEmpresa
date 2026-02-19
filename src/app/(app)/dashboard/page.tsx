@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -57,7 +58,7 @@ function deltaStyles(delta: number) {
 ========================= */
 
 async function getDashboardData(): Promise<DashboardResponse | null> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/dashboard`, {
+  const res = await fetch("/api/dashboard", {
     cache: "no-store",
   });
 
@@ -92,9 +93,9 @@ export default async function DashboardPage() {
       {!data.canCreateEvaluation && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
           Tu plan actual no permite crear nuevas evaluaciones.
-          <a href="/billing" className="ml-2 font-medium underline">
+          <Link href="/billing" className="ml-2 font-medium underline">
             Actualizar plan
-          </a>
+          </Link>
         </div>
       )}
 
@@ -104,12 +105,12 @@ export default async function DashboardPage() {
             <div className="text-sm text-zinc-500">
               Aún no tienes empresas monitoreadas.
             </div>
-            <a
+            <Link
               href="/companies/new"
               className="mt-4 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
             >
               Agregar empresa
-            </a>
+            </Link>
           </div>
         </div>
       )}
@@ -180,12 +181,12 @@ export default async function DashboardPage() {
               )}
               <div className="mt-6">
                 {data.canCreateEvaluation ? (
-                  <a
-                    href={`/app/companies/${company.id}`}
+                  <Link
+                    href={`/companies/${company.id}`}
                     className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
                   >
                     Ver empresa
-                  </a>
+                  </Link>
                 ) : (
                   <div className="text-xs text-zinc-500">
                     Plan requerido para nuevas evaluaciones
