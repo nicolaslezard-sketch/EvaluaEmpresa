@@ -1,25 +1,36 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { r2 } from "@/lib/r2";
+import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 
-const client = new S3Client({
-  region: "auto",
-  endpoint: process.env.R2_ENDPOINT!,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY!,
-    secretAccessKey: process.env.R2_SECRET_KEY!,
-  },
-});
+const BUCKET = process.env.R2_BUCKET!;
 
-export async function uploadPdf(reportId: string, buffer: Buffer) {
-  const key = `reports/${reportId}.pdf`;
+export function pdfKeyForEvaluation(evaluationId: string) {
+  return `reports/${evaluationId}.pdf`;
+}
 
-  await client.send(
+export async function uploadEvaluationPdf(
+  evaluationId: string,
+  buffer: Buffer,
+) {
+  const key = pdfKeyForEvaluation(evaluationId);
+
+  await r2.send(
     new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET!,
+      Bucket: BUCKET,
       Key: key,
       Body: buffer,
       ContentType: "application/pdf",
+      CacheControl: "private, max-age=31536000, immutable",
     }),
   );
 
-  return `${process.env.R2_PUBLIC_URL}/${key}`;
+  return { key, size: buffer.length, mime: "application/pdf" as const };
+}
+
+export async function getEvaluationPdfObject(key: string) {
+  return r2.send(
+    new GetObjectCommand({
+      Bucket: BUCKET,
+      Key: key,
+    }),
+  );
 }
