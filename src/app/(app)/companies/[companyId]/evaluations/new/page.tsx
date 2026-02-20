@@ -1,6 +1,9 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { createOrReuseDraft } from "@/lib/services/evaluations";
+import { getUserEntitlements } from "@/lib/access/userAccess";
 
 export default async function NewEvaluationPage({
   params,
@@ -10,21 +13,43 @@ export default async function NewEvaluationPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/evaluations`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-store",
-      body: JSON.stringify({ companyId: params.id }),
-    },
-  );
+  const userId = session.user.id;
 
-  if (!res.ok) {
-    // si plan no permite, mandalo al billing
+  // 🔐 Validar que la empresa pertenezca al usuario
+  const company = await prisma.company.findFirst({
+    where: {
+      id: params.id,
+      ownerId: userId,
+    },
+  });
+
+  if (!company) {
+    redirect("/dashboard");
+  }
+
+  // 📊 Validar plan
+  const ent = await getUserEntitlements(userId);
+
+  if (!ent.canCreateEvaluation) {
     redirect("/billing");
   }
 
-  const draft = await res.json();
+  // 🚫 Límite FREE (FINALIZED)
+  if (ent.maxFinalizedEvaluationsTotal !== null) {
+    const finalizedCount = await prisma.evaluation.count({
+      where: {
+        company: { ownerId: userId },
+        status: "FINALIZED",
+      },
+    });
+
+    if (finalizedCount >= ent.maxFinalizedEvaluationsTotal) {
+      redirect("/billing");
+    }
+  }
+
+  // ✅ Crear draft
+  const draft = await createOrReuseDraft(params.id);
+
   redirect(`/app/companies/${params.id}/evaluations/${draft.id}`);
 }
