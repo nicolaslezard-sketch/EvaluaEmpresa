@@ -1,9 +1,11 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-export const dynamic = "force-dynamic";
 
 /* =========================
    HELPERS
@@ -40,10 +42,9 @@ function alertStyles(severity: string) {
 ========================= */
 
 async function getCompany(id: string, userId: string) {
-  const company = await prisma.company.findFirst({
+  const company = await prisma.company.findUnique({
     where: {
       id,
-      ownerId: userId, // 🔐 filtro crítico
     },
     include: {
       evaluations: {
@@ -54,6 +55,10 @@ async function getCompany(id: string, userId: string) {
       },
     },
   });
+
+  if (!company || company.ownerId !== userId) {
+    return null;
+  }
 
   return company;
 }
