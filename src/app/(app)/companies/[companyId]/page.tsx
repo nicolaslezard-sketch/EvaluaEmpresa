@@ -90,7 +90,7 @@ export default async function CompanyPage({
           </div>
         </div>
 
-        {latest.executiveCategory && (
+        {latest?.executiveCategory && (
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${categoryStyles(
               latest.executiveCategory,
