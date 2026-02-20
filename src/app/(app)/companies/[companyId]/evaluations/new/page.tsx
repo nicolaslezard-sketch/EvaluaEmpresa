@@ -8,17 +8,17 @@ import { getUserEntitlements } from "@/lib/access/userAccess";
 export default async function NewEvaluationPage({
   params,
 }: {
-  params: { id: string };
+  params: { companyId: string };
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
   const userId = session.user.id;
+  const { companyId } = params;
 
-  // 🔐 Validar que la empresa pertenezca al usuario
   const company = await prisma.company.findFirst({
     where: {
-      id: params.id,
+      id: companyId,
       ownerId: userId,
     },
   });
@@ -27,14 +27,12 @@ export default async function NewEvaluationPage({
     redirect("/dashboard");
   }
 
-  // 📊 Validar plan
   const ent = await getUserEntitlements(userId);
 
   if (!ent.canCreateEvaluation) {
     redirect("/billing");
   }
 
-  // 🚫 Límite FREE (FINALIZED)
   if (ent.maxFinalizedEvaluationsTotal !== null) {
     const finalizedCount = await prisma.evaluation.count({
       where: {
@@ -48,8 +46,7 @@ export default async function NewEvaluationPage({
     }
   }
 
-  // ✅ Crear draft
-  const draft = await createOrReuseDraft(params.id);
+  const draft = await createOrReuseDraft(companyId);
 
-  redirect(`/app/companies/${params.id}/evaluations/${draft.id}`);
+  redirect(`/app/companies/${companyId}/evaluations/${draft.id}`);
 }

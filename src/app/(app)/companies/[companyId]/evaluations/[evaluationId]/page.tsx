@@ -8,19 +8,21 @@ import type { EvaluationFormData } from "@/lib/types/evaluationForm";
 export default async function EvaluationPage({
   params,
 }: {
-  params: { id: string; evaluationId: string };
+  params: { companyId: string; evaluationId: string };
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
+  const { companyId, evaluationId } = params;
+
   const evaluation = await prisma.evaluation.findUnique({
-    where: { id: params.evaluationId },
+    where: { id: evaluationId },
     include: { company: true },
   });
 
   if (
     !evaluation ||
-    evaluation.companyId !== params.id ||
+    evaluation.companyId !== companyId ||
     evaluation.company.ownerId !== session.user.id
   ) {
     notFound();
@@ -28,7 +30,7 @@ export default async function EvaluationPage({
 
   return (
     <EvaluationEditor
-      companyId={params.id}
+      companyId={companyId}
       evaluationId={evaluation.id}
       companyName={evaluation.company.name}
       companyCriticality={evaluation.company.criticality}

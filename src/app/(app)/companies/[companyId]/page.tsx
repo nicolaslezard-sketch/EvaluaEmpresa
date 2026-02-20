@@ -64,15 +64,17 @@ async function getCompany(id: string, userId: string) {
 export default async function CompanyPage({
   params,
 }: {
-  params: { id: string };
+  params: { companyId: string };
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const data = await getCompany(params.id, session.user.id);
+  const companyId = params.companyId;
+
+  const data = await getCompany(companyId, session.user.id);
 
   if (!data) {
-    notFound(); // o redirect("/dashboard")
+    notFound();
   }
 
   const latest = data.evaluations[0];
