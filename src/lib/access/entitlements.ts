@@ -6,28 +6,31 @@ export type Entitlements = {
   maxFinalizedEvaluationsTotal: number | null;
   trendDepth: number;
   canSeeAlerts: boolean;
+  canCreateEvaluation: boolean;
   canDownloadPdf: boolean;
 };
 
 export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
   switch (plan) {
-    case "PROFESSIONAL":
+    case "PRO":
       return {
         plan,
         maxCompanies: 3,
         maxFinalizedEvaluationsTotal: null,
         trendDepth: 3,
         canSeeAlerts: false,
+        canCreateEvaluation: true,
         canDownloadPdf: true,
       };
 
-    case "ENTERPRISE":
+    case "BUSINESS":
       return {
         plan,
         maxCompanies: 15,
         maxFinalizedEvaluationsTotal: null,
         trendDepth: 6,
         canSeeAlerts: true,
+        canCreateEvaluation: true,
         canDownloadPdf: true,
       };
 
@@ -39,6 +42,7 @@ export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
         maxFinalizedEvaluationsTotal: 1,
         trendDepth: 0,
         canSeeAlerts: false,
+        canCreateEvaluation: true, // puede crear 1 evaluación
         canDownloadPdf: false,
       };
   }

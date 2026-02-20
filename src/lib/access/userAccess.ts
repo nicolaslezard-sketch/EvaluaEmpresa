@@ -1,19 +1,19 @@
 import { prisma } from "@/lib/prisma";
-import { resolveEntitlements } from "./entitlements";
-import type { Entitlements } from "./types";
+import type { Entitlements } from "./entitlements";
+import { getEntitlementsFromSubscription } from "./userAccessCore";
 
+/**
+ * Wrapper legacy para mantener compatibilidad
+ */
 export async function getUserEntitlements(
   userId: string,
 ): Promise<Entitlements> {
-  const subscription = await prisma.subscription.findUnique({
-    where: { userId },
-    select: { plan: true, status: true },
+  const subscription = await prisma.subscription.findFirst({
+    where: {
+      userId,
+      status: "ACTIVE",
+    },
   });
 
-  // Si no existe o no está activa → FREE
-  if (!subscription || subscription.status !== "ACTIVE") {
-    return resolveEntitlements("FREE");
-  }
-
-  return resolveEntitlements(subscription.plan);
+  return getEntitlementsFromSubscription(subscription);
 }

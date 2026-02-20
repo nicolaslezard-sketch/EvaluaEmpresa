@@ -14,9 +14,10 @@ datasource db {
 
 enum SubscriptionPlan {
   FREE
-  PROFESSIONAL
-  ENTERPRISE
+  PRO
+  BUSINESS
 }
+
 
 
 enum SubscriptionStatus {
