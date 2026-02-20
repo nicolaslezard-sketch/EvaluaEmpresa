@@ -2,31 +2,8 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-
-/* =========================
-   TYPES
-========================= */
-
-type DashboardEvaluation = {
-  overallScore: number;
-  executiveCategory: string;
-  deltaOverall: number | null;
-  createdAt: string;
-};
-
-type DashboardCompany = {
-  id: string;
-  name: string;
-  evaluations: DashboardEvaluation[];
-};
-
-type DashboardResponse = {
-  plan: string;
-  trendDepth: number;
-  canCreateEvaluation: boolean;
-  canSeeAlerts: boolean;
-  companies: DashboardCompany[];
-};
+import { prisma } from "@/lib/prisma";
+import { getUserEntitlements } from "@/lib/access/userAccess";
 
 /* =========================
    HELPERS
@@ -54,32 +31,6 @@ function deltaStyles(delta: number) {
 }
 
 /* =========================
-   DATA
-========================= */
-
-async function getDashboardData(): Promise<DashboardResponse | null> {
-  const baseUrl =
-    process.env.NEXTAUTH_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
-
-  if (!baseUrl) {
-    console.error("Missing NEXTAUTH_URL / VERCEL_URL");
-    return null;
-  }
-
-  const res = await fetch(`${baseUrl}/api/dashboard`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    console.error("Dashboard fetch failed", res.status);
-    return null;
-  }
-
-  return res.json();
-}
-
-/* =========================
    PAGE
 ========================= */
 
@@ -87,10 +38,23 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const data = await getDashboardData();
-  if (!data) {
-    return <div>Error loading dashboard</div>;
-  }
+  const userId = session.user.id;
+  const ent = await getUserEntitlements(userId);
+
+  const companies = await prisma.company.findMany({
+    where: {
+      ownerId: userId,
+      status: "ACTIVE",
+    },
+    include: {
+      evaluations: {
+        where: { status: "FINALIZED" },
+        orderBy: { createdAt: "desc" },
+        take: ent.trendDepth,
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="space-y-8">
@@ -99,11 +63,12 @@ export default async function DashboardPage() {
 
         <div className="text-sm text-zinc-500">
           <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-            {data.plan}
+            {ent.plan}
           </span>
         </div>
       </div>
-      {!data.canCreateEvaluation && (
+
+      {!ent.canCreateEvaluation && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
           Tu plan actual no permite crear nuevas evaluaciones.
           <Link href="/billing" className="ml-2 font-medium underline">
@@ -112,24 +77,22 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {data.companies.length === 0 && (
+      {companies.length === 0 && (
         <div className="rounded-xl border bg-white p-10 text-center text-sm text-zinc-500">
-          <div className="rounded-xl border bg-white p-10 text-center">
-            <div className="text-sm text-zinc-500">
-              Aún no tienes empresas monitoreadas.
-            </div>
-            <Link
-              href="/companies/new"
-              className="mt-4 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-            >
-              Agregar empresa
-            </Link>
+          <div className="text-sm text-zinc-500">
+            Aún no tienes empresas monitoreadas.
           </div>
+          <Link
+            href="/companies/new"
+            className="mt-4 inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+          >
+            Agregar empresa
+          </Link>
         </div>
       )}
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {data.companies.map((company) => {
+        {companies.map((company) => {
           const latest = company.evaluations[0];
 
           return (
@@ -140,7 +103,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between">
                 <h2 className="font-medium text-zinc-900">{company.name}</h2>
 
-                {latest && (
+                {latest && latest.executiveCategory && (
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${categoryStyles(
                       latest.executiveCategory,
@@ -155,7 +118,7 @@ export default async function DashboardPage() {
                 <>
                   <div className="mt-6 flex items-end gap-3">
                     <div className="text-4xl font-semibold text-zinc-900">
-                      {latest.overallScore.toFixed(1)}
+                      {latest.overallScore?.toFixed(1) ?? "—"}
                     </div>
 
                     {latest.deltaOverall !== null && (
@@ -169,15 +132,15 @@ export default async function DashboardPage() {
                     )}
                   </div>
 
-                  {/* Barra visual */}
                   <div className="mt-4 h-2 w-full rounded-full bg-zinc-100">
                     <div
                       className="h-2 rounded-full bg-zinc-900 transition-all"
                       style={{
-                        width: `${Math.min(
-                          Math.max(latest.overallScore, 0),
-                          100,
-                        )}%`,
+                        width: `${
+                          latest.overallScore
+                            ? Math.min(Math.max(latest.overallScore, 0), 100)
+                            : 0
+                        }%`,
                       }}
                     />
                   </div>
@@ -192,19 +155,14 @@ export default async function DashboardPage() {
                   Sin evaluaciones finalizadas
                 </div>
               )}
+
               <div className="mt-6">
-                {data.canCreateEvaluation ? (
-                  <Link
-                    href={`/companies/${company.id}`}
-                    className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                  >
-                    Ver empresa
-                  </Link>
-                ) : (
-                  <div className="text-xs text-zinc-500">
-                    Plan requerido para nuevas evaluaciones
-                  </div>
-                )}
+                <Link
+                  href={`/companies/${company.id}`}
+                  className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                >
+                  Ver empresa
+                </Link>
               </div>
             </div>
           );
