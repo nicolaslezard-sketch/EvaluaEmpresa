@@ -120,7 +120,7 @@ export default function HomePage() {
           </h2>
 
           <div className="mt-8 flex justify-center gap-4">
-            <Link href="/new" className="btn btn-primary">
+            <Link href="/login" className="btn btn-primary">
               Iniciar evaluación
             </Link>
             <Link href="/pricing" className="btn btn-secondary">
