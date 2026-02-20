@@ -25,7 +25,7 @@ export default function PricingPage() {
             <li>• Vista parcial</li>
           </ul>
 
-          <Link href="/new" className="btn btn-secondary mt-8 w-full">
+          <Link href="/login" className="btn btn-secondary mt-8 w-full">
             Comenzar gratis
           </Link>
         </div>
@@ -45,7 +45,7 @@ export default function PricingPage() {
             <li>• Sin suscripción</li>
           </ul>
 
-          <Link href="/new" className="btn btn-primary mt-8 w-full">
+          <Link href="/login" className="btn btn-primary mt-8 w-full">
             Generar informe
           </Link>
         </div>

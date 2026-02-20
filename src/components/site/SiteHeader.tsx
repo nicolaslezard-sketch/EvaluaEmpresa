@@ -41,7 +41,7 @@ export async function SiteHeader() {
               <Link href="/dashboard" className="btn btn-secondary">
                 Dashboard
               </Link>
-              <Link href="/new" className="btn btn-primary">
+              <Link href="/companies/new" className="btn btn-primary">
                 Nueva evaluación
               </Link>
             </>

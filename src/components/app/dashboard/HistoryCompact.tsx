@@ -58,7 +58,7 @@ export function HistoryCompact({ reports }: { reports: Report[] }) {
       </div>
 
       <div className="mt-6">
-        <Link href="/new" className="btn btn-secondary w-full">
+        <Link href="/companies/new" className="btn btn-secondary w-full">
           Nueva evaluación
         </Link>
       </div>

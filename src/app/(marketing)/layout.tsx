@@ -45,7 +45,7 @@ export default function MarketingLayout({
             <Link href="/login" className="btn btn-secondary">
               Ingresar
             </Link>
-            <Link href="/new" className="btn btn-primary">
+            <Link href="/login" className="btn btn-primary">
               Iniciar evaluación
             </Link>
           </div>

@@ -18,7 +18,7 @@ export default function AuthLayout({
             <Link href="/pricing" className="btn btn-secondary">
               Ver planes
             </Link>
-            <Link href="/new" className="btn btn-primary">
+            <Link href="/login" className="btn btn-primary">
               Iniciar evaluación
             </Link>
           </div>

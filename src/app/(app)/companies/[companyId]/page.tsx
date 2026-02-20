@@ -70,18 +70,24 @@ async function getCompany(id: string, userId: string) {
 export default async function CompanyPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ companyId: string }>;
 }) {
-  console.log("PARAMS:", params);
+  const resolvedParams = await params;
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  if (!params?.id) notFound();
+  const companyId = resolvedParams.companyId;
 
-  const data = await getCompany(params.id, session.user.id);
+  if (!companyId) {
+    notFound();
+  }
 
-  if (!data) notFound();
+  const data = await getCompany(companyId, session.user.id);
+
+  if (!data) {
+    notFound();
+  }
 
   const latest = data.evaluations[0];
 

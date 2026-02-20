@@ -21,7 +21,7 @@ export default function HomePage() {
           </p>
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-            <Link href="/new" className="btn btn-primary">
+            <Link href="/login" className="btn btn-primary">
               Iniciar evaluación
             </Link>
 

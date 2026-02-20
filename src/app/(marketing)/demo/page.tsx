@@ -19,7 +19,7 @@ export default function DemoPage() {
       </div>
 
       <div className="mt-10">
-        <Link href="/new" className="btn btn-primary">
+        <Link href="/login" className="btn btn-primary">
           Generar evaluación real
         </Link>
       </div>

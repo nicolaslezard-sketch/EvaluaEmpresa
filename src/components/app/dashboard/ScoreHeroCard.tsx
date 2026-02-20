@@ -58,7 +58,7 @@ export function ScoreHeroCard({
         </div>
 
         <div className="flex gap-2">
-          <Link href="/new" className="btn btn-secondary">
+          <Link href="/companies/new" className="btn btn-secondary">
             Nueva evaluación
           </Link>
           <Link
