@@ -1,33 +1,8 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-
-/* =========================
-   TYPES
-========================= */
-
-type Evaluation = {
-  id: string;
-  overallScore: number;
-  executiveCategory: string;
-  deltaOverall: number | null;
-  createdAt: string;
-};
-
-type Alert = {
-  id: string;
-  severity: "INFO" | "WARNING" | "CRITICAL";
-  message: string;
-  createdAt: string;
-};
-
-type CompanyResponse = {
-  id: string;
-  name: string;
-  criticality: string;
-  evaluations: Evaluation[];
-  alerts?: Alert[];
-};
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
 
 /* =========================
    HELPERS
@@ -63,14 +38,23 @@ function alertStyles(severity: string) {
    DATA
 ========================= */
 
-async function getCompany(id: string): Promise<CompanyResponse | null> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/companies/${id}`,
-    { cache: "no-store" },
-  );
+async function getCompany(id: string, userId: string) {
+  const company = await prisma.company.findFirst({
+    where: {
+      id,
+      ownerId: userId, // 🔐 filtro crítico
+    },
+    include: {
+      evaluations: {
+        orderBy: { createdAt: "desc" },
+      },
+      alerts: {
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
 
-  if (!res.ok) return null;
-  return res.json();
+  return company;
 }
 
 /* =========================
@@ -85,8 +69,11 @@ export default async function CompanyPage({
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const data = await getCompany(params.id);
-  if (!data) return <div>Company not found</div>;
+  const data = await getCompany(params.id, session.user.id);
+
+  if (!data) {
+    notFound(); // o redirect("/dashboard")
+  }
 
   const latest = data.evaluations[0];
 
@@ -101,7 +88,7 @@ export default async function CompanyPage({
           </div>
         </div>
 
-        {latest && (
+        {latest.executiveCategory && (
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${categoryStyles(
               latest.executiveCategory,
@@ -116,7 +103,9 @@ export default async function CompanyPage({
       {latest && (
         <div className="rounded-2xl border bg-white p-8 shadow-sm">
           <div className="text-5xl font-semibold text-zinc-900">
-            {latest.overallScore.toFixed(1)}
+            {latest.overallScore !== null
+              ? latest.overallScore.toFixed(1)
+              : "—"}
           </div>
 
           {latest.deltaOverall !== null && (
@@ -129,7 +118,11 @@ export default async function CompanyPage({
             <div
               className="h-2 rounded-full bg-zinc-900 transition-all"
               style={{
-                width: `${Math.min(Math.max(latest.overallScore, 0), 100)}%`,
+                width: `${
+                  latest.overallScore !== null
+                    ? Math.min(Math.max(latest.overallScore, 0), 100)
+                    : 0
+                }%`,
               }}
             />
           </div>
@@ -153,7 +146,9 @@ export default async function CompanyPage({
 
                 <div className="flex items-center gap-4">
                   <div className="font-medium">
-                    {ev.overallScore.toFixed(1)}
+                    {ev.overallScore !== null
+                      ? ev.overallScore.toFixed(1)
+                      : "—"}
                   </div>
 
                   {ev.deltaOverall !== null && (

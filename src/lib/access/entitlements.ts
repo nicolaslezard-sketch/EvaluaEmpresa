@@ -1,28 +1,33 @@
 import type { SubscriptionPlan } from "@prisma/client";
-import type { Entitlements } from "./types";
 
-/**
- * Matriz congelada de planes
- */
+export type Entitlements = {
+  plan: SubscriptionPlan;
+  maxCompanies: number;
+  maxFinalizedEvaluationsTotal: number | null;
+  trendDepth: number;
+  canSeeAlerts: boolean;
+  canDownloadPdf: boolean;
+};
+
 export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
   switch (plan) {
-    case "PRO":
+    case "PROFESSIONAL":
       return {
         plan,
-        maxActiveCompanies: 3,
-        canCreateEvaluation: true,
-        canSeeAlerts: false,
+        maxCompanies: 3,
+        maxFinalizedEvaluationsTotal: null,
         trendDepth: 3,
+        canSeeAlerts: false,
         canDownloadPdf: true,
       };
 
-    case "BUSINESS":
+    case "ENTERPRISE":
       return {
         plan,
-        maxActiveCompanies: 15,
-        canCreateEvaluation: true,
-        canSeeAlerts: true,
+        maxCompanies: 15,
+        maxFinalizedEvaluationsTotal: null,
         trendDepth: 6,
+        canSeeAlerts: true,
         canDownloadPdf: true,
       };
 
@@ -30,10 +35,10 @@ export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
     default:
       return {
         plan: "FREE",
-        maxActiveCompanies: 1,
-        canCreateEvaluation: false, // FREE solo 1 evaluación inicial
-        canSeeAlerts: false,
+        maxCompanies: 1,
+        maxFinalizedEvaluationsTotal: 1,
         trendDepth: 0,
+        canSeeAlerts: false,
         canDownloadPdf: false,
       };
   }
