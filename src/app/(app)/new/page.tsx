@@ -22,7 +22,7 @@ export default async function NewEntryPoint() {
 
   // Tiene una sola → crear evaluación directo
   if (companies.length === 1) {
-    redirect(`/app/companies/${companies[0].id}/evaluations/new`);
+    redirect(`/companies/${companies[0].id}/evaluations/new`);
   }
 
   // Tiene varias → dashboard

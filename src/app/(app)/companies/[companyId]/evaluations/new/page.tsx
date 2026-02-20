@@ -48,5 +48,5 @@ export default async function NewEvaluationPage({
 
   const draft = await createOrReuseDraft(companyId);
 
-  redirect(`/app/companies/${companyId}/evaluations/${draft.id}`);
+  redirect(`/companies/${companyId}/evaluations/${draft.id}`);
 }
