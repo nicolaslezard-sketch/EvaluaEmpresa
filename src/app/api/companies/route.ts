@@ -34,6 +34,9 @@ export async function POST(req: NextRequest) {
       ownerId: userId,
     },
   });
+  console.log("PLAN:", ent.plan);
+  console.log("MAX COMPANIES:", ent.maxCompanies);
+  console.log("CURRENT COUNT:", companiesCount);
 
   if (companiesCount >= ent.maxCompanies) {
     return NextResponse.json(
