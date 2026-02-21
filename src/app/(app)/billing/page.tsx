@@ -2,28 +2,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { UpgradeButton } from "@/components/billing/UpgradeButton";
-
-type BillingResponse = {
-  plan: string;
-};
-
-async function getBilling(): Promise<BillingResponse | null> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/billing`, {
-    cache: "no-store",
-  });
-
-  if (!res.ok) return null;
-  return res.json();
-}
+import { getUserEntitlements } from "@/lib/access/getEntitlements";
 
 export default async function BillingPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const data = await getBilling();
-  if (!data) return <div>Error loading billing</div>;
-
-  const currentPlan = data.plan;
+  const ent = await getUserEntitlements(session.user.id);
+  const currentPlan = ent.plan;
 
   return (
     <div className="space-y-12">
