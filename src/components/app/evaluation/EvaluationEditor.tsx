@@ -12,26 +12,61 @@ function isFiniteNum(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n);
 }
 
-function sectionStatus(obj?: Record<string, number | undefined>) {
-  if (!obj) return "empty";
+const FINANCIAL_FIELDS = [
+  "liquidity",
+  "debtLevel",
+  "revenueStability",
+  "externalDependency",
+] as const;
 
-  const values = Object.values(obj);
-  if (values.length === 0) return "empty";
+const COMMERCIAL_FIELDS = [
+  "clientConcentration",
+  "competitivePosition",
+  "sectorDependency",
+  "contractGeneration",
+] as const;
 
-  const filled = values.filter(isFiniteNum).length;
+const OPERATIONAL_FIELDS = [
+  "keyPersonDependency",
+  "structureFormalization",
+  "operationalRisk",
+  "adaptability",
+] as const;
 
-  if (filled === 0) return "empty";
-  if (filled < values.length) return "partial";
-  return "complete";
+const LEGAL_FIELDS = [
+  "compliance",
+  "litigation",
+  "contractFormalization",
+  "regulatoryRisk",
+] as const;
+
+const STRATEGIC_FIELDS = [
+  "strategicClarity",
+  "macroDependency",
+  "innovationLevel",
+  "resilience",
+] as const;
+
+function sectionStatusByKeys(
+  obj: Record<string, number | undefined> | undefined,
+  requiredKeys: readonly string[],
+) {
+  if (!obj) return "empty" as const;
+
+  const filled = requiredKeys.filter((key) => isFiniteNum(obj[key])).length;
+
+  if (filled === 0) return "empty" as const;
+  if (filled < requiredKeys.length) return "partial" as const;
+  return "complete" as const;
 }
 
 function allComplete(fd: EvaluationFormData) {
   return (
-    sectionStatus(fd.financial) === "complete" &&
-    sectionStatus(fd.commercial) === "complete" &&
-    sectionStatus(fd.operational) === "complete" &&
-    sectionStatus(fd.legal) === "complete" &&
-    sectionStatus(fd.strategic) === "complete"
+    sectionStatusByKeys(fd.financial, FINANCIAL_FIELDS) === "complete" &&
+    sectionStatusByKeys(fd.commercial, COMMERCIAL_FIELDS) === "complete" &&
+    sectionStatusByKeys(fd.operational, OPERATIONAL_FIELDS) === "complete" &&
+    sectionStatusByKeys(fd.legal, LEGAL_FIELDS) === "complete" &&
+    sectionStatusByKeys(fd.strategic, STRATEGIC_FIELDS) === "complete"
   );
 }
 
@@ -46,15 +81,15 @@ function categoryStyles(category: string | null) {
     case "CRITICO":
       return "bg-red-100 text-red-700";
     default:
-      return "bg-zinc-100 text-zinc-600";
+      return "bg-zinc-100 text-zinc-700";
   }
 }
 
 function deltaStyles(delta: number | null) {
-  if (delta === null) return "text-zinc-500";
+  if (delta === null) return "text-zinc-600";
   if (delta > 0) return "text-emerald-600";
   if (delta < 0) return "text-red-600";
-  return "text-zinc-500";
+  return "text-zinc-600";
 }
 
 type EvaluationAccessResponse = {
@@ -111,14 +146,35 @@ export default function EvaluationEditor(props: {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [access, setAccess] = useState<EvaluationAccessResponse | null>(null);
 
+  const financialStatus = useMemo(
+    () => sectionStatusByKeys(data.financial, FINANCIAL_FIELDS),
+    [data.financial],
+  );
+  const commercialStatus = useMemo(
+    () => sectionStatusByKeys(data.commercial, COMMERCIAL_FIELDS),
+    [data.commercial],
+  );
+  const operationalStatus = useMemo(
+    () => sectionStatusByKeys(data.operational, OPERATIONAL_FIELDS),
+    [data.operational],
+  );
+  const legalStatus = useMemo(
+    () => sectionStatusByKeys(data.legal, LEGAL_FIELDS),
+    [data.legal],
+  );
+  const strategicStatus = useMemo(
+    () => sectionStatusByKeys(data.strategic, STRATEGIC_FIELDS),
+    [data.strategic],
+  );
+
   const canFinalize = useMemo(() => allComplete(data), [data]);
 
   const sectionStatuses = [
-    sectionStatus(data.financial),
-    sectionStatus(data.commercial),
-    sectionStatus(data.operational),
-    sectionStatus(data.legal),
-    sectionStatus(data.strategic),
+    financialStatus,
+    commercialStatus,
+    operationalStatus,
+    legalStatus,
+    strategicStatus,
   ];
 
   const completedCount = sectionStatuses.filter((s) => s === "complete").length;
@@ -259,9 +315,11 @@ export default function EvaluationEditor(props: {
             <h1 className="text-2xl font-semibold text-zinc-900">
               Evaluación — {props.companyName}
             </h1>
-            <div className="mt-1 text-sm text-zinc-500">
+            <div className="mt-1 text-sm text-zinc-600">
               Criticidad:{" "}
-              <span className="font-medium">{props.companyCriticality}</span>
+              <span className="font-medium text-zinc-800">
+                {props.companyCriticality}
+              </span>
             </div>
           </div>
 
@@ -279,7 +337,7 @@ export default function EvaluationEditor(props: {
         <div className="rounded-2xl border bg-white p-8 shadow-sm">
           <div className="grid gap-6 md:grid-cols-3">
             <div>
-              <div className="text-sm text-zinc-500">Score general</div>
+              <div className="text-sm text-zinc-700">Score general</div>
               <div className="mt-2 text-5xl font-semibold text-zinc-900">
                 {props.overallScore?.toFixed(1) ?? "—"}
               </div>
@@ -387,7 +445,7 @@ export default function EvaluationEditor(props: {
             </div>
           ) : (
             <SectionCard title="Reporte">
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-zinc-600">
                 Esta evaluación fue finalizada, pero todavía no hay datos de
                 reporte disponibles.
               </p>
@@ -398,7 +456,7 @@ export default function EvaluationEditor(props: {
             <h2 className="text-lg font-medium text-zinc-900">
               Reporte completo bloqueado
             </h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
               Puedes ver el score general de esta evaluación, pero el resumen
               ejecutivo, los riesgos prioritarios, las recomendaciones y el PDF
               completo están disponibles con acceso por suscripción o mediante
@@ -436,12 +494,14 @@ export default function EvaluationEditor(props: {
             Nueva evaluación — {props.companyName}
           </h1>
 
-          <div className="mt-1 text-sm text-zinc-500">
+          <div className="mt-1 text-sm text-zinc-600">
             Criticidad:{" "}
-            <span className="font-medium">{props.companyCriticality}</span>
+            <span className="font-medium text-zinc-800">
+              {props.companyCriticality}
+            </span>
           </div>
 
-          <div className="mt-3 text-xs text-zinc-500">
+          <div className="mt-3 text-sm text-zinc-600">
             {completedCount} / 5 pilares completos
             {isSaving ? " · Guardando..." : " · Guardado automático activo"}
           </div>
@@ -453,7 +513,7 @@ export default function EvaluationEditor(props: {
           className={`rounded-lg px-4 py-2 text-sm font-medium ${
             canFinalize && !finalizing
               ? "bg-zinc-900 text-white hover:bg-zinc-800"
-              : "cursor-not-allowed bg-zinc-100 text-zinc-400"
+              : "cursor-not-allowed bg-zinc-100 text-zinc-500"
           }`}
         >
           {finalizing ? "Generando..." : "Generar evaluación"}
@@ -461,7 +521,7 @@ export default function EvaluationEditor(props: {
       </div>
 
       <div className="rounded-2xl border bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between text-sm text-zinc-500">
+        <div className="flex items-center justify-between text-sm text-zinc-700">
           <span>Progreso general</span>
           <span>{Math.round(progressPct)}%</span>
         </div>
@@ -475,7 +535,7 @@ export default function EvaluationEditor(props: {
       </div>
 
       <div className="grid gap-4">
-        <Card title="Financiero" status={sectionStatus(data.financial)}>
+        <Card title="Financiero" status={financialStatus}>
           <PillarFields
             fields={[
               ["liquidity", "Liquidez actual"],
@@ -493,7 +553,7 @@ export default function EvaluationEditor(props: {
           />
         </Card>
 
-        <Card title="Comercial" status={sectionStatus(data.commercial)}>
+        <Card title="Comercial" status={commercialStatus}>
           <PillarFields
             fields={[
               ["clientConcentration", "Concentración de clientes"],
@@ -511,7 +571,7 @@ export default function EvaluationEditor(props: {
           />
         </Card>
 
-        <Card title="Operativo" status={sectionStatus(data.operational)}>
+        <Card title="Operativo" status={operationalStatus}>
           <PillarFields
             fields={[
               ["keyPersonDependency", "Dependencia de persona clave"],
@@ -532,7 +592,7 @@ export default function EvaluationEditor(props: {
           />
         </Card>
 
-        <Card title="Legal" status={sectionStatus(data.legal)}>
+        <Card title="Legal" status={legalStatus}>
           <PillarFields
             fields={[
               ["compliance", "Cumplimiento regulatorio"],
@@ -550,7 +610,7 @@ export default function EvaluationEditor(props: {
           />
         </Card>
 
-        <Card title="Estratégico" status={sectionStatus(data.strategic)}>
+        <Card title="Estratégico" status={strategicStatus}>
           <PillarFields
             fields={[
               ["strategicClarity", "Claridad estratégica"],
@@ -596,7 +656,7 @@ function BulletList({ items }: { items: string[] }) {
     <ul className="space-y-2 text-sm text-zinc-700">
       {items.map((item, index) => (
         <li key={`${item}-${index}`} className="flex gap-2">
-          <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-zinc-400" />
+          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-zinc-500" />
           <span>{item}</span>
         </li>
       ))}
@@ -615,7 +675,7 @@ function MetricCard({
 }) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-      <div className="text-sm text-zinc-500">{title}</div>
+      <div className="text-sm text-zinc-700">{title}</div>
       <div className={`mt-2 text-base font-medium ${deltaStyles(value)}`}>
         {value !== null ? `${prefix}${value.toFixed(1)}` : "—"}
       </div>
@@ -636,8 +696,8 @@ function Card({
     status === "complete"
       ? "text-emerald-600"
       : status === "partial"
-        ? "text-amber-500"
-        : "text-zinc-400";
+        ? "text-amber-600"
+        : "text-zinc-600";
 
   const label =
     status === "complete"
@@ -649,8 +709,8 @@ function Card({
   return (
     <div className="rounded-2xl border bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <div className="text-sm font-medium text-zinc-900">{title}</div>
-        <div className={`text-xs ${color}`}>{label}</div>
+        <div className="text-lg font-medium text-zinc-900">{title}</div>
+        <div className={`text-sm font-medium ${color}`}>{label}</div>
       </div>
       <div className="space-y-4">{children}</div>
     </div>
@@ -677,10 +737,10 @@ function PillarFields({
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {fields.map(([key, label]) => (
-        <label key={key} className="space-y-1">
-          <div className="text-xs font-medium text-zinc-700">{label}</div>
+        <label key={key} className="space-y-1.5">
+          <div className="text-sm font-medium text-zinc-700">{label}</div>
           <select
-            className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
             value={value[key] ?? ""}
             onChange={(e) => {
               const v = Number(e.target.value);
@@ -688,7 +748,7 @@ function PillarFields({
               onChange({ [key]: v });
             }}
           >
-            <option value="" disabled>
+            <option value="" disabled className="text-zinc-500">
               Seleccionar…
             </option>
             {OPTIONS.map((o) => (

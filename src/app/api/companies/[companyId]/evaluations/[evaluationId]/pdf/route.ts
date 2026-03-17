@@ -8,8 +8,7 @@ import {
   uploadEvaluationPdf,
 } from "@/lib/reports/storage";
 import { generateReportPdf } from "@/lib/pdf/generateReportPdf";
-import type { ReportJson } from "@/lib/types/report";
-
+import type { DeterministicPdfData } from "@/lib/pdf/generateReportPdf";
 export async function GET(
   _req: NextRequest,
   context: {
@@ -69,9 +68,33 @@ export async function GET(
       );
     }
 
-    const buffer = await generateReportPdf(
-      evaluation.reportData as unknown as ReportJson,
-    );
+    const pdfData: DeterministicPdfData = {
+      companyName: evaluation.company.name,
+      generatedAt: new Date(
+        evaluation.updatedAt ?? evaluation.createdAt,
+      ).toLocaleDateString("es-AR"),
+      companyCriticality: evaluation.company.criticality,
+      overallScore: evaluation.overallScore ?? 0,
+      executiveCategory: evaluation.executiveCategory ?? "SIN_CATEGORIA",
+      pillars: {
+        financial: evaluation.financialScore,
+        commercial: evaluation.commercialScore,
+        operational: evaluation.operationalScore,
+        legal: evaluation.legalScore,
+        strategic: evaluation.strategicScore,
+      },
+      deltas: {
+        overall: evaluation.deltaOverall,
+        financial: evaluation.deltaFinancial,
+        commercial: evaluation.deltaCommercial,
+        operational: evaluation.deltaOperational,
+        legal: evaluation.deltaLegal,
+        strategic: evaluation.deltaStrategic,
+      },
+      reportData: evaluation.reportData as DeterministicPdfData["reportData"],
+    };
+
+    const buffer = await generateReportPdf(pdfData);
 
     const { key, size, mime } = await uploadEvaluationPdf(
       evaluation.id,
