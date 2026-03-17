@@ -35,6 +35,43 @@ function allComplete(fd: EvaluationFormData) {
   );
 }
 
+function categoryStyles(category: string | null) {
+  switch (category) {
+    case "SOLIDO":
+      return "bg-emerald-100 text-emerald-700";
+    case "ESTABLE":
+      return "bg-blue-100 text-blue-700";
+    case "VULNERABLE":
+      return "bg-amber-100 text-amber-700";
+    case "CRITICO":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-zinc-100 text-zinc-600";
+  }
+}
+
+function deltaStyles(delta: number | null) {
+  if (delta === null) return "text-zinc-500";
+  if (delta > 0) return "text-emerald-600";
+  if (delta < 0) return "text-red-600";
+  return "text-zinc-500";
+}
+
+type EvaluationAccessResponse = {
+  hasAccess: boolean;
+  canViewFullReport: boolean;
+  canDownloadPdf: boolean;
+  reason: "subscription" | "one_time" | "pending" | "none";
+};
+
+type ReportData = {
+  executiveSummary: string;
+  keyFindings: string[];
+  priorityRisks: string[];
+  recommendations: string[];
+  nextReviewSuggestedDays: number | null;
+};
+
 /* ===============================
    Component
 =================================*/
@@ -56,6 +93,7 @@ export default function EvaluationEditor(props: {
     legal: number | null;
     strategic: number | null;
   };
+  reportData?: ReportData | null;
 }) {
   const router = useRouter();
 
@@ -68,17 +106,56 @@ export default function EvaluationEditor(props: {
     context: props.formData.context ?? {},
   }));
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [access, setAccess] = useState<EvaluationAccessResponse | null>(null);
+
   const canFinalize = useMemo(() => allComplete(data), [data]);
-  const completedCount = [
+
+  const sectionStatuses = [
     sectionStatus(data.financial),
     sectionStatus(data.commercial),
     sectionStatus(data.operational),
     sectionStatus(data.legal),
     sectionStatus(data.strategic),
-  ].filter((s) => s === "complete").length;
+  ];
+
+  const completedCount = sectionStatuses.filter((s) => s === "complete").length;
+  const progressPct = (completedCount / 5) * 100;
 
   const dirtyRef = useRef(false);
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
+
+  /* ===============================
+     Load access for FINALIZED
+  =================================*/
+
+  useEffect(() => {
+    if (props.status === "DRAFT") return;
+
+    let cancelled = false;
+
+    async function loadAccess() {
+      const res = await fetch(
+        `/api/companies/${props.companyId}/evaluations/${props.evaluationId}/access`,
+        {
+          cache: "no-store",
+        },
+      );
+
+      if (!res.ok) return;
+
+      const json = (await res.json()) as EvaluationAccessResponse;
+      if (!cancelled) setAccess(json);
+    }
+
+    loadAccess();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [props.companyId, props.evaluationId, props.status]);
 
   /* ===============================
      Autosave
@@ -95,12 +172,18 @@ export default function EvaluationEditor(props: {
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
     saveTimer.current = setTimeout(async () => {
-      await fetch(`/api/evaluations/${props.evaluationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify(data),
-      });
+      try {
+        setIsSaving(true);
+
+        await fetch(`/api/evaluations/${props.evaluationId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify(data),
+        });
+      } finally {
+        setIsSaving(false);
+      }
     }, 800);
 
     return () => {
@@ -109,17 +192,55 @@ export default function EvaluationEditor(props: {
   }, [data, props.evaluationId, props.status]);
 
   async function finalize() {
-    const res = await fetch(`/api/evaluations/${props.evaluationId}/finalize`, {
-      method: "POST",
-      cache: "no-store",
-    });
+    try {
+      setFinalizing(true);
 
-    if (!res.ok) {
-      alert("No se pudo finalizar. Revisá que estén completos los 5 pilares.");
-      return;
+      const res = await fetch(
+        `/api/evaluations/${props.evaluationId}/finalize`,
+        {
+          method: "POST",
+          cache: "no-store",
+        },
+      );
+
+      if (!res.ok) {
+        alert(
+          "No se pudo finalizar. Revisá que estén completos los 5 pilares.",
+        );
+        return;
+      }
+
+      router.refresh();
+    } finally {
+      setFinalizing(false);
     }
+  }
 
-    router.refresh();
+  async function startOneTimeCheckout() {
+    try {
+      setCheckoutLoading(true);
+
+      const res = await fetch(
+        `/api/companies/${props.companyId}/evaluations/${props.evaluationId}/checkout`,
+        {
+          method: "POST",
+          cache: "no-store",
+        },
+      );
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        alert(json?.error || "No se pudo iniciar el checkout.");
+        return;
+      }
+
+      if (json?.url) {
+        window.location.href = json.url;
+      }
+    } finally {
+      setCheckoutLoading(false);
+    }
   }
 
   /* ===============================
@@ -127,33 +248,178 @@ export default function EvaluationEditor(props: {
   =================================*/
 
   if (props.status !== "DRAFT") {
+    const canViewFullReport = access?.canViewFullReport ?? false;
+    const canDownloadPdf = access?.canDownloadPdf ?? false;
+    const isPending = access?.reason === "pending";
+
     return (
-      <div className="max-w-4xl mx-auto py-10 space-y-6">
-        <h1 className="text-2xl font-semibold">
-          Evaluación — {props.companyName}
-        </h1>
-
-        <div className="rounded-2xl border bg-white p-8 shadow-sm">
-          <div className="text-sm text-zinc-500">Score general</div>
-          <div className="text-5xl font-semibold text-zinc-900">
-            {props.overallScore?.toFixed(1) ?? "—"}
+      <div className="mx-auto max-w-5xl space-y-8 py-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-zinc-900">
+              Evaluación — {props.companyName}
+            </h1>
+            <div className="mt-1 text-sm text-zinc-500">
+              Criticidad:{" "}
+              <span className="font-medium">{props.companyCriticality}</span>
+            </div>
           </div>
 
-          <div className="mt-2 text-sm text-zinc-500">
-            Categoría: {props.executiveCategory ?? "—"}
-            {props.deltas.overall !== null &&
-              ` · Δ ${props.deltas.overall.toFixed(1)}`}
-          </div>
-
-          <div className="mt-6">
-            <a
-              className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white"
-              href={`/api/companies/${props.companyId}/evaluations/${props.evaluationId}/pdf`}
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${categoryStyles(
+                props.executiveCategory,
+              )}`}
             >
-              Descargar PDF
-            </a>
+              {props.executiveCategory ?? "Sin categoría"}
+            </span>
           </div>
         </div>
+
+        <div className="rounded-2xl border bg-white p-8 shadow-sm">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div>
+              <div className="text-sm text-zinc-500">Score general</div>
+              <div className="mt-2 text-5xl font-semibold text-zinc-900">
+                {props.overallScore?.toFixed(1) ?? "—"}
+              </div>
+              <div
+                className={`mt-3 text-sm font-medium ${deltaStyles(
+                  props.deltas.overall,
+                )}`}
+              >
+                {props.deltas.overall !== null
+                  ? `Δ ${props.deltas.overall.toFixed(1)}`
+                  : "Sin variación disponible"}
+              </div>
+            </div>
+
+            <MetricCard
+              title="Financiero"
+              value={props.deltas.financial}
+              prefix="Δ "
+            />
+            <MetricCard
+              title="Comercial"
+              value={props.deltas.commercial}
+              prefix="Δ "
+            />
+            <MetricCard
+              title="Operativo"
+              value={props.deltas.operational}
+              prefix="Δ "
+            />
+            <MetricCard title="Legal" value={props.deltas.legal} prefix="Δ " />
+            <MetricCard
+              title="Estratégico"
+              value={props.deltas.strategic}
+              prefix="Δ "
+            />
+          </div>
+
+          <div className="mt-6 h-2 w-full rounded-full bg-zinc-100">
+            <div
+              className="h-2 rounded-full bg-zinc-900 transition-all"
+              style={{
+                width: `${
+                  props.overallScore !== null
+                    ? Math.min(Math.max(props.overallScore, 0), 100)
+                    : 0
+                }%`,
+              }}
+            />
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            {canDownloadPdf ? (
+              <a
+                className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                href={`/api/companies/${props.companyId}/evaluations/${props.evaluationId}/pdf`}
+              >
+                Descargar PDF
+              </a>
+            ) : isPending ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
+                Pago registrado. El acceso puede demorar unos instantes.
+              </div>
+            ) : (
+              <button
+                onClick={startOneTimeCheckout}
+                disabled={checkoutLoading}
+                className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {checkoutLoading
+                  ? "Iniciando checkout..."
+                  : "Desbloquear evaluación completa"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {canViewFullReport ? (
+          props.reportData ? (
+            <div className="grid gap-6">
+              <SectionCard title="Resumen ejecutivo">
+                <p className="text-sm leading-6 text-zinc-700">
+                  {props.reportData.executiveSummary}
+                </p>
+              </SectionCard>
+
+              <SectionCard title="Hallazgos clave">
+                <BulletList items={props.reportData.keyFindings} />
+              </SectionCard>
+
+              <SectionCard title="Riesgos prioritarios">
+                <BulletList items={props.reportData.priorityRisks} />
+              </SectionCard>
+
+              <SectionCard title="Recomendaciones">
+                <BulletList items={props.reportData.recommendations} />
+              </SectionCard>
+
+              <SectionCard title="Próxima revisión sugerida">
+                <p className="text-sm leading-6 text-zinc-700">
+                  {props.reportData.nextReviewSuggestedDays !== null
+                    ? `Se recomienda una nueva revisión en aproximadamente ${props.reportData.nextReviewSuggestedDays} días.`
+                    : "No hay una sugerencia de revisión disponible para este ciclo."}
+                </p>
+              </SectionCard>
+            </div>
+          ) : (
+            <SectionCard title="Reporte">
+              <p className="text-sm text-zinc-500">
+                Esta evaluación fue finalizada, pero todavía no hay datos de
+                reporte disponibles.
+              </p>
+            </SectionCard>
+          )
+        ) : (
+          <div className="rounded-2xl border bg-white p-8 shadow-sm">
+            <h2 className="text-lg font-medium text-zinc-900">
+              Reporte completo bloqueado
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
+              Puedes ver el score general de esta evaluación, pero el resumen
+              ejecutivo, los riesgos prioritarios, las recomendaciones y el PDF
+              completo están disponibles con acceso por suscripción o mediante
+              evaluación única.
+            </p>
+
+            {!isPending && (
+              <div className="mt-5">
+                <button
+                  onClick={startOneTimeCheckout}
+                  disabled={checkoutLoading}
+                  className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {checkoutLoading
+                    ? "Iniciando checkout..."
+                    : "Comprar evaluación única"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -163,10 +429,10 @@ export default function EvaluationEditor(props: {
   =================================*/
 
   return (
-    <div className="max-w-5xl mx-auto py-10 space-y-6">
-      <div className="flex items-start justify-between gap-6">
+    <div className="mx-auto max-w-5xl space-y-6 py-10">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold text-zinc-900">
             Nueva evaluación — {props.companyName}
           </h1>
 
@@ -175,22 +441,37 @@ export default function EvaluationEditor(props: {
             <span className="font-medium">{props.companyCriticality}</span>
           </div>
 
-          <div className="mt-2 text-xs text-zinc-500">
+          <div className="mt-3 text-xs text-zinc-500">
             {completedCount} / 5 pilares completos
+            {isSaving ? " · Guardando..." : " · Guardado automático activo"}
           </div>
         </div>
 
         <button
           onClick={finalize}
-          disabled={!canFinalize}
+          disabled={!canFinalize || finalizing}
           className={`rounded-lg px-4 py-2 text-sm font-medium ${
-            canFinalize
-              ? "bg-zinc-900 text-white"
-              : "bg-zinc-100 text-zinc-400 cursor-not-allowed"
+            canFinalize && !finalizing
+              ? "bg-zinc-900 text-white hover:bg-zinc-800"
+              : "cursor-not-allowed bg-zinc-100 text-zinc-400"
           }`}
         >
-          Generar evaluación
+          {finalizing ? "Generando..." : "Generar evaluación"}
         </button>
+      </div>
+
+      <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between text-sm text-zinc-500">
+          <span>Progreso general</span>
+          <span>{Math.round(progressPct)}%</span>
+        </div>
+
+        <div className="mt-3 h-2 w-full rounded-full bg-zinc-100">
+          <div
+            className="h-2 rounded-full bg-zinc-900 transition-all"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -294,6 +575,53 @@ export default function EvaluationEditor(props: {
 /* ===============================
    Subcomponents
 =================================*/
+
+function SectionCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border bg-white p-6 shadow-sm">
+      <h2 className="mb-4 text-base font-medium text-zinc-900">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function BulletList({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-2 text-sm text-zinc-700">
+      {items.map((item, index) => (
+        <li key={`${item}-${index}`} className="flex gap-2">
+          <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-zinc-400" />
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  prefix = "",
+}: {
+  title: string;
+  value: number | null;
+  prefix?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+      <div className="text-sm text-zinc-500">{title}</div>
+      <div className={`mt-2 text-base font-medium ${deltaStyles(value)}`}>
+        {value !== null ? `${prefix}${value.toFixed(1)}` : "—"}
+      </div>
+    </div>
+  );
+}
 
 function Card({
   title,

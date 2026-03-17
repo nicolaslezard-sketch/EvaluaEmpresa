@@ -8,12 +8,12 @@ import type { EvaluationFormData } from "@/lib/types/evaluationForm";
 export default async function EvaluationPage({
   params,
 }: {
-  params: { companyId: string; evaluationId: string };
+  params: Promise<{ companyId: string; evaluationId: string }>;
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
-  const { companyId, evaluationId } = params;
+  const { companyId, evaluationId } = await params;
 
   const evaluation = await prisma.evaluation.findUnique({
     where: { id: evaluationId },

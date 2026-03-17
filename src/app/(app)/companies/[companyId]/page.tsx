@@ -3,9 +3,9 @@ export const revalidate = 0;
 
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { getUserEntitlements } from "@/lib/access/getEntitlements";
 
 /* =========================
    HELPERS
@@ -35,6 +35,39 @@ function alertStyles(severity: string) {
     default:
       return "bg-zinc-50 border-zinc-200 text-zinc-700";
   }
+}
+
+function getReviewStatus(latestDate?: Date | null) {
+  if (!latestDate) {
+    return {
+      label: "Sin evaluaciones",
+      className: "bg-zinc-100 text-zinc-600",
+    };
+  }
+
+  const now = Date.now();
+  const diffDays = Math.floor(
+    (now - new Date(latestDate).getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays >= 120) {
+    return {
+      label: "Desactualizada",
+      className: "bg-red-100 text-red-700",
+    };
+  }
+
+  if (diffDays >= 60) {
+    return {
+      label: "Próxima revisión",
+      className: "bg-amber-100 text-amber-700",
+    };
+  }
+
+  return {
+    label: "Actualizada",
+    className: "bg-emerald-100 text-emerald-700",
+  };
 }
 
 /* =========================
@@ -89,44 +122,79 @@ export default async function CompanyPage({
     notFound();
   }
 
+  const ent = await getUserEntitlements(session.user.id);
   const latest = data.evaluations[0];
+  const reviewStatus = getReviewStatus(latest?.createdAt);
 
   return (
     <div className="space-y-10">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">{data.name}</h1>
-          <div className="text-sm text-zinc-500">
-            Criticidad: {data.criticality}
+
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+            <span>Criticidad: {data.criticality}</span>
+            <span>•</span>
+            <span>
+              Última evaluación:{" "}
+              {latest ? new Date(latest.createdAt).toLocaleDateString() : "—"}
+            </span>
           </div>
         </div>
 
-        {latest?.executiveCategory && (
+        <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${categoryStyles(
-              latest.executiveCategory,
-            )}`}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${reviewStatus.className}`}
           >
-            {latest.executiveCategory}
+            {reviewStatus.label}
           </span>
-        )}
+
+          {latest?.executiveCategory && (
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${categoryStyles(
+                latest.executiveCategory,
+              )}`}
+            >
+              {latest.executiveCategory}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* SCORE PRINCIPAL */}
-      {latest && (
+      {latest ? (
         <div className="rounded-2xl border bg-white p-8 shadow-sm">
-          <div className="text-5xl font-semibold text-zinc-900">
-            {latest.overallScore !== null
-              ? latest.overallScore.toFixed(1)
-              : "—"}
-          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div>
+              <div className="text-sm text-zinc-500">Score actual</div>
+              <div className="mt-2 text-5xl font-semibold text-zinc-900">
+                {latest.overallScore !== null
+                  ? latest.overallScore.toFixed(1)
+                  : "—"}
+              </div>
 
-          {latest.deltaOverall !== null && (
-            <div className="mt-3 text-sm text-zinc-500">
-              Δ {latest.deltaOverall.toFixed(1)}
+              {latest.deltaOverall !== null && (
+                <div className="mt-3 text-sm text-zinc-500">
+                  Δ {latest.deltaOverall.toFixed(1)}
+                </div>
+              )}
             </div>
-          )}
+
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+              <div className="text-sm text-zinc-500">Criticidad</div>
+              <div className="mt-2 text-base font-medium text-zinc-900">
+                {data.criticality}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+              <div className="text-sm text-zinc-500">Última evaluación</div>
+              <div className="mt-2 text-base font-medium text-zinc-900">
+                {new Date(latest.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
 
           <div className="mt-6 h-2 w-full rounded-full bg-zinc-100">
             <div
@@ -141,10 +209,20 @@ export default async function CompanyPage({
             />
           </div>
         </div>
+      ) : (
+        <div className="rounded-2xl border bg-white p-8 shadow-sm">
+          <div className="text-lg font-medium text-zinc-900">
+            Todavía no hay evaluaciones
+          </div>
+          <div className="mt-2 text-sm text-zinc-500">
+            Cuando finalices la primera evaluación, acá vas a ver el score
+            actual, su evolución y el estado general de la empresa.
+          </div>
+        </div>
       )}
 
       {/* HISTÓRICO */}
-      {data.evaluations.length > 1 && (
+      {data.evaluations.length > 0 && (
         <div>
           <h2 className="mb-4 text-lg font-medium text-zinc-900">Historial</h2>
 
@@ -178,32 +256,37 @@ export default async function CompanyPage({
       )}
 
       {/* ALERTAS */}
-      {data.alerts && data.alerts.length > 0 && (
-        <div>
-          <h2 className="mb-4 text-lg font-medium text-zinc-900">Alertas</h2>
+      <div>
+        <h2 className="mb-4 text-lg font-medium text-zinc-900">Alertas</h2>
 
-          <div className="space-y-3">
-            {data.alerts.map((alert) => (
-              <div
-                key={alert.id}
-                className={`rounded-lg border p-4 text-sm ${alertStyles(
-                  alert.severity,
-                )}`}
-              >
-                {alert.message}
-              </div>
-            ))}
-            {!data.alerts && (
-              <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500">
-                Las alertas están disponibles en el plan Business.
-                <a href="/billing" className="ml-2 font-medium underline">
-                  Actualizar plan
-                </a>
-              </div>
-            )}
+        {ent.canSeeAlerts ? (
+          data.alerts.length > 0 ? (
+            <div className="space-y-3">
+              {data.alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`rounded-lg border p-4 text-sm ${alertStyles(
+                    alert.severity,
+                  )}`}
+                >
+                  {alert.message}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500">
+              No hay alertas activas para esta empresa.
+            </div>
+          )
+        ) : (
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500">
+            Las alertas persistidas están disponibles en el plan Business.
+            <a href="/billing" className="ml-2 font-medium underline">
+              Actualizar plan
+            </a>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
