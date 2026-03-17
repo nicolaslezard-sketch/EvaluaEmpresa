@@ -35,7 +35,7 @@ async function createCompanyAction(formData: FormData) {
       description,
     });
 
-    redirect(`/companies/${company.id}`);
+    redirect(`/companies/${company.id}/evaluations/new`);
   } catch (err) {
     if (err instanceof Error && err.message === "PLAN_LIMIT_COMPANIES") {
       redirect("/billing");
@@ -56,7 +56,7 @@ export default async function NewCompanyPage() {
     <div className="max-w-2xl space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-zinc-900">Nueva empresa</h1>
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-2 text-sm text-zinc-600">
           Registrá una empresa para comenzar a evaluarla bajo la metodología
           E-Score™.
         </p>
@@ -73,7 +73,7 @@ export default async function NewCompanyPage() {
           <input
             name="name"
             required
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm outline-none focus:border-zinc-900"
+            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
             placeholder="Ej: Constructora Delta SA"
           />
         </div>
@@ -85,7 +85,7 @@ export default async function NewCompanyPage() {
           <select
             name="relationType"
             required
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm outline-none focus:border-zinc-900"
+            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
           >
             <option value="">Seleccionar</option>
             <option value="CLIENTE">Cliente</option>
@@ -103,7 +103,7 @@ export default async function NewCompanyPage() {
           </label>
           <input
             name="sector"
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm outline-none focus:border-zinc-900"
+            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
             placeholder="Ej: Construcción"
           />
         </div>
@@ -114,7 +114,7 @@ export default async function NewCompanyPage() {
           </label>
           <select
             name="size"
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm outline-none focus:border-zinc-900"
+            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
           >
             <option value="">Seleccionar</option>
             <option value="micro">Micro</option>
@@ -131,7 +131,7 @@ export default async function NewCompanyPage() {
           <textarea
             name="description"
             rows={4}
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm outline-none focus:border-zinc-900"
+            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
             placeholder="Descripción general de la empresa..."
           />
         </div>

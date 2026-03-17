@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
@@ -22,7 +23,7 @@ function categoryStyles(category: string) {
     case "CRITICO":
       return "bg-red-100 text-red-700";
     default:
-      return "bg-zinc-100 text-zinc-600";
+      return "bg-zinc-100 text-zinc-700";
   }
 }
 
@@ -41,7 +42,7 @@ function getReviewStatus(latestDate?: Date | null) {
   if (!latestDate) {
     return {
       label: "Sin evaluaciones",
-      className: "bg-zinc-100 text-zinc-600",
+      className: "bg-zinc-100 text-zinc-700",
     };
   }
 
@@ -133,7 +134,7 @@ export default async function CompanyPage({
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900">{data.name}</h1>
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-600">
             <span>Criticidad: {data.criticality}</span>
             <span>•</span>
             <span>
@@ -167,7 +168,7 @@ export default async function CompanyPage({
         <div className="rounded-2xl border bg-white p-8 shadow-sm">
           <div className="grid gap-6 md:grid-cols-3">
             <div>
-              <div className="text-sm text-zinc-500">Score actual</div>
+              <div className="text-sm text-zinc-700">Score actual</div>
               <div className="mt-2 text-5xl font-semibold text-zinc-900">
                 {latest.overallScore !== null
                   ? latest.overallScore.toFixed(1)
@@ -175,21 +176,21 @@ export default async function CompanyPage({
               </div>
 
               {latest.deltaOverall !== null && (
-                <div className="mt-3 text-sm text-zinc-500">
+                <div className="mt-3 text-sm text-zinc-600">
                   Δ {latest.deltaOverall.toFixed(1)}
                 </div>
               )}
             </div>
 
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="text-sm text-zinc-500">Criticidad</div>
+              <div className="text-sm text-zinc-700">Criticidad</div>
               <div className="mt-2 text-base font-medium text-zinc-900">
                 {data.criticality}
               </div>
             </div>
 
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="text-sm text-zinc-500">Última evaluación</div>
+              <div className="text-sm text-zinc-700">Última evaluación</div>
               <div className="mt-2 text-base font-medium text-zinc-900">
                 {new Date(latest.createdAt).toLocaleDateString()}
               </div>
@@ -214,9 +215,19 @@ export default async function CompanyPage({
           <div className="text-lg font-medium text-zinc-900">
             Todavía no hay evaluaciones
           </div>
-          <div className="mt-2 text-sm text-zinc-500">
-            Cuando finalices la primera evaluación, acá vas a ver el score
-            actual, su evolución y el estado general de la empresa.
+          <div className="mt-2 max-w-2xl text-sm text-zinc-600">
+            Esta empresa todavía no tiene una evaluación inicial cargada. Iniciá
+            la primera evaluación para generar el score actual, guardar el
+            histórico y comenzar el monitoreo continuo.
+          </div>
+
+          <div className="mt-6">
+            <Link
+              href={`/companies/${data.id}/evaluations/new`}
+              className="inline-flex rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            >
+              Iniciar primera evaluación
+            </Link>
           </div>
         </div>
       )}
@@ -237,14 +248,14 @@ export default async function CompanyPage({
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="font-medium">
+                  <div className="font-medium text-zinc-900">
                     {ev.overallScore !== null
                       ? ev.overallScore.toFixed(1)
                       : "—"}
                   </div>
 
                   {ev.deltaOverall !== null && (
-                    <div className="text-xs text-zinc-500">
+                    <div className="text-xs text-zinc-600">
                       Δ {ev.deltaOverall.toFixed(1)}
                     </div>
                   )}
@@ -274,14 +285,17 @@ export default async function CompanyPage({
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500">
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-600">
               No hay alertas activas para esta empresa.
             </div>
           )
         ) : (
-          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500">
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-600">
             Las alertas persistidas están disponibles en el plan Business.
-            <a href="/billing" className="ml-2 font-medium underline">
+            <a
+              href="/billing"
+              className="ml-2 font-medium text-zinc-900 underline"
+            >
               Actualizar plan
             </a>
           </div>
