@@ -8,7 +8,7 @@ import { getUserEntitlements } from "@/lib/access/getEntitlements";
 export default async function NewEvaluationPage({
   params,
 }: {
-  params: { companyId: string };
+  params: Promise<{ companyId: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -17,7 +17,11 @@ export default async function NewEvaluationPage({
   }
 
   const userId = session.user.id;
-  const { companyId } = params;
+  const { companyId } = await params;
+
+  if (!companyId) {
+    redirect("/dashboard");
+  }
 
   const company = await prisma.company.findFirst({
     where: {
