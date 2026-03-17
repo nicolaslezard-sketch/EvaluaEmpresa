@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserEntitlements } from "@/lib/access/userAccess";
+import { detectRegion } from "@/lib/geo/region";
+import { getEvaluationAccess } from "@/lib/access/getEvaluationAccess";
 import { createMercadoPagoCheckout } from "@/lib/payments/mp";
 import { createLemonCheckout } from "@/lib/payments/lemon";
-import type { EvaluationUnlockMetadata } from "@/lib/payments/mp";
+import type { OneTimeEvaluationMetadata } from "@/lib/payments/mp";
 
 export async function POST(
   _req: NextRequest,
@@ -28,11 +29,7 @@ export async function POST(
     include: { company: true },
   });
 
-  if (!evaluation) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  if (evaluation.companyId !== companyId) {
+  if (!evaluation || evaluation.companyId !== companyId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -47,43 +44,34 @@ export async function POST(
     );
   }
 
-  // Si ya tiene plan o unlock → no permitir checkout
-  const ent = await getUserEntitlements(session.user.id);
+  const access = await getEvaluationAccess({
+    userId: session.user.id,
+    evaluationId,
+  });
 
-  if (ent.canDownloadPdf) {
+  if (!access.exists || !access.isOwner) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (access.canViewFullReport) {
     return NextResponse.json({ error: "ALREADY_HAS_ACCESS" }, { status: 400 });
   }
 
-  const existingUnlock = await prisma.evaluationUnlock.findUnique({
-    where: {
-      userId_evaluationId: {
-        userId: session.user.id,
-        evaluationId,
-      },
-    },
-  });
+  const region = detectRegion(_req);
 
-  if (existingUnlock) {
-    return NextResponse.json({ error: "ALREADY_UNLOCKED" }, { status: 400 });
-  }
-
-  // Detectar país (simple por ahora)
-  const isArgentina = session.user.email?.endsWith(".ar");
-
-  const metadata: EvaluationUnlockMetadata = {
+  const metadata: OneTimeEvaluationMetadata = {
     userId: session.user.id,
     evaluationId,
     companyId,
-    type: "evaluation_unlock",
+    region,
+    sku: "EVALUACION_UNICA",
+    type: "evaluation_one_time",
   };
 
-  let url: string;
-
-  if (isArgentina) {
-    url = await createMercadoPagoCheckout(metadata);
-  } else {
-    url = await createLemonCheckout(metadata);
-  }
+  const url =
+    region === "AR"
+      ? await createMercadoPagoCheckout(metadata)
+      : await createLemonCheckout(metadata);
 
   return NextResponse.json({ url });
 }

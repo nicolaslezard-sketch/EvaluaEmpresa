@@ -1,8 +1,15 @@
-import type { EvaluationUnlockMetadata } from "./mp";
+import type { OneTimeEvaluationMetadata } from "./mp";
+import { PRICING } from "@/lib/pricing/config";
 
 export async function createLemonCheckout(
-  metadata: EvaluationUnlockMetadata,
+  metadata: OneTimeEvaluationMetadata,
 ): Promise<string> {
+  const variantId = PRICING.INTL.oneTime.EVALUACION_UNICA.lemon_price_id;
+
+  if (!variantId) {
+    throw new Error("Missing Lemon price id for EVALUACION_UNICA");
+  }
+
   const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
     method: "POST",
     headers: {
@@ -31,7 +38,7 @@ export async function createLemonCheckout(
           variant: {
             data: {
               type: "variants",
-              id: process.env.LEMON_VARIANT_UNLOCK_ID!,
+              id: variantId,
             },
           },
         },
@@ -46,7 +53,6 @@ export async function createLemonCheckout(
   }
 
   const json = await response.json();
-
   const url = json?.data?.attributes?.url;
 
   if (!url) {

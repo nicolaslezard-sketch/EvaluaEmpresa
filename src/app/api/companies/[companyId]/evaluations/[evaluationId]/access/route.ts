@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserEntitlements } from "@/lib/access/userAccess";
+import { getEvaluationAccess } from "@/lib/access/getEvaluationAccess";
 
 export async function GET(
   _req: NextRequest,
@@ -33,36 +33,24 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const ent = await getUserEntitlements(session.user.id);
-
-  if (ent.canDownloadPdf) {
-    return NextResponse.json({
-      hasAccess: true,
-      reason: "plan",
-    });
-  }
-
-  const unlock = await prisma.evaluationUnlock.findUnique({
-    where: {
-      userId_evaluationId: {
-        userId: session.user.id,
-        evaluationId,
-      },
-    },
+  const access = await getEvaluationAccess({
+    userId: session.user.id,
+    evaluationId,
   });
 
-  if (unlock) {
+  if (access.canViewFullReport) {
     return NextResponse.json({
       hasAccess: true,
-      reason: "unlock",
+      canViewFullReport: true,
+      canDownloadPdf: access.canDownloadPdf,
+      reason: access.reason,
     });
   }
 
-  // 🔎 Verificar pago pendiente
-  const pendingPayment = await prisma.paymentEvent.findFirst({
+  const pendingMpPayment = await prisma.paymentEvent.findFirst({
     where: {
       provider: "mp",
-      type: "payment_unlock",
+      type: "payment_one_time",
       payload: {
         path: ["metadata", "evaluationId"],
         equals: evaluationId,
@@ -70,15 +58,30 @@ export async function GET(
     },
   });
 
-  if (pendingPayment) {
+  const pendingLemonOrder = await prisma.paymentEvent.findFirst({
+    where: {
+      provider: "lemon",
+      type: "order_one_time",
+      payload: {
+        path: ["data", "attributes", "custom", "evaluationId"],
+        equals: evaluationId,
+      },
+    },
+  });
+
+  if (pendingMpPayment || pendingLemonOrder) {
     return NextResponse.json({
       hasAccess: false,
+      canViewFullReport: false,
+      canDownloadPdf: false,
       reason: "pending",
     });
   }
 
   return NextResponse.json({
     hasAccess: false,
+    canViewFullReport: false,
+    canDownloadPdf: false,
     reason: "none",
   });
 }

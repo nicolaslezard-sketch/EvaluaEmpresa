@@ -1,8 +1,8 @@
 export type Region = "AR" | "INTL";
-export type BillingPeriod = "monthly"; // (fase 1) sin trimestral/anual
-export type CheckoutKind = "subscription" | "unlock";
+export type BillingPeriod = "monthly"; // fase 1: sin trimestral/anual
+export type CheckoutKind = "subscription" | "one_time";
 export type Plan = "PRO" | "BUSINESS";
-export type UnlockSku = "REPORT_ONETIME";
+export type OneTimeSku = "EVALUACION_UNICA";
 
 export const PRICING = {
   AR: {
@@ -23,10 +23,10 @@ export const PRICING = {
         },
       },
     },
-    unlock: {
-      REPORT_ONETIME: {
+    oneTime: {
+      EVALUACION_UNICA: {
         amount: 45000,
-        mp_preference_sku: "mp_report_onetime",
+        mp_preference_sku: "mp_evaluacion_unica",
         lemon_price_id: "",
       },
     },
@@ -49,11 +49,11 @@ export const PRICING = {
         },
       },
     },
-    unlock: {
-      REPORT_ONETIME: {
+    oneTime: {
+      EVALUACION_UNICA: {
         amount: 59,
         mp_preference_sku: "",
-        lemon_price_id: process.env.LEMON_REPORT_ONETIME_PRICE_ID || "",
+        lemon_price_id: process.env.LEMON_EVALUACION_UNICA_PRICE_ID || "",
       },
     },
   },

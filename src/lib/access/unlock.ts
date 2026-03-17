@@ -7,7 +7,7 @@ export async function hasEvaluationUnlock(
   userId: string,
   evaluationId: string,
 ): Promise<boolean> {
-  const unlock = await prisma.evaluationUnlock.findUnique({
+  const unlock = await prisma.oneTimeEvaluationAccess.findUnique({
     where: {
       userId_evaluationId: {
         userId,

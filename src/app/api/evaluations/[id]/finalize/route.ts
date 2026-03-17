@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { finalizeEvaluation } from "@/lib/services/evaluations";
+import { finalizeEvaluationForUser } from "@/lib/services/evaluations";
 
 export async function POST(
   _req: NextRequest,
@@ -15,7 +15,28 @@ export async function POST(
 
   const { id } = await context.params;
 
-  const result = await finalizeEvaluation(id);
+  try {
+    const result = await finalizeEvaluationForUser(session.user.id, id);
+    return NextResponse.json(result);
+  } catch (error) {
+    const message = (error as Error).message;
 
-  return NextResponse.json(result);
+    if (message === "Evaluation not found") {
+      return NextResponse.json({ error: message }, { status: 404 });
+    }
+
+    if (message === "Forbidden") {
+      return NextResponse.json({ error: message }, { status: 403 });
+    }
+
+    if (
+      message === "Invalid evaluation state" ||
+      message === "Incomplete evaluation sections" ||
+      message === "Evaluation already finalized"
+    ) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 }

@@ -30,7 +30,7 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.evaluationUnlock.upsert({
+  await prisma.oneTimeEvaluationAccess.upsert({
     where: {
       userId_evaluationId: {
         userId: session.user.id,

@@ -9,18 +9,15 @@ export async function POST(req: NextRequest) {
 
     const eventName = event?.meta?.event_name;
 
-    // Solo procesamos órdenes creadas
     if (eventName !== "order_created") {
       return NextResponse.json({ ok: true });
     }
 
     const orderId = event?.data?.id;
-
     if (!orderId) {
       return NextResponse.json({ ok: true });
     }
 
-    // 🔒 Idempotencia
     const existing = await prisma.paymentEvent.findUnique({
       where: {
         provider_externalId: {
@@ -36,14 +33,13 @@ export async function POST(req: NextRequest) {
 
     const attributes = event?.data?.attributes;
 
-    // 🔒 Validar estado pago
     if (attributes?.status !== "paid") {
       return NextResponse.json({ ok: true });
     }
 
     const metadata = attributes?.custom;
 
-    if (!metadata || metadata.type !== "evaluation_unlock") {
+    if (!metadata || metadata.type !== "evaluation_one_time") {
       return NextResponse.json({ ok: true });
     }
 
@@ -52,18 +48,16 @@ export async function POST(req: NextRequest) {
     }
 
     await prisma.$transaction(async (tx) => {
-      // Guardar evento
       await tx.paymentEvent.create({
         data: {
           provider: "lemon",
           externalId: orderId,
-          type: "order_unlock",
+          type: "order_one_time",
           payload: event,
         },
       });
 
-      // Crear unlock (idempotente)
-      await tx.evaluationUnlock.upsert({
+      await tx.oneTimeEvaluationAccess.upsert({
         where: {
           userId_evaluationId: {
             userId: metadata.userId,

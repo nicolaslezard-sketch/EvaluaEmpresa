@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { patchDraft } from "@/lib/services/evaluations";
+import { patchDraftForUser } from "@/lib/services/evaluations";
 
 export async function PATCH(
   request: NextRequest,
@@ -14,16 +14,34 @@ export async function PATCH(
   }
 
   const { id } = await context.params;
-  const body = await request.json();
+  const body = await request.json().catch(() => null);
+
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
 
   try {
-    const updated = await patchDraft(id, body);
+    const updated = await patchDraftForUser(session.user.id, id, body);
 
     return NextResponse.json(updated);
   } catch (error) {
-    return NextResponse.json(
-      { error: (error as Error).message },
-      { status: 400 },
-    );
+    const message = (error as Error).message;
+
+    if (message === "Evaluation not found") {
+      return NextResponse.json({ error: message }, { status: 404 });
+    }
+
+    if (message === "Forbidden") {
+      return NextResponse.json({ error: message }, { status: 403 });
+    }
+
+    if (
+      message === "Evaluation not editable" ||
+      message === "Expired evaluation not editable"
+    ) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }

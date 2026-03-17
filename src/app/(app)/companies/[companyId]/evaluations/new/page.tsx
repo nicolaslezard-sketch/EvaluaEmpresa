@@ -2,8 +2,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { createOrReuseDraft } from "@/lib/services/evaluations";
-import { getUserEntitlements } from "@/lib/access/userAccess";
+import { createOrReuseDraftForUser } from "@/lib/services/evaluations";
+import { getUserEntitlements } from "@/lib/access/getEntitlements";
 
 export default async function NewEvaluationPage({
   params,
@@ -11,7 +11,10 @@ export default async function NewEvaluationPage({
   params: { companyId: string };
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login");
+
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
 
   const userId = session.user.id;
   const { companyId } = params;
@@ -20,6 +23,9 @@ export default async function NewEvaluationPage({
     where: {
       id: companyId,
       ownerId: userId,
+    },
+    select: {
+      id: true,
     },
   });
 
@@ -46,7 +52,7 @@ export default async function NewEvaluationPage({
     }
   }
 
-  const draft = await createOrReuseDraft(companyId);
+  const draft = await createOrReuseDraftForUser(userId, companyId);
 
   redirect(`/companies/${companyId}/evaluations/${draft.id}`);
 }

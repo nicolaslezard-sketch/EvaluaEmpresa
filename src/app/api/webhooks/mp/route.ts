@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PRICING } from "@/lib/pricing/config";
 
 function mapMpStatus(
   status: string,
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     const topic = body.type;
     const dataId = body.data?.id;
-    // 🔓 UNLOCK PAYMENT (one-time)
+
     if (topic === "payment" && dataId) {
       const paymentRes = await fetch(
         `https://api.mercadopago.com/v1/payments/${dataId}`,
@@ -46,30 +47,43 @@ export async function POST(req: NextRequest) {
 
       const payment = await paymentRes.json();
 
-      // 🔐 Validaciones duras
       if (payment.status !== "approved") {
         return NextResponse.json({ ok: true });
       }
 
-      if (payment.transaction_amount !== 15000) {
-        return NextResponse.json({ ok: true }); // monto incorrecto
-      }
-
       const metadata = payment.metadata;
 
-      if (metadata?.type === "evaluation_unlock") {
+      if (metadata?.type === "evaluation_one_time") {
+        const expectedAmount = PRICING.AR.oneTime.EVALUACION_UNICA.amount;
+
+        if (payment.transaction_amount !== expectedAmount) {
+          return NextResponse.json({ ok: true });
+        }
+
+        const existingEvent = await prisma.paymentEvent.findUnique({
+          where: {
+            provider_externalId: {
+              provider: "mp",
+              externalId: String(dataId),
+            },
+          },
+        });
+
+        if (existingEvent) {
+          return NextResponse.json({ ok: true });
+        }
+
         await prisma.$transaction(async (tx) => {
-          // Guardar evento para auditoría
           await tx.paymentEvent.create({
             data: {
               provider: "mp",
               externalId: String(dataId),
-              type: "payment_unlock",
+              type: "payment_one_time",
               payload: payment,
             },
           });
 
-          await tx.evaluationUnlock.upsert({
+          await tx.oneTimeEvaluationAccess.upsert({
             where: {
               userId_evaluationId: {
                 userId: metadata.userId,
@@ -83,6 +97,8 @@ export async function POST(req: NextRequest) {
             },
           });
         });
+
+        return NextResponse.json({ ok: true });
       }
 
       return NextResponse.json({ ok: true });
@@ -92,7 +108,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // 🔁 IDPOTENCIA — si ya procesamos este evento, salimos
     const existingEvent = await prisma.paymentEvent.findUnique({
       where: {
         provider_externalId: {
@@ -133,7 +148,6 @@ export async function POST(req: NextRequest) {
     const mappedStatus = mapMpStatus(subscription.status);
 
     await prisma.$transaction(async (tx) => {
-      // Guardar evento primero
       await tx.paymentEvent.create({
         data: {
           provider: "mp",
@@ -143,7 +157,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Actualizar suscripción
       await tx.subscription.upsert({
         where: { userId },
         update: {

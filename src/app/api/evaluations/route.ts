@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createOrReuseDraft } from "@/lib/services/evaluations";
-import { getUserEntitlements } from "@/lib/access/userAccess";
+import { createOrReuseDraftForUser } from "@/lib/services/evaluations";
+import { getUserEntitlements } from "@/lib/access/getEntitlements";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -15,8 +15,13 @@ export async function POST(request: NextRequest) {
   const userId = session.user.id;
   const ent = await getUserEntitlements(userId);
 
-  const body = await request.json();
-  const { companyId } = body;
+  const body = await request.json().catch(() => null);
+
+  if (!body || typeof body !== "object") {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 });
+  }
+
+  const { companyId } = body as { companyId?: string };
 
   if (!companyId) {
     return NextResponse.json(
@@ -25,11 +30,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 🔎 Validar que la empresa pertenezca al usuario
   const company = await prisma.company.findFirst({
     where: {
       id: companyId,
       ownerId: userId,
+    },
+    select: {
+      id: true,
     },
   });
 
@@ -37,7 +44,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Company not found" }, { status: 404 });
   }
 
-  // 🚫 Plan no permite crear evaluaciones
   if (!ent.canCreateEvaluation) {
     return NextResponse.json(
       { error: "Plan does not allow new evaluations" },
@@ -45,7 +51,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 🚫 Límite FREE (evaluaciones FINALIZED)
   if (ent.maxFinalizedEvaluationsTotal !== null) {
     const finalizedCount = await prisma.evaluation.count({
       where: {
@@ -68,8 +73,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // ✅ Crear o reutilizar draft
-  const draft = await createOrReuseDraft(companyId);
+  const draft = await createOrReuseDraftForUser(userId, companyId);
 
   return NextResponse.json(draft);
 }

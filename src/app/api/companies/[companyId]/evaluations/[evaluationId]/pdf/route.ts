@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getUserEntitlements } from "@/lib/access/userAccess";
+import { getEvaluationAccess } from "@/lib/access/getEvaluationAccess";
 import {
   getEvaluationPdfObject,
   uploadEvaluationPdf,
@@ -51,22 +51,13 @@ export async function GET(
     );
   }
 
-  // 🔐 Access control
-  const ent = await getUserEntitlements(session.user.id);
+  const access = await getEvaluationAccess({
+    userId: session.user.id,
+    evaluationId,
+  });
 
-  if (!ent.canDownloadPdf) {
-    const unlock = await prisma.evaluationUnlock.findUnique({
-      where: {
-        userId_evaluationId: {
-          userId: session.user.id,
-          evaluationId,
-        },
-      },
-    });
-
-    if (!unlock) {
-      return NextResponse.json({ error: "PDF_ACCESS_DENIED" }, { status: 403 });
-    }
+  if (!access.canDownloadPdf) {
+    return NextResponse.json({ error: "PDF_ACCESS_DENIED" }, { status: 403 });
   }
 
   // 🔥 GENERACIÓN ON-DEMAND

@@ -4,10 +4,10 @@ export type Entitlements = {
   plan: SubscriptionPlan;
   maxCompanies: number;
   maxFinalizedEvaluationsTotal: number | null;
-  trendDepth: number;
+  trendDepth: 0 | 3 | 6;
   canSeeAlerts: boolean;
   canCreateEvaluation: boolean;
-  canDownloadPdf: boolean;
+  canDownloadPdfBySubscription: boolean;
 };
 
 export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
@@ -20,7 +20,7 @@ export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
         trendDepth: 3,
         canSeeAlerts: false,
         canCreateEvaluation: true,
-        canDownloadPdf: true,
+        canDownloadPdfBySubscription: true,
       };
 
     case "BUSINESS":
@@ -31,7 +31,7 @@ export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
         trendDepth: 6,
         canSeeAlerts: true,
         canCreateEvaluation: true,
-        canDownloadPdf: true,
+        canDownloadPdfBySubscription: true,
       };
 
     case "FREE":
@@ -42,8 +42,8 @@ export function resolveEntitlements(plan: SubscriptionPlan): Entitlements {
         maxFinalizedEvaluationsTotal: 1,
         trendDepth: 0,
         canSeeAlerts: false,
-        canCreateEvaluation: true, // puede crear 1 evaluación
-        canDownloadPdf: false,
+        canCreateEvaluation: true,
+        canDownloadPdfBySubscription: false,
       };
   }
 }
