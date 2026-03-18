@@ -104,6 +104,20 @@ function getMostNegativeDeltas(
     .slice(0, limit);
 }
 
+function scoreState(score: number) {
+  if (score >= 80) return "strong";
+  if (score >= 65) return "stable";
+  if (score >= 50) return "vulnerable";
+  return "critical";
+}
+
+function hasMeaningfulSpread(pillars: ScorePayload["pillars"]) {
+  const values = Object.values(pillars);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  return max - min >= 8;
+}
+
 function buildExecutiveSummary({
   companyName,
   criticality,
@@ -115,21 +129,38 @@ function buildExecutiveSummary({
 >) {
   const alertCount = alerts.length;
   const criticalAlerts = alerts.filter((a) => a.severity === "CRITICAL").length;
+  const overallState = scoreState(score.overallScore);
 
-  const base =
-    `La evaluación actual de ${companyName} ubica a la empresa en la categoría ` +
-    `${score.executiveCategory.toLowerCase()} con un score general de ${score.overallScore.toFixed(1)}.`;
+  let base = "";
+
+  if (overallState === "strong") {
+    base =
+      `La evaluación actual de ${companyName} ubica a la empresa en una posición sólida, ` +
+      `con un score general de ${score.overallScore.toFixed(1)} y una exposición relativamente acotada en este ciclo.`;
+  } else if (overallState === "stable") {
+    base =
+      `La evaluación actual de ${companyName} ubica a la empresa en una posición estable, ` +
+      `con un score general de ${score.overallScore.toFixed(1)} y fundamentos razonables para sostener la relación bajo monitoreo preventivo.`;
+  } else if (overallState === "vulnerable") {
+    base =
+      `La evaluación actual de ${companyName} ubica a la empresa en una posición vulnerable, ` +
+      `con un score general de ${score.overallScore.toFixed(1)} y señales que justifican seguimiento reforzado.`;
+  } else {
+    base =
+      `La evaluación actual de ${companyName} ubica a la empresa en una posición crítica, ` +
+      `con un score general de ${score.overallScore.toFixed(1)} y necesidad de revisión prioritaria sobre los frentes más sensibles.`;
+  }
 
   const criticalityText =
     criticality === "HIGH"
-      ? " Dado que se trata de una relación de alta criticidad, cualquier desvío relevante requiere seguimiento prioritario."
+      ? " Dado que se trata de una relación de alta criticidad, cualquier desvío relevante debe tratarse con seguimiento prioritario."
       : criticality === "MEDIUM"
-        ? " Al tratarse de una relación de criticidad media, conviene mantener seguimiento periódico y revisión ante cambios relevantes."
-        : " La criticidad actual permite un seguimiento más espaciado, siempre que no aparezcan señales nuevas de deterioro.";
+        ? " Al tratarse de una relación de criticidad media, conviene sostener monitoreo periódico y revisar cambios relevantes sin demoras."
+        : " La criticidad actual permite una frecuencia de seguimiento más espaciada, siempre que no aparezcan nuevas señales de deterioro.";
 
   const alertText =
     alertCount === 0
-      ? " No se generaron alertas persistidas en este ciclo."
+      ? " No se registraron alertas persistidas en este ciclo."
       : criticalAlerts > 0
         ? ` Se registraron ${alertCount} alertas, incluyendo ${criticalAlerts} de severidad crítica.`
         : ` Se registraron ${alertCount} alertas persistidas en este ciclo.`;
@@ -144,23 +175,43 @@ function buildKeyFindings({
   const findings: string[] = [];
 
   const weakest = getWeakestPillars(score.pillars, 2);
-  const strongest = getStrongestPillars(score.pillars, 1);
+  const strongest = getStrongestPillars(score.pillars, 2);
   const negativeDeltas = getMostNegativeDeltas(deltas.pillars, 2);
+  const overallState = scoreState(score.overallScore);
+  const spread = hasMeaningfulSpread(score.pillars);
 
-  if (weakest.length > 0) {
+  if (overallState === "strong") {
     findings.push(
-      `Los pilares más débiles del ciclo actual son ${weakest
-        .map((p) => `${pillarLabel(p.key)} (${p.value.toFixed(1)})`)
-        .join(" y ")}.`,
+      `El perfil general del ciclo es sólido, con un score de ${score.overallScore.toFixed(1)} y sin señales estructurales severas inmediatas.`,
     );
-  }
 
-  if (strongest.length > 0) {
-    findings.push(
-      `El principal punto relativamente favorable se observa en ${pillarLabel(
-        strongest[0].key,
-      )} (${strongest[0].value.toFixed(1)}).`,
-    );
+    if (spread && strongest.length > 0) {
+      findings.push(
+        `Los pilares con mejor desempeño relativo son ${strongest
+          .map((p) => `${pillarLabel(p.key)} (${p.value.toFixed(1)})`)
+          .join(" y ")}.`,
+      );
+    } else {
+      findings.push(
+        "Los cinco pilares muestran un comportamiento homogéneo y favorable, sin brechas internas relevantes en este ciclo.",
+      );
+    }
+  } else {
+    if (weakest.length > 0) {
+      findings.push(
+        `Los pilares de menor desempeño relativo son ${weakest
+          .map((p) => `${pillarLabel(p.key)} (${p.value.toFixed(1)})`)
+          .join(" y ")}.`,
+      );
+    }
+
+    if (strongest.length > 0) {
+      findings.push(
+        `El frente relativamente más sólido se observa en ${pillarLabel(
+          strongest[0].key,
+        )} (${strongest[0].value.toFixed(1)}).`,
+      );
+    }
   }
 
   if (deltas.overall < 0) {
@@ -173,7 +224,7 @@ function buildKeyFindings({
     );
   } else {
     findings.push(
-      "El score general se mantiene estable respecto del ciclo anterior.",
+      "No se observa variación del score general respecto del ciclo anterior.",
     );
   }
 
@@ -194,15 +245,21 @@ function buildPriorityRisks({
   alerts,
 }: Pick<BuildReportDataInput, "criticality" | "score" | "alerts">): string[] {
   const risks: string[] = [];
-
   const weakest = getWeakestPillars(score.pillars, 2);
+  const overallState = scoreState(score.overallScore);
 
   for (const pillar of weakest) {
     if (pillar.value < 60) {
       risks.push(
         `El pilar ${pillarLabel(
           pillar.key,
-        )} presenta un nivel bajo (${pillar.value.toFixed(1)}), lo que puede afectar la confiabilidad operativa o estratégica de la relación.`,
+        )} presenta un nivel comprometido (${pillar.value.toFixed(1)}), lo que puede impactar la confiabilidad operativa, contractual o estratégica del vínculo.`,
+      );
+    } else if (pillar.value < 70 && overallState !== "strong") {
+      risks.push(
+        `El pilar ${pillarLabel(
+          pillar.key,
+        )} requiere seguimiento preventivo (${pillar.value.toFixed(1)}), ya que concentra parte relevante de la fragilidad relativa del ciclo.`,
       );
     }
   }
@@ -217,14 +274,20 @@ function buildPriorityRisks({
 
   if (criticality === "HIGH" && score.overallScore < 70) {
     risks.push(
-      "La combinación de score moderado o bajo con criticidad alta incrementa la exposición del vínculo y justifica seguimiento reforzado.",
+      "La combinación de score moderado o bajo con criticidad alta incrementa la exposición del vínculo y justifica un esquema de seguimiento reforzado.",
     );
   }
 
   if (risks.length === 0) {
-    risks.push(
-      "No se identifican riesgos prioritarios de alta urgencia en este ciclo, aunque se recomienda sostener monitoreo periódico.",
-    );
+    if (overallState === "strong") {
+      risks.push(
+        "No se identifican riesgos prioritarios de alta urgencia en este ciclo; la recomendación principal es sostener monitoreo periódico para detectar cambios tempranos.",
+      );
+    } else {
+      risks.push(
+        "No se identifican riesgos críticos inmediatos adicionales en este ciclo, aunque conviene mantener seguimiento preventivo sobre los frentes de menor desempeño relativo.",
+      );
+    }
   }
 
   return risks.slice(0, 4);
@@ -240,6 +303,8 @@ function buildRecommendations({
   "criticality" | "score" | "deltas" | "alerts"
 >): string[] {
   const recommendations: string[] = [];
+  const weakest = getWeakestPillars(score.pillars, 2);
+  const overallState = scoreState(score.overallScore);
 
   if (deltas.overall < 0) {
     recommendations.push(
@@ -247,33 +312,41 @@ function buildRecommendations({
     );
   }
 
-  const weakest = getWeakestPillars(score.pillars, 2);
   for (const pillar of weakest) {
     if (pillar.value < 65) {
       recommendations.push(
         `Profundizar el análisis del frente ${pillarLabel(
           pillar.key,
-        ).toLowerCase()} y validar medidas correctivas o controles adicionales.`,
+        ).toLowerCase()} y validar controles, mitigaciones o medidas correctivas específicas.`,
       );
     }
   }
 
   if (alerts.some((a) => a.severity === "CRITICAL")) {
     recommendations.push(
-      "Escalar internamente la revisión del caso y definir si corresponde seguimiento extraordinario o medidas de mitigación adicionales.",
+      "Escalar internamente la revisión del caso y definir si corresponde seguimiento extraordinario o medidas adicionales de mitigación.",
     );
   }
 
   if (criticality === "HIGH") {
     recommendations.push(
-      "Mantener frecuencia de monitoreo corta debido a la criticidad de la relación, aun cuando no existan incidentes inmediatos.",
+      "Mantener una frecuencia de monitoreo corta dada la criticidad de la relación, aun cuando no existan incidentes inmediatos.",
     );
   }
 
   if (recommendations.length === 0) {
-    recommendations.push(
-      "Mantener monitoreo periódico y actualizar la evaluación ante cualquier cambio relevante en la relación o en la operatoria.",
-    );
+    if (overallState === "strong") {
+      recommendations.push(
+        "Mantener monitoreo periódico estándar y actualizar la evaluación ante cualquier cambio relevante en la contraparte o en la operatoria.",
+      );
+      recommendations.push(
+        "Conservar trazabilidad documental y señales tempranas para anticipar eventuales desvíos antes del próximo ciclo.",
+      );
+    } else {
+      recommendations.push(
+        "Mantener monitoreo periódico y actualizar la evaluación ante cualquier cambio relevante en la relación o en la operatoria.",
+      );
+    }
   }
 
   return recommendations.slice(0, 4);

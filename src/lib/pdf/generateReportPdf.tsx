@@ -5,6 +5,10 @@ import {
   Text,
   View,
   StyleSheet,
+  Svg,
+  Polygon,
+  Line,
+  Circle,
 } from "@react-pdf/renderer";
 
 export type DeterministicPdfData = {
@@ -37,98 +41,348 @@ export type DeterministicPdfData = {
   };
 };
 
+const COLORS = {
+  ink: "#111827",
+  slate: "#475569",
+  muted: "#6b7280",
+  line: "#e5e7eb",
+  panel: "#f8fafc",
+  dark: "#0f172a",
+  greenBg: "#dcfce7",
+  greenText: "#166534",
+  blueBg: "#dbeafe",
+  blueText: "#1d4ed8",
+  amberBg: "#fef3c7",
+  amberText: "#b45309",
+  redBg: "#fee2e2",
+  redText: "#b91c1c",
+};
+
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontSize: 11,
+    paddingTop: 34,
+    paddingBottom: 34,
+    paddingHorizontal: 34,
+    fontSize: 10.5,
     fontFamily: "Helvetica",
-    color: "#111827",
+    color: COLORS.ink,
+    backgroundColor: "#ffffff",
   },
-  header: {
-    marginBottom: 18,
-    paddingBottom: 12,
-    borderBottom: "1 solid #e5e7eb",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 10,
-    color: "#4b5563",
-  },
-  badgeRow: {
+
+  /* Generic */
+  row: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 10,
   },
-  badge: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    border: "1 solid #d1d5db",
-    fontSize: 9,
-  },
-  scoreBox: {
-    marginTop: 16,
-    padding: 12,
-    border: "1 solid #d1d5db",
-    backgroundColor: "#f9fafb",
-  },
-  scoreLabel: {
-    fontSize: 10,
-    color: "#4b5563",
-  },
-  scoreValue: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginTop: 4,
+  spaceBetween: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   section: {
-    marginTop: 20,
+    marginTop: 18,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: "bold",
     marginBottom: 8,
+    color: COLORS.dark,
   },
-  paragraph: {
-    marginBottom: 6,
-    lineHeight: 1.45,
+  bodyText: {
+    fontSize: 10.5,
+    lineHeight: 1.5,
+    color: COLORS.slate,
   },
-  grid: {
+  smallText: {
+    fontSize: 9,
+    color: COLORS.muted,
+    lineHeight: 1.4,
+  },
+
+  /* Header */
+  topBar: {
+    borderBottom: `1 solid ${COLORS.line}`,
+    paddingBottom: 12,
+  },
+  brand: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  brandSub: {
+    marginTop: 3,
+    fontSize: 9.5,
+    color: COLORS.muted,
+  },
+  docTitle: {
+    marginTop: 16,
+    fontSize: 21,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  docMeta: {
+    marginTop: 6,
+    fontSize: 10,
+    color: COLORS.slate,
+  },
+
+  /* Badges */
+  badgeRow: {
+    flexDirection: "row",
+    marginTop: 12,
+  },
+  badgeBase: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    fontSize: 9,
+    fontWeight: "bold",
+    marginRight: 8,
+  },
+
+  /* Hero */
+  heroCard: {
+    marginTop: 18,
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 14,
+    backgroundColor: COLORS.panel,
+    padding: 18,
+  },
+  heroGrid: {
+    flexDirection: "row",
+  },
+  heroLeft: {
+    width: "43%",
+    paddingRight: 18,
+  },
+  heroRight: {
+    width: "57%",
+  },
+  heroLabel: {
+    fontSize: 9.5,
+    color: COLORS.muted,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  heroScore: {
+    fontSize: 40,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  heroCategory: {
     marginTop: 8,
+    fontSize: 11,
+    color: COLORS.slate,
+  },
+  heroDelta: {
+    marginTop: 8,
+    fontSize: 10,
+    color: COLORS.slate,
+  },
+  heroSummaryBox: {
+    borderLeft: `3 solid ${COLORS.dark}`,
+    paddingLeft: 10,
+  },
+
+  /* Progress */
+  progressWrap: {
+    marginTop: 14,
+  },
+  progressTrack: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#e5e7eb",
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: COLORS.dark,
+  },
+
+  /* KPI mini cards */
+  kpiRow: {
+    flexDirection: "row",
+    marginTop: 14,
+  },
+  kpiCard: {
+    width: "32%",
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    padding: 12,
+  },
+  kpiSpacer: {
+    width: "2%",
+  },
+  kpiLabel: {
+    fontSize: 9.5,
+    color: COLORS.muted,
+    marginBottom: 5,
+  },
+  kpiValue: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+
+  /* Pillar cards */
+  pillarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: 4,
+  },
+  pillarCard: {
+    width: "48.5%",
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    padding: 12,
+    marginBottom: 10,
+  },
+  pillarCardOdd: {
+    marginRight: "3%",
+  },
+  pillarTitle: {
+    fontSize: 10.5,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    marginBottom: 6,
+  },
+  pillarScoreRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  pillarScore: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  pillarDelta: {
+    fontSize: 9.5,
+    color: COLORS.slate,
+  },
+  barTrack: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "#e5e7eb",
+    overflow: "hidden",
+    marginBottom: 6,
+  },
+  barFill: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: COLORS.dark,
+  },
+  pillarState: {
+    fontSize: 9.5,
+    color: COLORS.slate,
+  },
+
+  /* Page 2 */
+  pageHeader: {
+    marginBottom: 14,
+    paddingBottom: 10,
+    borderBottom: `1 solid ${COLORS.line}`,
+  },
+  pageHeaderTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  pageHeaderSub: {
+    marginTop: 4,
+    fontSize: 9.5,
+    color: COLORS.muted,
+  },
+
+  twoCol: {
+    flexDirection: "row",
+    marginTop: 6,
+  },
+  colLeft: {
+    width: "51%",
+    paddingRight: 10,
+  },
+  colRight: {
+    width: "49%",
+    paddingLeft: 10,
+  },
+
+  infoCard: {
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#ffffff",
+    marginBottom: 12,
+  },
+
+  bulletRow: {
+    flexDirection: "row",
+    marginBottom: 7,
+  },
+  bulletDot: {
+    width: 8,
+    fontSize: 12,
+    color: COLORS.dark,
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 10.5,
+    lineHeight: 1.45,
+    color: COLORS.slate,
+  },
+
+  /* Table */
+  tableWrap: {
+    marginTop: 4,
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: COLORS.panel,
+    borderBottom: `1 solid ${COLORS.line}`,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
   tableRow: {
     flexDirection: "row",
-    borderBottom: "1 solid #e5e7eb",
-    paddingVertical: 6,
+    borderBottom: `1 solid ${COLORS.line}`,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
   },
-  tableHeader: {
-    fontWeight: "bold",
-    backgroundColor: "#f9fafb",
+  tableColPillar: {
+    width: "32%",
   },
-  tableCol1: {
-    width: "38%",
+  tableColScore: {
+    width: "16%",
   },
-  tableCol2: {
+  tableColDelta: {
+    width: "16%",
+  },
+  tableColState: {
     width: "18%",
   },
-  tableCol3: {
+  tableColReading: {
     width: "18%",
   },
-  tableCol4: {
-    width: "26%",
-  },
-  bullet: {
-    marginBottom: 6,
-    lineHeight: 1.4,
-  },
-  small: {
+  tableHeadText: {
     fontSize: 9,
-    color: "#6b7280",
-    marginTop: 22,
-    lineHeight: 1.4,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  tableText: {
+    fontSize: 9.5,
+    color: COLORS.slate,
+  },
+
+  /* Footer */
+  footer: {
+    marginTop: 16,
+    paddingTop: 10,
+    borderTop: `1 solid ${COLORS.line}`,
   },
 });
 
@@ -138,8 +392,13 @@ function formatScore(value: number | null) {
     : "—";
 }
 
+function safeScore(value: number | null) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
 function formatDelta(value: number | null) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "—";
+  if (typeof value !== "number" || !Number.isFinite(value))
+    return "Sin variación";
   if (value > 0) return `+${value.toFixed(1)}`;
   if (value < 0) return value.toFixed(1);
   return "0.0";
@@ -160,9 +419,307 @@ function pillarLabel(key: keyof DeterministicPdfData["pillars"]) {
   }
 }
 
+function getCategoryPalette(category: string) {
+  switch (category) {
+    case "SOLIDO":
+      return {
+        bg: COLORS.greenBg,
+        text: COLORS.greenText,
+      };
+    case "ESTABLE":
+      return {
+        bg: COLORS.blueBg,
+        text: COLORS.blueText,
+      };
+    case "VULNERABLE":
+      return {
+        bg: COLORS.amberBg,
+        text: COLORS.amberText,
+      };
+    case "CRITICO":
+      return {
+        bg: COLORS.redBg,
+        text: COLORS.redText,
+      };
+    default:
+      return {
+        bg: "#f3f4f6",
+        text: "#374151",
+      };
+  }
+}
+
+function scoreState(score: number | null) {
+  if (typeof score !== "number" || !Number.isFinite(score)) return "Sin dato";
+  if (score >= 80) return "Fuerte";
+  if (score >= 65) return "Estable";
+  if (score >= 50) return "Vulnerable";
+  return "Crítico";
+}
+
+function monitoringStatus(score: number) {
+  if (score >= 80) return "Seguimiento estándar";
+  if (score >= 65) return "Seguimiento preventivo";
+  if (score >= 50) return "Seguimiento reforzado";
+  return "Seguimiento inmediato";
+}
+
+function scoreReading(score: number) {
+  if (score >= 80) {
+    return "Perfil robusto con exposición acotada y necesidad de monitoreo estándar.";
+  }
+  if (score >= 65) {
+    return "Perfil razonablemente estable, con focos puntuales a seguir de cerca.";
+  }
+  if (score >= 50) {
+    return "Perfil vulnerable, con señales que justifican seguimiento reforzado.";
+  }
+  return "Perfil crítico, con exposición elevada y necesidad de acción prioritaria.";
+}
+
+function pickStrongestPillars(data: DeterministicPdfData) {
+  return Object.entries(data.pillars)
+    .sort((a, b) => safeScore(b[1]) - safeScore(a[1]))
+    .slice(0, 2)
+    .map(([key]) => pillarLabel(key as keyof DeterministicPdfData["pillars"]));
+}
+
+function pickWeakestPillars(data: DeterministicPdfData) {
+  return Object.entries(data.pillars)
+    .sort((a, b) => safeScore(a[1]) - safeScore(b[1]))
+    .slice(0, 2)
+    .map(([key]) => pillarLabel(key as keyof DeterministicPdfData["pillars"]));
+}
+
+function executiveHeadline(data: DeterministicPdfData) {
+  const score = safeScore(data.overallScore);
+  const company = data.companyName;
+
+  if (score >= 80) {
+    return `${company} presenta un perfil de riesgo sólido, con una posición general favorable para continuidad operativa y seguimiento periódico estándar.`;
+  }
+  if (score >= 65) {
+    return `${company} presenta un perfil de riesgo estable, con fundamentos razonables y algunos focos que conviene monitorear en próximos ciclos.`;
+  }
+  if (score >= 50) {
+    return `${company} presenta un perfil vulnerable, con señales que ameritan seguimiento reforzado y priorización de medidas preventivas.`;
+  }
+  return `${company} presenta un perfil crítico, con exposición relevante y necesidad de revisión prioritaria sobre los pilares más sensibles.`;
+}
+
+function executiveHighlights(data: DeterministicPdfData) {
+  const score = safeScore(data.overallScore);
+  const strongest = pickStrongestPillars(data);
+  const weakest = pickWeakestPillars(data);
+
+  if (score >= 80) {
+    return [
+      `Los pilares con mejor desempeño relativo son ${strongest.join(" y ")}.`,
+      "La evaluación no muestra señales severas inmediatas, aunque el monitoreo debe mantenerse activo.",
+      "Conviene sostener disciplina de revisión periódica para detectar cambios tempranos en la contraparte.",
+    ];
+  }
+
+  if (score >= 65) {
+    return [
+      `Los pilares más sólidos actualmente son ${strongest.join(" y ")}.`,
+      `Los focos de atención relativa se concentran en ${weakest.join(" y ")}.`,
+      "Se recomienda revisión preventiva antes de que los desvíos se consoliden.",
+    ];
+  }
+
+  if (score >= 50) {
+    return [
+      `Los focos de mayor fragilidad relativa se concentran en ${weakest.join(" y ")}.`,
+      "El perfil general justifica seguimiento más frecuente y revisión de exposición operativa/comercial.",
+      "La prioridad es contener deterioros antes de que impacten en continuidad, cumplimiento o relación contractual.",
+    ];
+  }
+
+  return [
+    `Los pilares más comprometidos actualmente se concentran en ${weakest.join(" y ")}.`,
+    "La exposición observada exige seguimiento inmediato y una revisión priorizada de continuidad y controles.",
+    "Se recomienda definir medidas concretas de mitigación en el corto plazo.",
+  ];
+}
+
+function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
+  const values = [
+    safeScore(data.financial),
+    safeScore(data.commercial),
+    safeScore(data.operational),
+    safeScore(data.legal),
+    safeScore(data.strategic),
+  ];
+
+  const labels = [
+    "Financiero",
+    "Comercial",
+    "Operativo",
+    "Legal",
+    "Estratégico",
+  ];
+
+  const size = 210;
+  const center = size / 2;
+  const radius = 70;
+  const levels = [20, 40, 60, 80, 100];
+
+  function pointFor(index: number, valuePct: number, r = radius) {
+    const angle = (-90 + index * 72) * (Math.PI / 180);
+    const scaled = (r * valuePct) / 100;
+    const x = center + Math.cos(angle) * scaled;
+    const y = center + Math.sin(angle) * scaled;
+    return { x, y };
+  }
+
+  function polygonPoints(pct: number) {
+    return values
+      .map((_, i) => {
+        const p = pointFor(i, pct);
+        return `${p.x},${p.y}`;
+      })
+      .join(" ");
+  }
+
+  const dataPolygon = values
+    .map((v, i) => {
+      const p = pointFor(i, v);
+      return `${p.x},${p.y}`;
+    })
+    .join(" ");
+
+  return (
+    <View style={{ alignItems: "center", marginTop: 6 }}>
+      <Svg width={size} height={size}>
+        {levels.map((level) => (
+          <Polygon
+            key={`level-${level}`}
+            points={polygonPoints(level)}
+            stroke={COLORS.line}
+            strokeWidth={1}
+            fill="none"
+          />
+        ))}
+
+        {values.map((_, i) => {
+          const p = pointFor(i, 100);
+          return (
+            <Line
+              key={`axis-${i}`}
+              x1={center}
+              y1={center}
+              x2={p.x}
+              y2={p.y}
+              stroke={COLORS.line}
+              strokeWidth={1}
+            />
+          );
+        })}
+
+        <Polygon
+          points={dataPolygon}
+          fill="#11182733"
+          stroke={COLORS.dark}
+          strokeWidth={1.5}
+        />
+
+        {values.map((v, i) => {
+          const p = pointFor(i, v);
+          return (
+            <Circle
+              key={`dot-${i}`}
+              cx={p.x}
+              cy={p.y}
+              r={3}
+              fill={COLORS.dark}
+            />
+          );
+        })}
+      </Svg>
+
+      <View style={{ width: "100%", marginTop: -8 }}>
+        {labels.map((label, i) => (
+          <Text
+            key={label}
+            style={{
+              fontSize: 8.5,
+              color: COLORS.muted,
+              textAlign: "center",
+              marginBottom: 2,
+            }}
+          >
+            {label}
+            {i < labels.length - 1 ? " · " : ""}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function PillarCard({
+  title,
+  score,
+  delta,
+  odd,
+}: {
+  title: string;
+  score: number | null;
+  delta: number | null;
+  odd?: boolean;
+}) {
+  const width = `${Math.max(0, Math.min(100, safeScore(score)))}%`;
+
+  return (
+    <View
+      style={
+        odd ? [styles.pillarCard, styles.pillarCardOdd] : styles.pillarCard
+      }
+    >
+      {" "}
+      <Text style={styles.pillarTitle}>{title}</Text>
+      <View style={styles.pillarScoreRow}>
+        <Text style={styles.pillarScore}>{formatScore(score)}</Text>
+        <Text style={styles.pillarDelta}>{formatDelta(delta)}</Text>
+      </View>
+      <View style={styles.barTrack}>
+        <View style={[styles.barFill, { width }]} />
+      </View>
+      <Text style={styles.pillarState}>{scoreState(score)}</Text>
+    </View>
+  );
+}
+
+function BulletList({
+  items,
+  emptyText,
+}: {
+  items: string[];
+  emptyText: string;
+}) {
+  if (!items.length) {
+    return <Text style={styles.bodyText}>{emptyText}</Text>;
+  }
+
+  return (
+    <View>
+      {items.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.bulletRow}>
+          <Text style={styles.bulletDot}>•</Text>
+          <Text style={styles.bulletText}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export async function generateReportPdf(
   data: DeterministicPdfData,
 ): Promise<Buffer> {
+  const categoryPalette = getCategoryPalette(data.executiveCategory);
+  const overall = safeScore(data.overallScore);
+
   const pillarRows: Array<keyof DeterministicPdfData["pillars"]> = [
     "financial",
     "commercial",
@@ -171,144 +728,307 @@ export async function generateReportPdf(
     "strategic",
   ];
 
+  const highlights = executiveHighlights(data);
+
   const doc = (
     <Document>
+      {/* PAGE 1 */}
       <Page size="A4" style={styles.page}>
-        {/* HEADER */}
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            Informe E-Score™ — {data.companyName}
+        <View style={styles.topBar}>
+          <Text style={styles.brand}>EvaluaEmpresa</Text>
+          <Text style={styles.brandSub}>
+            Monitoreo continuo de riesgo de terceros
           </Text>
-          <Text style={styles.subtitle}>
-            Fecha de generación: {data.generatedAt}
+        </View>
+
+        <Text style={styles.docTitle}>{data.companyName}</Text>
+        <Text style={styles.docMeta}>
+          Informe ejecutivo de monitoreo · Fecha de generación:{" "}
+          {data.generatedAt}
+        </Text>
+
+        <View style={styles.badgeRow}>
+          <Text
+            style={[
+              styles.badgeBase,
+              {
+                backgroundColor: "#f3f4f6",
+                color: COLORS.dark,
+              },
+            ]}
+          >
+            Criticidad: {data.companyCriticality}
           </Text>
 
-          <View style={styles.badgeRow}>
-            <Text style={styles.badge}>
-              Criticidad: {data.companyCriticality}
-            </Text>
-            <Text style={styles.badge}>
-              Categoría: {data.executiveCategory}
-            </Text>
+          <Text
+            style={[
+              styles.badgeBase,
+              {
+                backgroundColor: categoryPalette.bg,
+                color: categoryPalette.text,
+              },
+            ]}
+          >
+            Categoría: {data.executiveCategory}
+          </Text>
+
+          <Text
+            style={[
+              styles.badgeBase,
+              {
+                backgroundColor: "#eef2ff",
+                color: "#4338ca",
+              },
+            ]}
+          >
+            {monitoringStatus(overall)}
+          </Text>
+        </View>
+
+        <View style={styles.heroCard}>
+          <View style={styles.heroGrid}>
+            <View style={styles.heroLeft}>
+              <Text style={styles.heroLabel}>Score general</Text>
+              <Text style={styles.heroScore}>
+                {formatScore(data.overallScore)}
+              </Text>
+              <Text style={styles.heroCategory}>
+                {scoreState(data.overallScore)}
+              </Text>
+              <Text style={styles.heroDelta}>
+                Variación vs. ciclo anterior: {formatDelta(data.deltas.overall)}
+              </Text>
+
+              <View style={styles.progressWrap}>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${Math.max(0, Math.min(100, overall))}%` },
+                    ]}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.heroRight}>
+              <View style={styles.heroSummaryBox}>
+                <Text style={styles.sectionTitle}>Lectura ejecutiva</Text>
+                <Text style={styles.bodyText}>{executiveHeadline(data)}</Text>
+              </View>
+
+              <View style={styles.kpiRow}>
+                <View style={styles.kpiCard}>
+                  <Text style={styles.kpiLabel}>Seguimiento</Text>
+                  <Text style={styles.kpiValue}>
+                    {monitoringStatus(overall)}
+                  </Text>
+                </View>
+                <View style={styles.kpiSpacer} />
+                <View style={styles.kpiCard}>
+                  <Text style={styles.kpiLabel}>Próxima revisión</Text>
+                  <Text style={styles.kpiValue}>
+                    {data.reportData.nextReviewSuggestedDays !== null
+                      ? `${data.reportData.nextReviewSuggestedDays} días`
+                      : "Sin fecha"}
+                  </Text>
+                </View>
+                <View style={styles.kpiSpacer} />
+                <View style={styles.kpiCard}>
+                  <Text style={styles.kpiLabel}>Perfil general</Text>
+                  <Text style={styles.kpiValue}>
+                    {scoreState(data.overallScore)}
+                  </Text>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
 
-        {/* SCORE GENERAL */}
-        <View style={styles.scoreBox}>
-          <Text style={styles.scoreLabel}>Score general</Text>
-          <Text style={styles.scoreValue}>
-            {formatScore(data.overallScore)}
-          </Text>
-          <Text style={styles.paragraph}>
-            Variación vs. ciclo anterior: {formatDelta(data.deltas.overall)}
-          </Text>
-        </View>
-
-        {/* RESUMEN */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Resumen ejecutivo</Text>
-          <Text style={styles.paragraph}>
+          <Text style={styles.bodyText}>
             {data.reportData.executiveSummary}
           </Text>
         </View>
 
-        {/* PILARES */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Detalle por pilar</Text>
+          <Text style={styles.sectionTitle}>Puntos destacados del ciclo</Text>
+          <BulletList
+            items={highlights}
+            emptyText="No hay observaciones destacadas disponibles para este ciclo."
+          />
+        </View>
 
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <View style={styles.tableCol1}>
-              <Text>Pilar</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Vista por pilar</Text>
+
+          <View style={styles.pillarGrid}>
+            <PillarCard
+              title="Financiero"
+              score={data.pillars.financial}
+              delta={data.deltas.financial}
+              odd
+            />
+            <PillarCard
+              title="Comercial"
+              score={data.pillars.commercial}
+              delta={data.deltas.commercial}
+            />
+            <PillarCard
+              title="Operativo"
+              score={data.pillars.operational}
+              delta={data.deltas.operational}
+              odd
+            />
+            <PillarCard
+              title="Legal"
+              score={data.pillars.legal}
+              delta={data.deltas.legal}
+            />
+            <PillarCard
+              title="Estratégico"
+              score={data.pillars.strategic}
+              delta={data.deltas.strategic}
+              odd
+            />
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.smallText}>
+            Este documento sintetiza el estado actual de la contraparte bajo la
+            metodología E-Score™ y debe leerse como una herramienta de monitoreo
+            continuo, no como una due diligence integral.
+          </Text>
+        </View>
+      </Page>
+
+      {/* PAGE 2 */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageHeaderTitle}>
+            Detalle analítico y foco de seguimiento
+          </Text>
+          <Text style={styles.pageHeaderSub}>
+            Empresa evaluada: {data.companyName} · Categoría:{" "}
+            {data.executiveCategory}
+          </Text>
+        </View>
+
+        <View style={styles.twoCol}>
+          <View style={styles.colLeft}>
+            <View style={styles.infoCard}>
+              <Text style={styles.sectionTitle}>Radar de pilares</Text>
+              <RadarChart data={data.pillars} />
             </View>
-            <View style={styles.tableCol2}>
-              <Text>Score</Text>
-            </View>
-            <View style={styles.tableCol3}>
-              <Text>Delta</Text>
-            </View>
-            <View style={styles.tableCol4}>
-              <Text>Lectura</Text>
+
+            <View style={styles.infoCard}>
+              <Text style={styles.sectionTitle}>Hallazgos clave</Text>
+              <BulletList
+                items={data.reportData.keyFindings}
+                emptyText="No hay hallazgos clave disponibles para este ciclo."
+              />
             </View>
           </View>
 
-          {pillarRows.map((key) => {
-            const score = data.pillars[key];
-            const delta = data.deltas[key];
+          <View style={styles.colRight}>
+            <View style={styles.infoCard}>
+              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
+              <BulletList
+                items={data.reportData.priorityRisks}
+                emptyText="No hay riesgos prioritarios identificados para este ciclo."
+              />
+            </View>
 
-            return (
-              <View key={key} style={styles.tableRow}>
-                <View style={styles.tableCol1}>
-                  <Text>{pillarLabel(key)}</Text>
-                </View>
-                <View style={styles.tableCol2}>
-                  <Text>{formatScore(score)}</Text>
-                </View>
-                <View style={styles.tableCol3}>
-                  <Text>{formatDelta(delta)}</Text>
-                </View>
-                <View style={styles.tableCol4}>
-                  <Text>
-                    {typeof score === "number" && score >= 80
-                      ? "Fuerte"
-                      : typeof score === "number" && score >= 65
-                        ? "Estable"
-                        : typeof score === "number" && score >= 50
-                          ? "Vulnerable"
-                          : "Crítico"}
-                  </Text>
-                </View>
+            <View style={styles.infoCard}>
+              <Text style={styles.sectionTitle}>Recomendaciones</Text>
+              <BulletList
+                items={data.reportData.recommendations}
+                emptyText="No hay recomendaciones disponibles para este ciclo."
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Lectura por pilar</Text>
+
+          <View style={styles.tableWrap}>
+            <View style={styles.tableHeader}>
+              <View style={styles.tableColPillar}>
+                <Text style={styles.tableHeadText}>Pilar</Text>
               </View>
-            );
-          })}
+              <View style={styles.tableColScore}>
+                <Text style={styles.tableHeadText}>Score</Text>
+              </View>
+              <View style={styles.tableColDelta}>
+                <Text style={styles.tableHeadText}>Delta</Text>
+              </View>
+              <View style={styles.tableColState}>
+                <Text style={styles.tableHeadText}>Estado</Text>
+              </View>
+              <View style={styles.tableColReading}>
+                <Text style={styles.tableHeadText}>Lectura</Text>
+              </View>
+            </View>
+
+            {pillarRows.map((key, index) => {
+              const score = data.pillars[key];
+              const delta = data.deltas[key];
+
+              return (
+                <View
+                  key={key}
+                  style={
+                    index === pillarRows.length - 1
+                      ? [
+                          styles.tableRow,
+                          { borderBottom: "0 solid transparent" },
+                        ]
+                      : styles.tableRow
+                  }
+                >
+                  <View style={styles.tableColPillar}>
+                    <Text style={styles.tableText}>{pillarLabel(key)}</Text>
+                  </View>
+                  <View style={styles.tableColScore}>
+                    <Text style={styles.tableText}>{formatScore(score)}</Text>
+                  </View>
+                  <View style={styles.tableColDelta}>
+                    <Text style={styles.tableText}>{formatDelta(delta)}</Text>
+                  </View>
+                  <View style={styles.tableColState}>
+                    <Text style={styles.tableText}>{scoreState(score)}</Text>
+                  </View>
+                  <View style={styles.tableColReading}>
+                    <Text style={styles.tableText}>
+                      {scoreReading(safeScore(score))}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
         </View>
 
-        {/* HALLAZGOS */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hallazgos clave</Text>
-          {data.reportData.keyFindings.map((item, i) => (
-            <Text key={i} style={styles.bullet}>
-              • {item}
-            </Text>
-          ))}
-        </View>
-
-        {/* RIESGOS */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-          {data.reportData.priorityRisks.map((item, i) => (
-            <Text key={i} style={styles.bullet}>
-              • {item}
-            </Text>
-          ))}
-        </View>
-
-        {/* RECOMENDACIONES */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recomendaciones</Text>
-          {data.reportData.recommendations.map((item, i) => (
-            <Text key={i} style={styles.bullet}>
-              • {item}
-            </Text>
-          ))}
-        </View>
-
-        {/* PRÓXIMA REVISIÓN */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Próxima revisión sugerida</Text>
-          <Text style={styles.paragraph}>
+          <Text style={styles.sectionTitle}>Próximo ciclo sugerido</Text>
+          <Text style={styles.bodyText}>
             {data.reportData.nextReviewSuggestedDays !== null
-              ? `Se recomienda una nueva revisión en aproximadamente ${data.reportData.nextReviewSuggestedDays} días.`
+              ? `Se recomienda una nueva revisión en aproximadamente ${data.reportData.nextReviewSuggestedDays} días, ajustando la intensidad del seguimiento según la evolución de los pilares más sensibles.`
               : "No hay una sugerencia de revisión disponible para este ciclo."}
           </Text>
         </View>
 
-        {/* DISCLAIMER */}
-        <Text style={styles.small}>
-          Informe orientativo basado en información estructurada cargada en la
-          plataforma. No constituye asesoramiento legal, contable ni financiero.
-          El PDF es una exportación del sistema de monitoreo continuo y no
-          reemplaza un proceso de due diligence formal.
-        </Text>
+        <View style={styles.footer}>
+          <Text style={styles.smallText}>
+            Informe orientativo basado en información estructurada cargada en la
+            plataforma. No constituye asesoramiento legal, contable ni
+            financiero. El PDF es una exportación del sistema de monitoreo
+            continuo y no reemplaza un proceso de due diligence formal.
+          </Text>
+        </View>
       </Page>
     </Document>
   );

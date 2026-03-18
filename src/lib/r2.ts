@@ -1,26 +1,34 @@
 import { S3Client } from "@aws-sdk/client-s3";
 
-const accountId = process.env.R2_ACCOUNT_ID;
-const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+let cachedClient: S3Client | null = null;
 
-if (!accountId) {
-  throw new Error("Missing env: R2_ACCOUNT_ID");
+export function getR2Client() {
+  if (cachedClient) return cachedClient;
+
+  const accountId = process.env.R2_ACCOUNT_ID;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+
+  if (!accountId) {
+    throw new Error("Missing env: R2_ACCOUNT_ID");
+  }
+
+  if (!accessKeyId) {
+    throw new Error("Missing env: R2_ACCESS_KEY_ID");
+  }
+
+  if (!secretAccessKey) {
+    throw new Error("Missing env: R2_SECRET_ACCESS_KEY");
+  }
+
+  cachedClient = new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+
+  return cachedClient;
 }
-
-if (!accessKeyId) {
-  throw new Error("Missing env: R2_ACCESS_KEY_ID");
-}
-
-if (!secretAccessKey) {
-  throw new Error("Missing env: R2_SECRET_ACCESS_KEY");
-}
-
-export const r2 = new S3Client({
-  region: "auto",
-  endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId,
-    secretAccessKey,
-  },
-});
