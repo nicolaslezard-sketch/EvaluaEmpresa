@@ -160,6 +160,15 @@ export default async function CompanyPage({
               {latest.executiveCategory}
             </span>
           )}
+
+          {latest && (
+            <Link
+              href={`/companies/${data.id}/evaluations/${latest.id}`}
+              className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            >
+              Ver última evaluación
+            </Link>
+          )}
         </div>
       </div>
 
@@ -243,8 +252,20 @@ export default async function CompanyPage({
                 key={ev.id}
                 className="flex items-center justify-between rounded-lg border bg-white p-4"
               >
-                <div className="text-sm text-zinc-600">
-                  {new Date(ev.createdAt).toLocaleDateString()}
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-zinc-600">
+                    {new Date(ev.createdAt).toLocaleDateString()}
+                  </div>
+
+                  {ev.executiveCategory && (
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles(
+                        ev.executiveCategory,
+                      )}`}
+                    >
+                      {ev.executiveCategory}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -259,6 +280,13 @@ export default async function CompanyPage({
                       Δ {ev.deltaOverall.toFixed(1)}
                     </div>
                   )}
+
+                  <Link
+                    href={`/companies/${data.id}/evaluations/${ev.id}`}
+                    className="inline-flex rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+                  >
+                    Ver evaluación
+                  </Link>
                 </div>
               </div>
             ))}
