@@ -304,6 +304,7 @@ export default function EvaluationEditor(props: {
   =================================*/
 
   if (props.status !== "DRAFT") {
+    const accessLoading = access === null;
     const canViewFullReport = access?.canViewFullReport ?? false;
     const canDownloadPdf = access?.canDownloadPdf ?? false;
     const isPending = access?.reason === "pending";
@@ -389,7 +390,11 @@ export default function EvaluationEditor(props: {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            {canDownloadPdf ? (
+            {accessLoading ? (
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-600">
+                Verificando acceso...
+              </div>
+            ) : canDownloadPdf ? (
               <a
                 className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
                 href={`/api/companies/${props.companyId}/evaluations/${props.evaluationId}/pdf`}
@@ -414,7 +419,16 @@ export default function EvaluationEditor(props: {
           </div>
         </div>
 
-        {canViewFullReport ? (
+        {accessLoading ? (
+          <div className="rounded-2xl border bg-white p-8 shadow-sm">
+            <h2 className="text-lg font-medium text-zinc-900">
+              Cargando acceso a la evaluación
+            </h2>
+            <p className="mt-2 text-sm text-zinc-600">
+              Estamos verificando si esta evaluación tiene acceso completo.
+            </p>
+          </div>
+        ) : canViewFullReport ? (
           props.reportData ? (
             <div className="grid gap-6">
               <SectionCard title="Resumen ejecutivo">
