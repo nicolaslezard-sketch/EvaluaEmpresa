@@ -317,7 +317,7 @@ export default function EvaluationEditor(props: {
               Evaluación — {props.companyName}
             </h1>
             <div className="mt-1 text-sm text-zinc-600">
-              Criticidad:{" "}
+              Criticidad de la relación:{" "}
               <span className="font-medium text-zinc-800">
                 {props.companyCriticality}
               </span>
@@ -332,6 +332,20 @@ export default function EvaluationEditor(props: {
             >
               {props.executiveCategory ?? "Sin categoría"}
             </span>
+
+            <a
+              href={`/companies/${props.companyId}`}
+              className="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            >
+              Volver a empresa
+            </a>
+
+            <a
+              href={`/companies/${props.companyId}/evaluations/new`}
+              className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            >
+              Nueva evaluación
+            </a>
           </div>
         </div>
 
@@ -509,7 +523,7 @@ export default function EvaluationEditor(props: {
           </h1>
 
           <div className="mt-1 text-sm text-zinc-600">
-            Criticidad:{" "}
+            Criticidad de la relación:{" "}
             <span className="font-medium text-zinc-800">
               {props.companyCriticality}
             </span>

@@ -135,7 +135,7 @@ export default async function CompanyPage({
           <h1 className="text-2xl font-semibold text-zinc-900">{data.name}</h1>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-600">
-            <span>Criticidad: {data.criticality}</span>
+            <span>Criticidad de la relación: {data.criticality}</span>
             <span>•</span>
             <span>
               Última evaluación:{" "}
@@ -164,11 +164,18 @@ export default async function CompanyPage({
           {latest && (
             <Link
               href={`/companies/${data.id}/evaluations/${latest.id}`}
-              className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              className="inline-flex rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
             >
               Ver última evaluación
             </Link>
           )}
+
+          <Link
+            href={`/companies/${data.id}/evaluations/new`}
+            className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+          >
+            Nueva evaluación
+          </Link>
         </div>
       </div>
 
@@ -192,7 +199,9 @@ export default async function CompanyPage({
             </div>
 
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <div className="text-sm text-zinc-700">Criticidad</div>
+              <div className="text-sm text-zinc-700">
+                Criticidad de la relación
+              </div>
               <div className="mt-2 text-base font-medium text-zinc-900">
                 {data.criticality}
               </div>

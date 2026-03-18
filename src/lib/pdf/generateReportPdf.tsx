@@ -60,24 +60,15 @@ const COLORS = {
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 34,
-    paddingBottom: 34,
-    paddingHorizontal: 34,
+    paddingTop: 32,
+    paddingBottom: 32,
+    paddingHorizontal: 32,
     fontSize: 10.5,
     fontFamily: "Helvetica",
     color: COLORS.ink,
     backgroundColor: "#ffffff",
   },
 
-  /* Generic */
-  row: {
-    flexDirection: "row",
-  },
-  spaceBetween: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   section: {
     marginTop: 18,
   },
@@ -89,7 +80,7 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     fontSize: 10.5,
-    lineHeight: 1.5,
+    lineHeight: 1.45,
     color: COLORS.slate,
   },
   smallText: {
@@ -98,7 +89,6 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
   },
 
-  /* Header */
   topBar: {
     borderBottom: `1 solid ${COLORS.line}`,
     paddingBottom: 12,
@@ -125,10 +115,11 @@ const styles = StyleSheet.create({
     color: COLORS.slate,
   },
 
-  /* Badges */
   badgeRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     marginTop: 12,
+    rowGap: 6,
   },
   badgeBase: {
     paddingVertical: 5,
@@ -139,7 +130,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  /* Hero */
   heroCard: {
     marginTop: 18,
     border: `1 solid ${COLORS.line}`,
@@ -151,11 +141,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   heroLeft: {
-    width: "43%",
-    paddingRight: 18,
+    width: "40%",
+    paddingRight: 16,
   },
   heroRight: {
-    width: "57%",
+    width: "60%",
   },
   heroLabel: {
     fontSize: 9.5,
@@ -169,8 +159,8 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
   },
   heroCategory: {
-    marginTop: 8,
-    fontSize: 11,
+    marginTop: 6,
+    fontSize: 12,
     color: COLORS.slate,
   },
   heroDelta: {
@@ -183,7 +173,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
 
-  /* Progress */
   progressWrap: {
     marginTop: 14,
   },
@@ -199,7 +188,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.dark,
   },
 
-  /* KPI mini cards */
   kpiRow: {
     flexDirection: "row",
     marginTop: 14,
@@ -210,22 +198,97 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#ffffff",
     padding: 12,
+    minHeight: 82,
   },
   kpiSpacer: {
     width: "2%",
   },
   kpiLabel: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.muted,
     marginBottom: 5,
   },
   kpiValue: {
-    fontSize: 15,
+    fontSize: 11.5,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    lineHeight: 1.25,
+  },
+
+  infoCard: {
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#ffffff",
+    marginBottom: 12,
+  },
+
+  bulletRow: {
+    flexDirection: "row",
+    marginBottom: 7,
+  },
+  bulletDot: {
+    width: 10,
+    fontSize: 12,
+    color: COLORS.dark,
+  },
+  bulletText: {
+    flex: 1,
+    fontSize: 10.5,
+    lineHeight: 1.45,
+    color: COLORS.slate,
+  },
+
+  pageHeader: {
+    marginBottom: 14,
+    paddingBottom: 10,
+    borderBottom: `1 solid ${COLORS.line}`,
+  },
+  pageHeaderTitle: {
+    fontSize: 16,
     fontWeight: "bold",
     color: COLORS.dark,
   },
+  pageHeaderSub: {
+    marginTop: 4,
+    fontSize: 9.5,
+    color: COLORS.muted,
+  },
 
-  /* Pillar cards */
+  twoCol: {
+    flexDirection: "row",
+    marginTop: 6,
+  },
+  colLeft: {
+    width: "50%",
+    paddingRight: 8,
+  },
+  colRight: {
+    width: "50%",
+    paddingLeft: 8,
+  },
+
+  radarWrap: {
+    alignItems: "center",
+    marginTop: 4,
+  },
+  radarLegendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  radarLegendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: COLORS.dark,
+    marginRight: 6,
+  },
+  radarLegendText: {
+    fontSize: 9.5,
+    color: COLORS.slate,
+  },
+
   pillarGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -279,61 +342,6 @@ const styles = StyleSheet.create({
     color: COLORS.slate,
   },
 
-  /* Page 2 */
-  pageHeader: {
-    marginBottom: 14,
-    paddingBottom: 10,
-    borderBottom: `1 solid ${COLORS.line}`,
-  },
-  pageHeaderTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: COLORS.dark,
-  },
-  pageHeaderSub: {
-    marginTop: 4,
-    fontSize: 9.5,
-    color: COLORS.muted,
-  },
-
-  twoCol: {
-    flexDirection: "row",
-    marginTop: 6,
-  },
-  colLeft: {
-    width: "51%",
-    paddingRight: 10,
-  },
-  colRight: {
-    width: "49%",
-    paddingLeft: 10,
-  },
-
-  infoCard: {
-    border: `1 solid ${COLORS.line}`,
-    borderRadius: 12,
-    padding: 14,
-    backgroundColor: "#ffffff",
-    marginBottom: 12,
-  },
-
-  bulletRow: {
-    flexDirection: "row",
-    marginBottom: 7,
-  },
-  bulletDot: {
-    width: 8,
-    fontSize: 12,
-    color: COLORS.dark,
-  },
-  bulletText: {
-    flex: 1,
-    fontSize: 10.5,
-    lineHeight: 1.45,
-    color: COLORS.slate,
-  },
-
-  /* Table */
   tableWrap: {
     marginTop: 4,
     border: `1 solid ${COLORS.line}`,
@@ -354,19 +362,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   tableColPillar: {
-    width: "32%",
+    width: "18%",
   },
   tableColScore: {
-    width: "16%",
+    width: "13%",
   },
   tableColDelta: {
-    width: "16%",
+    width: "14%",
   },
   tableColState: {
-    width: "18%",
+    width: "15%",
   },
   tableColReading: {
-    width: "18%",
+    width: "40%",
   },
   tableHeadText: {
     fontSize: 9,
@@ -376,9 +384,9 @@ const styles = StyleSheet.create({
   tableText: {
     fontSize: 9.5,
     color: COLORS.slate,
+    lineHeight: 1.35,
   },
 
-  /* Footer */
   footer: {
     marginTop: 16,
     paddingTop: 10,
@@ -422,30 +430,15 @@ function pillarLabel(key: keyof DeterministicPdfData["pillars"]) {
 function getCategoryPalette(category: string) {
   switch (category) {
     case "SOLIDO":
-      return {
-        bg: COLORS.greenBg,
-        text: COLORS.greenText,
-      };
+      return { bg: COLORS.greenBg, text: COLORS.greenText };
     case "ESTABLE":
-      return {
-        bg: COLORS.blueBg,
-        text: COLORS.blueText,
-      };
+      return { bg: COLORS.blueBg, text: COLORS.blueText };
     case "VULNERABLE":
-      return {
-        bg: COLORS.amberBg,
-        text: COLORS.amberText,
-      };
+      return { bg: COLORS.amberBg, text: COLORS.amberText };
     case "CRITICO":
-      return {
-        bg: COLORS.redBg,
-        text: COLORS.redText,
-      };
+      return { bg: COLORS.redBg, text: COLORS.redText };
     default:
-      return {
-        bg: "#f3f4f6",
-        text: "#374151",
-      };
+      return { bg: "#f3f4f6", text: "#374151" };
   }
 }
 
@@ -462,6 +455,13 @@ function monitoringStatus(score: number) {
   if (score >= 65) return "Seguimiento preventivo";
   if (score >= 50) return "Seguimiento reforzado";
   return "Seguimiento inmediato";
+}
+
+function monitoringStatusShort(score: number) {
+  if (score >= 80) return "Estándar";
+  if (score >= 65) return "Preventivo";
+  if (score >= 50) return "Reforzado";
+  return "Inmediato";
 }
 
 function scoreReading(score: number) {
@@ -544,25 +544,17 @@ function executiveHighlights(data: DeterministicPdfData) {
 }
 
 function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
-  const values = [
-    safeScore(data.financial),
-    safeScore(data.commercial),
-    safeScore(data.operational),
-    safeScore(data.legal),
-    safeScore(data.strategic),
+  const entries = [
+    { label: "Financiero", value: safeScore(data.financial) },
+    { label: "Comercial", value: safeScore(data.commercial) },
+    { label: "Operativo", value: safeScore(data.operational) },
+    { label: "Legal", value: safeScore(data.legal) },
+    { label: "Estratégico", value: safeScore(data.strategic) },
   ];
 
-  const labels = [
-    "Financiero",
-    "Comercial",
-    "Operativo",
-    "Legal",
-    "Estratégico",
-  ];
-
-  const size = 210;
+  const size = 220;
   const center = size / 2;
-  const radius = 70;
+  const radius = 68;
   const levels = [20, 40, 60, 80, 100];
 
   function pointFor(index: number, valuePct: number, r = radius) {
@@ -574,7 +566,7 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
   }
 
   function polygonPoints(pct: number) {
-    return values
+    return entries
       .map((_, i) => {
         const p = pointFor(i, pct);
         return `${p.x},${p.y}`;
@@ -582,15 +574,15 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
       .join(" ");
   }
 
-  const dataPolygon = values
-    .map((v, i) => {
-      const p = pointFor(i, v);
+  const dataPolygon = entries
+    .map((entry, i) => {
+      const p = pointFor(i, entry.value);
       return `${p.x},${p.y}`;
     })
     .join(" ");
 
   return (
-    <View style={{ alignItems: "center", marginTop: 6 }}>
+    <View style={styles.radarWrap}>
       <Svg width={size} height={size}>
         {levels.map((level) => (
           <Polygon
@@ -602,7 +594,7 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
           />
         ))}
 
-        {values.map((_, i) => {
+        {entries.map((_, i) => {
           const p = pointFor(i, 100);
           return (
             <Line
@@ -619,13 +611,13 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 
         <Polygon
           points={dataPolygon}
-          fill="#11182733"
+          fill="#ef444466"
           stroke={COLORS.dark}
           strokeWidth={1.5}
         />
 
-        {values.map((v, i) => {
-          const p = pointFor(i, v);
+        {entries.map((entry, i) => {
+          const p = pointFor(i, entry.value);
           return (
             <Circle
               key={`dot-${i}`}
@@ -638,20 +630,14 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
         })}
       </Svg>
 
-      <View style={{ width: "100%", marginTop: -8 }}>
-        {labels.map((label, i) => (
-          <Text
-            key={label}
-            style={{
-              fontSize: 8.5,
-              color: COLORS.muted,
-              textAlign: "center",
-              marginBottom: 2,
-            }}
-          >
-            {label}
-            {i < labels.length - 1 ? " · " : ""}
-          </Text>
+      <View style={{ marginTop: 6, width: "100%" }}>
+        {entries.map((entry) => (
+          <View key={entry.label} style={styles.radarLegendRow}>
+            <View style={styles.radarLegendDot} />
+            <Text style={styles.radarLegendText}>
+              {entry.label}: {entry.value.toFixed(1)}
+            </Text>
+          </View>
         ))}
       </View>
     </View>
@@ -673,19 +659,22 @@ function PillarCard({
 
   return (
     <View
+      wrap={false}
       style={
         odd ? [styles.pillarCard, styles.pillarCardOdd] : styles.pillarCard
       }
     >
-      {" "}
       <Text style={styles.pillarTitle}>{title}</Text>
+
       <View style={styles.pillarScoreRow}>
         <Text style={styles.pillarScore}>{formatScore(score)}</Text>
         <Text style={styles.pillarDelta}>{formatDelta(delta)}</Text>
       </View>
+
       <View style={styles.barTrack}>
         <View style={[styles.barFill, { width }]} />
       </View>
+
       <Text style={styles.pillarState}>{scoreState(score)}</Text>
     </View>
   );
@@ -751,13 +740,10 @@ export async function generateReportPdf(
           <Text
             style={[
               styles.badgeBase,
-              {
-                backgroundColor: "#f3f4f6",
-                color: COLORS.dark,
-              },
+              { backgroundColor: "#f3f4f6", color: COLORS.dark },
             ]}
           >
-            Criticidad: {data.companyCriticality}
+            Criticidad de la relación: {data.companyCriticality}
           </Text>
 
           <Text
@@ -785,7 +771,7 @@ export async function generateReportPdf(
           </Text>
         </View>
 
-        <View style={styles.heroCard}>
+        <View style={styles.heroCard} wrap={false}>
           <View style={styles.heroGrid}>
             <View style={styles.heroLeft}>
               <Text style={styles.heroLabel}>Score general</Text>
@@ -821,7 +807,7 @@ export async function generateReportPdf(
                 <View style={styles.kpiCard}>
                   <Text style={styles.kpiLabel}>Seguimiento</Text>
                   <Text style={styles.kpiValue}>
-                    {monitoringStatus(overall)}
+                    {monitoringStatusShort(overall)}
                   </Text>
                 </View>
                 <View style={styles.kpiSpacer} />
@@ -860,9 +846,56 @@ export async function generateReportPdf(
           />
         </View>
 
+        <View style={styles.footer}>
+          <Text style={styles.smallText}>
+            Este documento sintetiza el estado actual de la contraparte bajo la
+            metodología E-Score™ y debe leerse como una herramienta de monitoreo
+            continuo, no como una due diligence integral.
+          </Text>
+        </View>
+      </Page>
+
+      {/* PAGE 2 */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageHeaderTitle}>
+            Vista por pilar y mapa de exposición
+          </Text>
+          <Text style={styles.pageHeaderSub}>
+            Empresa evaluada: {data.companyName} · Categoría:{" "}
+            {data.executiveCategory}
+          </Text>
+        </View>
+
+        <View style={styles.twoCol}>
+          <View style={styles.colLeft}>
+            <View style={styles.infoCard} wrap={false}>
+              <Text style={styles.sectionTitle}>Radar de pilares</Text>
+              <RadarChart data={data.pillars} />
+            </View>
+          </View>
+
+          <View style={styles.colRight}>
+            <View style={styles.infoCard} wrap={false}>
+              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
+              <BulletList
+                items={data.reportData.priorityRisks}
+                emptyText="No hay riesgos prioritarios identificados para este ciclo."
+              />
+            </View>
+
+            <View style={styles.infoCard} wrap={false}>
+              <Text style={styles.sectionTitle}>Recomendaciones</Text>
+              <BulletList
+                items={data.reportData.recommendations}
+                emptyText="No hay recomendaciones disponibles para este ciclo."
+              />
+            </View>
+          </View>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Vista por pilar</Text>
-
           <View style={styles.pillarGrid}>
             <PillarCard
               title="Financiero"
@@ -894,21 +927,13 @@ export async function generateReportPdf(
             />
           </View>
         </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.smallText}>
-            Este documento sintetiza el estado actual de la contraparte bajo la
-            metodología E-Score™ y debe leerse como una herramienta de monitoreo
-            continuo, no como una due diligence integral.
-          </Text>
-        </View>
       </Page>
 
-      {/* PAGE 2 */}
+      {/* PAGE 3 */}
       <Page size="A4" style={styles.page}>
         <View style={styles.pageHeader}>
           <Text style={styles.pageHeaderTitle}>
-            Detalle analítico y foco de seguimiento
+            Lectura detallada por pilar
           </Text>
           <Text style={styles.pageHeaderSub}>
             Empresa evaluada: {data.companyName} · Categoría:{" "}
@@ -916,38 +941,13 @@ export async function generateReportPdf(
           </Text>
         </View>
 
-        <View style={styles.twoCol}>
-          <View style={styles.colLeft}>
-            <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>Radar de pilares</Text>
-              <RadarChart data={data.pillars} />
-            </View>
-
-            <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>Hallazgos clave</Text>
-              <BulletList
-                items={data.reportData.keyFindings}
-                emptyText="No hay hallazgos clave disponibles para este ciclo."
-              />
-            </View>
-          </View>
-
-          <View style={styles.colRight}>
-            <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-              <BulletList
-                items={data.reportData.priorityRisks}
-                emptyText="No hay riesgos prioritarios identificados para este ciclo."
-              />
-            </View>
-
-            <View style={styles.infoCard}>
-              <Text style={styles.sectionTitle}>Recomendaciones</Text>
-              <BulletList
-                items={data.reportData.recommendations}
-                emptyText="No hay recomendaciones disponibles para este ciclo."
-              />
-            </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Hallazgos clave</Text>
+          <View style={styles.infoCard} wrap={false}>
+            <BulletList
+              items={data.reportData.keyFindings}
+              emptyText="No hay hallazgos clave disponibles para este ciclo."
+            />
           </View>
         </View>
 
@@ -980,6 +980,7 @@ export async function generateReportPdf(
               return (
                 <View
                   key={key}
+                  wrap={false}
                   style={
                     index === pillarRows.length - 1
                       ? [
