@@ -143,6 +143,7 @@ export default function EvaluationEditor(props: {
 
   const [isSaving, setIsSaving] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [access, setAccess] = useState<EvaluationAccessResponse | null>(null);
 
@@ -269,6 +270,34 @@ export default function EvaluationEditor(props: {
       router.refresh();
     } finally {
       setFinalizing(false);
+    }
+  }
+
+  async function discardDraft() {
+    const confirmed = window.confirm(
+      "¿Seguro que quieres descartar este borrador? Se perderán los cambios no finalizados.",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDiscarding(true);
+
+      const res = await fetch(`/api/evaluations/${props.evaluationId}`, {
+        method: "DELETE",
+        cache: "no-store",
+      });
+
+      const json = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        alert(json?.error || "No se pudo descartar el borrador.");
+        return;
+      }
+
+      window.location.href = `/companies/${props.companyId}`;
+    } finally {
+      setDiscarding(false);
     }
   }
 
@@ -535,17 +564,34 @@ export default function EvaluationEditor(props: {
           </div>
         </div>
 
-        <button
-          onClick={finalize}
-          disabled={!canFinalize || finalizing}
-          className={`rounded-lg px-4 py-2 text-sm font-medium ${
-            canFinalize && !finalizing
-              ? "bg-zinc-900 text-white hover:bg-zinc-800"
-              : "cursor-not-allowed bg-zinc-100 text-zinc-500"
-          }`}
-        >
-          {finalizing ? "Generando..." : "Generar evaluación"}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={`/companies/${props.companyId}`}
+            className="inline-flex items-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+          >
+            Volver a empresa
+          </a>
+
+          <button
+            onClick={discardDraft}
+            disabled={discarding || finalizing}
+            className="inline-flex items-center rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {discarding ? "Descartando..." : "Descartar borrador"}
+          </button>
+
+          <button
+            onClick={finalize}
+            disabled={!canFinalize || finalizing || discarding}
+            className={`rounded-lg px-4 py-2 text-sm font-medium ${
+              canFinalize && !finalizing && !discarding
+                ? "bg-zinc-900 text-white hover:bg-zinc-800"
+                : "cursor-not-allowed bg-zinc-100 text-zinc-500"
+            }`}
+          >
+            {finalizing ? "Generando..." : "Generar evaluación"}
+          </button>
+        </div>
       </div>
 
       <div className="rounded-2xl border bg-white p-5 shadow-sm">

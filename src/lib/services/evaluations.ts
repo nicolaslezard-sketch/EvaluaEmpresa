@@ -336,3 +336,20 @@ export async function finalizeEvaluationForUser(
 
   return finalized;
 }
+
+export async function discardDraftForUser(
+  userId: string,
+  evaluationId: string,
+) {
+  const evaluation = await getOwnedEvaluationOrThrow(userId, evaluationId);
+
+  if (evaluation.status !== "DRAFT") {
+    throw new Error("Only draft evaluations can be discarded");
+  }
+
+  await prisma.evaluation.delete({
+    where: { id: evaluationId },
+  });
+
+  return { success: true };
+}
