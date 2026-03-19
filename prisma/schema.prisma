@@ -8,11 +8,186 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-/**
- * =========================
- * ENUMS
- * =========================
- */
+model User {
+  id              String                    @id @default(cuid())
+  name            String?
+  email           String                    @unique
+  emailVerified   DateTime?
+  image           String?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+  accounts        Account[]
+  companies       Company[]
+  oneTimeAccesses OneTimeEvaluationAccess[]
+  sessions        Session[]
+  subscription    Subscription?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  access_token      String?
+  expires_at        Int?
+  id_token          String?
+  refresh_token     String?
+  scope             String?
+  session_state     String?
+  token_type        String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PaymentEvent {
+  id         String   @id @default(cuid())
+  provider   String
+  externalId String
+  type       String
+  payload    Json
+  createdAt  DateTime @default(now())
+
+  @@unique([provider, externalId])
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  plan               SubscriptionPlan   @default(FREE)
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  userId             String             @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([plan])
+  @@index([status])
+}
+
+model Company {
+  id           String           @id @default(cuid())
+  name         String
+  relationType String
+  sector       String?
+  size         String?
+  criticality  CriticalityLevel @default(MEDIUM)
+  description  String?
+  status       CompanyStatus    @default(ACTIVE)
+  ownerId      String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  alerts       Alert[]
+  owner        User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  evaluations  Evaluation[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model Evaluation {
+  id                String                    @id @default(cuid())
+  companyId         String
+  status            EvaluationStatus          @default(DRAFT)
+
+  /**
+   * Versionado del motor
+   */
+  engineVersion     String                    @default("1.0.0")
+
+  /**
+   * Versionado del esquema de formData
+   */
+  schemaVersion     Int                       @default(2)
+
+  /**
+   * Formulario estructurado
+   */
+  formData          Json
+
+  /**
+   * Scores determinísticos
+   */
+  overallScore      Float?
+  executiveCategory ExecutiveCategory?
+  financialScore    Float?
+  commercialScore   Float?
+  operationalScore  Float?
+  legalScore        Float?
+  strategicScore    Float?
+
+  /**
+   * Deltas
+   */
+  deltaOverall      Float?
+  deltaFinancial    Float?
+  deltaCommercial   Float?
+  deltaOperational  Float?
+  deltaLegal        Float?
+  deltaStrategic    Float?
+
+  /**
+   * Datos estructurados del reporte/export
+   */
+  reportData        Json?
+
+  /**
+   * PDF opcional
+   */
+  pdfKey            String?
+  pdfSize           Int?
+  pdfMime           String?
+
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  alerts            Alert[]
+  company           Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  oneTimeAccesses   OneTimeEvaluationAccess[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([engineVersion])
+  @@index([schemaVersion])
+}
+
+model Alert {
+  id           String        @id @default(cuid())
+  companyId    String
+  evaluationId String?
+  severity     AlertSeverity
+  type         String
+  message      String
+  createdAt    DateTime      @default(now())
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  evaluation   Evaluation?   @relation(fields: [evaluationId], references: [id])
+
+  @@index([companyId])
+  @@index([severity])
+  @@index([evaluationId])
+}
+
+model OneTimeEvaluationAccess {
+  id           String     @id @default(cuid())
+  userId       String
+  evaluationId String
+  createdAt    DateTime   @default(now())
+  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, evaluationId])
+  @@index([evaluationId])
+}
 
 enum SubscriptionPlan {
   FREE
@@ -56,240 +231,4 @@ enum AlertSeverity {
   INFO
   WARNING
   CRITICAL
-}
-
-/**
- * =========================
- * NEXTAUTH MODELS
- * =========================
- */
-
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-
-  accounts Account[]
-  sessions Session[]
-
-  subscription    Subscription?
-  companies       Company[]
-  oneTimeAccesses OneTimeEvaluationAccess[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model PaymentEvent {
-  id         String   @id @default(cuid())
-  provider   String
-  externalId String
-  type       String
-  payload    Json
-  createdAt  DateTime @default(now())
-
-  @@unique([provider, externalId])
-}
-
-/**
- * =========================
- * SUBSCRIPTION
- * =========================
- */
-
-model Subscription {
-  id String @id @default(cuid())
-
-  plan   SubscriptionPlan   @default(FREE)
-  status SubscriptionStatus @default(ACTIVE)
-
-  currentPeriodStart DateTime?
-  currentPeriodEnd   DateTime?
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([plan])
-  @@index([status])
-}
-
-/**
- * =========================
- * COMPANY
- * =========================
- */
-
-model Company {
-  id String @id @default(cuid())
-
-  name         String
-  relationType String
-  sector       String?
-  size         String?
-  criticality  CriticalityLevel @default(MEDIUM)
-
-  description String? @db.Text
-
-  status CompanyStatus @default(ACTIVE)
-
-  ownerId String
-  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-
-  evaluations Evaluation[]
-  alerts      Alert[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([ownerId])
-  @@index([status])
-}
-
-/**
- * =========================
- * EVALUATION
- * =========================
- */
-
-model Evaluation {
-  id String @id @default(cuid())
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  status EvaluationStatus @default(DRAFT)
-
-  /**
-   * Versionado del motor
-   */
-  engineVersion String @default("1.0.0")
-
-  /**
-   * Formulario estructurado
-   */
-  formData Json
-
-  /**
-   * Scores determinísticos
-   */
-  overallScore      Float?
-  executiveCategory ExecutiveCategory?
-
-  financialScore   Float?
-  commercialScore  Float?
-  operationalScore Float?
-  legalScore       Float?
-  strategicScore   Float?
-
-  /**
-   * Deltas
-   */
-  deltaOverall     Float?
-  deltaFinancial   Float?
-  deltaCommercial  Float?
-  deltaOperational Float?
-  deltaLegal       Float?
-  deltaStrategic   Float?
-
-  /**
-   * Informe narrativo IA
-   */
-  reportData Json?
-
-  /**
-   * PDF opcional
-   */
-  pdfKey  String?
-  pdfSize Int?
-  pdfMime String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  oneTimeAccesses OneTimeEvaluationAccess[]
-  alerts          Alert[]
-
-  @@index([companyId])
-  @@index([status])
-  @@index([engineVersion])
-}
-
-/**
- * =========================
- * ALERTS
- * =========================
- */
-
-model Alert {
-  id String @id @default(cuid())
-
-  companyId String
-  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
-
-  evaluationId String?
-  evaluation   Evaluation? @relation(fields: [evaluationId], references: [id])
-
-  severity AlertSeverity
-  type     String
-  message  String        @db.Text
-
-  createdAt DateTime @default(now())
-
-  @@index([companyId])
-  @@index([severity])
-  @@index([evaluationId])
-}
-
-/**
- * =========================
- * ONE-TIME UNLOCK
- * =========================
- */
-
-model OneTimeEvaluationAccess {
-  id String @id @default(cuid())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  evaluationId String
-  evaluation   Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, evaluationId])
-  @@index([evaluationId])
 }

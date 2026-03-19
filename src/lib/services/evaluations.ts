@@ -4,10 +4,11 @@ import {
   computeDeltas,
   generateAlerts,
   validateRequiredStructured,
-  type EvaluationInput,
 } from "@/lib/engine";
 import type { EvaluationFormData } from "@/lib/types/evaluationForm";
 import { buildReportData } from "@/lib/reports/buildReportData";
+import { createEmptyEvaluationFormData } from "@/lib/evaluations/createEmptyFormData";
+import { toEngineInput } from "@/lib/evaluationV2/toEngineInput";
 
 /**
  * Helper interno:
@@ -72,26 +73,13 @@ export async function createOrReuseDraftForUser(
     return existing;
   }
 
-  const previousFinalized = await prisma.evaluation.findFirst({
-    where: {
-      companyId,
-      status: "FINALIZED",
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      formData: true,
-    },
-  });
-
-  const baseFormData = previousFinalized?.formData ?? {};
-
   return prisma.evaluation.create({
     data: {
       companyId,
       status: "DRAFT",
-      formData: baseFormData,
+      engineVersion: "1.0.0",
+      schemaVersion: 2,
+      formData: createEmptyEvaluationFormData(),
     },
   });
 }
@@ -208,9 +196,11 @@ export async function finalizeEvaluationForUser(
       throw new Error("Invalid evaluation state");
     }
 
-    const validation = validateRequiredStructured(
-      evaluation.formData as EvaluationInput,
+    const engineInput = toEngineInput(
+      evaluation.formData as EvaluationFormData,
     );
+
+    const validation = validateRequiredStructured(engineInput);
 
     if (validation) {
       throw new Error("Incomplete evaluation sections");
@@ -224,8 +214,7 @@ export async function finalizeEvaluationForUser(
       orderBy: { createdAt: "desc" },
     });
 
-    const score = calculateScore(evaluation.formData as EvaluationInput);
-
+    const score = calculateScore(engineInput);
     const prevPayload = previous
       ? {
           engineVersion: previous.engineVersion,

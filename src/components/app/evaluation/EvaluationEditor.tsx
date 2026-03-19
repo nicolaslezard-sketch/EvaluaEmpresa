@@ -2,14 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { EvaluationFormData } from "@/lib/types/evaluationForm";
-
+import type {
+  EvaluationFormData,
+  FieldAssessment,
+} from "@/lib/types/evaluationForm";
 /* ===============================
    Helpers
 =================================*/
 
 function isFiniteNum(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n);
+}
+
+function getAssessmentValue(
+  field: FieldAssessment | undefined,
+): number | undefined {
+  return field?.value;
 }
 
 const FINANCIAL_FIELDS = [
@@ -47,13 +55,14 @@ const STRATEGIC_FIELDS = [
   "resilience",
 ] as const;
 
-function sectionStatusByKeys(
-  obj: Record<string, number | undefined> | undefined,
-  requiredKeys: readonly string[],
-) {
+function sectionStatusByKeys<
+  T extends Record<string, FieldAssessment | undefined>,
+>(obj: T | undefined, requiredKeys: readonly string[]) {
   if (!obj) return "empty" as const;
 
-  const filled = requiredKeys.filter((key) => isFiniteNum(obj[key])).length;
+  const filled = requiredKeys.filter((key) =>
+    isFiniteNum(getAssessmentValue(obj[key])),
+  ).length;
 
   if (filled === 0) return "empty" as const;
   if (filled < requiredKeys.length) return "partial" as const;
@@ -796,9 +805,9 @@ function PillarFields({
   value,
   onChange,
 }: {
-  fields: [string, string][];
-  value: Record<string, number | undefined>;
-  onChange: (patch: Record<string, number>) => void;
+  fields: readonly [string, string][];
+  value: Record<string, FieldAssessment | undefined>;
+  onChange: (patch: Record<string, FieldAssessment>) => void;
 }) {
   const OPTIONS = [
     { label: "Muy favorable", value: 90 },
@@ -814,12 +823,18 @@ function PillarFields({
         <label key={key} className="space-y-1.5">
           <div className="text-sm font-medium text-zinc-700">{label}</div>
           <select
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-            value={value[key] ?? ""}
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400"
+            value={value[key]?.value ?? ""}
             onChange={(e) => {
               const v = Number(e.target.value);
               if (!Number.isFinite(v)) return;
-              onChange({ [key]: v });
+
+              onChange({
+                [key]: {
+                  ...(value[key] ?? {}),
+                  value: v as 20 | 40 | 60 | 75 | 90,
+                },
+              });
             }}
           >
             <option value="" disabled className="text-zinc-500">
