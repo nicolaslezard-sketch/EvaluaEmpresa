@@ -58,6 +58,18 @@ const COLORS = {
   redText: "#b91c1c",
 };
 
+const PILLAR_COLORS = {
+  financial: "#2563eb", // azul
+  commercial: "#16a34a", // verde
+  operational: "#ea580c", // naranja
+  legal: "#dc2626", // rojo
+  strategic: "#7c3aed", // violeta
+} as const;
+
+function pillarColor(key: keyof DeterministicPdfData["pillars"]) {
+  return PILLAR_COLORS[key];
+}
+
 const styles = StyleSheet.create({
   page: {
     paddingTop: 32,
@@ -130,6 +142,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
 
+  radarLabel: { fontSize: 9, fontWeight: "bold" },
+  pillarTitleAccent: { fontSize: 10.5, fontWeight: "bold", marginBottom: 6 },
   heroCard: {
     marginTop: 18,
     border: `1 solid ${COLORS.line}`,
@@ -281,8 +295,8 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 999,
-    backgroundColor: COLORS.dark,
-    marginRight: 6,
+    marginRight: 8,
+    marginTop: 2,
   },
   radarLegendText: {
     fontSize: 9.5,
@@ -544,12 +558,42 @@ function executiveHighlights(data: DeterministicPdfData) {
 }
 
 function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
-  const entries = [
-    { label: "Financiero", value: safeScore(data.financial) },
-    { label: "Comercial", value: safeScore(data.commercial) },
-    { label: "Operativo", value: safeScore(data.operational) },
-    { label: "Legal", value: safeScore(data.legal) },
-    { label: "Estratégico", value: safeScore(data.strategic) },
+  const entries: Array<{
+    key: keyof DeterministicPdfData["pillars"];
+    label: string;
+    value: number;
+    color: string;
+  }> = [
+    {
+      key: "financial",
+      label: "Financiero",
+      value: safeScore(data.financial),
+      color: pillarColor("financial"),
+    },
+    {
+      key: "commercial",
+      label: "Comercial",
+      value: safeScore(data.commercial),
+      color: pillarColor("commercial"),
+    },
+    {
+      key: "operational",
+      label: "Operativo",
+      value: safeScore(data.operational),
+      color: pillarColor("operational"),
+    },
+    {
+      key: "legal",
+      label: "Legal",
+      value: safeScore(data.legal),
+      color: pillarColor("legal"),
+    },
+    {
+      key: "strategic",
+      label: "Estratégico",
+      value: safeScore(data.strategic),
+      color: pillarColor("strategic"),
+    },
   ];
 
   const size = 220;
@@ -594,16 +638,16 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
           />
         ))}
 
-        {entries.map((_, i) => {
+        {entries.map((entry, i) => {
           const p = pointFor(i, 100);
           return (
             <Line
-              key={`axis-${i}`}
+              key={`axis-${entry.key}`}
               x1={center}
               y1={center}
               x2={p.x}
               y2={p.y}
-              stroke={COLORS.line}
+              stroke={entry.color}
               strokeWidth={1}
             />
           );
@@ -611,7 +655,7 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 
         <Polygon
           points={dataPolygon}
-          fill="#ef444466"
+          fill="#0f172a22"
           stroke={COLORS.dark}
           strokeWidth={1.5}
         />
@@ -620,11 +664,11 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
           const p = pointFor(i, entry.value);
           return (
             <Circle
-              key={`dot-${i}`}
+              key={`dot-${entry.key}`}
               cx={p.x}
               cy={p.y}
-              r={3}
-              fill={COLORS.dark}
+              r={3.2}
+              fill={entry.color}
             />
           );
         })}
@@ -632,9 +676,16 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 
       <View style={{ marginTop: 6, width: "100%" }}>
         {entries.map((entry) => (
-          <View key={entry.label} style={styles.radarLegendRow}>
-            <View style={styles.radarLegendDot} />
-            <Text style={styles.radarLegendText}>
+          <View key={entry.key} style={styles.radarLegendRow}>
+            <View
+              style={[styles.radarLegendDot, { backgroundColor: entry.color }]}
+            />
+            <Text
+              style={[
+                styles.radarLegendText,
+                { color: entry.color, fontWeight: "bold" },
+              ]}
+            >
               {entry.label}: {entry.value.toFixed(1)}
             </Text>
           </View>
@@ -645,17 +696,20 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 }
 
 function PillarCard({
+  pillarKey,
   title,
   score,
   delta,
   odd,
 }: {
+  pillarKey: keyof DeterministicPdfData["pillars"];
   title: string;
   score: number | null;
   delta: number | null;
   odd?: boolean;
 }) {
   const width = `${Math.max(0, Math.min(100, safeScore(score)))}%`;
+  const accent = pillarColor(pillarKey);
 
   return (
     <View
@@ -664,7 +718,7 @@ function PillarCard({
         odd ? [styles.pillarCard, styles.pillarCardOdd] : styles.pillarCard
       }
     >
-      <Text style={styles.pillarTitle}>{title}</Text>
+      <Text style={[styles.pillarTitleAccent, { color: accent }]}>{title}</Text>
 
       <View style={styles.pillarScoreRow}>
         <Text style={styles.pillarScore}>{formatScore(score)}</Text>
@@ -672,7 +726,7 @@ function PillarCard({
       </View>
 
       <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width }]} />
+        <View style={[styles.barFill, { width, backgroundColor: accent }]} />
       </View>
 
       <Text style={styles.pillarState}>{scoreState(score)}</Text>
@@ -898,28 +952,33 @@ export async function generateReportPdf(
           <Text style={styles.sectionTitle}>Vista por pilar</Text>
           <View style={styles.pillarGrid}>
             <PillarCard
+              pillarKey="financial"
               title="Financiero"
               score={data.pillars.financial}
               delta={data.deltas.financial}
               odd
             />
             <PillarCard
+              pillarKey="commercial"
               title="Comercial"
               score={data.pillars.commercial}
               delta={data.deltas.commercial}
             />
             <PillarCard
+              pillarKey="operational"
               title="Operativo"
               score={data.pillars.operational}
               delta={data.deltas.operational}
               odd
             />
             <PillarCard
+              pillarKey="legal"
               title="Legal"
               score={data.pillars.legal}
               delta={data.deltas.legal}
             />
             <PillarCard
+              pillarKey="strategic"
               title="Estratégico"
               score={data.pillars.strategic}
               delta={data.deltas.strategic}
