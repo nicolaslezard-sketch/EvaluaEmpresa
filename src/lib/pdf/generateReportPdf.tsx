@@ -61,7 +61,7 @@ const COLORS = {
 const PILLAR_COLORS = {
   financial: "#2563eb", // azul
   commercial: "#16a34a", // verde
-  operational: "#ea580c", // naranja
+  operational: "#b45309", // ámbar oscuro
   legal: "#dc2626", // rojo
   strategic: "#7c3aed", // violeta
 } as const;
@@ -655,7 +655,7 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 
         <Polygon
           points={dataPolygon}
-          fill="#0f172a22"
+          fill="#0f172a18"
           stroke={COLORS.dark}
           strokeWidth={1.5}
         />
