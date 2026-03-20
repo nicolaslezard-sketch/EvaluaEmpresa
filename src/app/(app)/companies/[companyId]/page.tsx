@@ -109,9 +109,11 @@ async function getCompany(id: string, userId: string) {
     include: {
       evaluations: {
         orderBy: { createdAt: "desc" },
-      },
-      alerts: {
-        orderBy: { createdAt: "desc" },
+        include: {
+          alerts: {
+            orderBy: { createdAt: "desc" },
+          },
+        },
       },
     },
   });
@@ -156,6 +158,7 @@ export default async function CompanyPage({
 
   const latestFinalized =
     data.evaluations.find((ev) => ev.status === "FINALIZED") ?? null;
+  const activeAlerts = ent.canSeeAlerts ? (latestFinalized?.alerts ?? []) : [];
 
   const reviewStatus = getReviewStatus(latestFinalized?.createdAt);
 
@@ -438,9 +441,9 @@ export default async function CompanyPage({
         <h2 className="mb-4 text-lg font-medium text-zinc-900">Alertas</h2>
 
         {ent.canSeeAlerts ? (
-          data.alerts.length > 0 ? (
+          activeAlerts.length > 0 ? (
             <div className="space-y-3">
-              {data.alerts.map((alert) => (
+              {activeAlerts.map((alert) => (
                 <div
                   key={alert.id}
                   className={`rounded-lg border p-4 text-sm ${alertStyles(

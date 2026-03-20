@@ -23,13 +23,14 @@ export async function GET() {
         where: { status: "FINALIZED" },
         orderBy: { createdAt: "desc" },
         take: ent.trendDepth > 0 ? ent.trendDepth : 1,
+        include: {
+          alerts: ent.canSeeAlerts
+            ? {
+                orderBy: { createdAt: "desc" },
+              }
+            : false,
+        },
       },
-      alerts: ent.canSeeAlerts
-        ? {
-            orderBy: { createdAt: "desc" },
-            take: 5,
-          }
-        : false,
     },
     orderBy: { createdAt: "desc" },
   });

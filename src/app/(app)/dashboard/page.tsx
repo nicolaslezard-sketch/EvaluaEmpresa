@@ -84,13 +84,14 @@ export default async function DashboardPage() {
         where: { status: "FINALIZED" },
         orderBy: { createdAt: "desc" },
         take: ent.trendDepth > 0 ? ent.trendDepth : 1,
+        include: {
+          alerts: ent.canSeeAlerts
+            ? {
+                orderBy: { createdAt: "desc" },
+              }
+            : false,
+        },
       },
-      alerts: ent.canSeeAlerts
-        ? {
-            orderBy: { createdAt: "desc" },
-            take: 3,
-          }
-        : false,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -132,6 +133,7 @@ export default async function DashboardPage() {
         {companies.map((company) => {
           const latest = company.evaluations[0];
           const status = reviewStatus(latest?.createdAt);
+          const activeAlerts = ent.canSeeAlerts ? (latest?.alerts ?? []) : [];
 
           return (
             <div
@@ -201,15 +203,13 @@ export default async function DashboardPage() {
                     {new Date(latest.createdAt).toLocaleDateString()}
                   </div>
 
-                  {ent.canSeeAlerts &&
-                    "alerts" in company &&
-                    company.alerts.length > 0 && (
-                      <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-3 text-xs text-red-700">
-                        {company.alerts.length} alerta
-                        {company.alerts.length > 1 ? "s" : ""} activa
-                        {company.alerts.length > 1 ? "s" : ""}
-                      </div>
-                    )}
+                  {ent.canSeeAlerts && activeAlerts.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-3 text-xs text-red-700">
+                      {activeAlerts.length} alerta
+                      {activeAlerts.length > 1 ? "s" : ""} activa
+                      {activeAlerts.length > 1 ? "s" : ""}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="mt-6 text-sm text-zinc-500">

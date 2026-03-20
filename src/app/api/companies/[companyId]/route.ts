@@ -24,8 +24,12 @@ export async function GET(
     include: {
       evaluations: {
         orderBy: { createdAt: "desc" },
+        include: {
+          alerts: {
+            orderBy: { createdAt: "desc" },
+          },
+        },
       },
-      alerts: true,
     },
   });
 
