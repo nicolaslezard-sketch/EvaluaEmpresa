@@ -192,6 +192,7 @@ export default function EvaluationEditor(props: {
 
   const dirtyRef = useRef(false);
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
+  const generateButtonRef = useRef<HTMLButtonElement | null>(null);
 
   /* ===============================
      Load access for FINALIZED
@@ -335,6 +336,15 @@ export default function EvaluationEditor(props: {
     } finally {
       setCheckoutLoading(false);
     }
+  }
+
+  function scrollToGenerateButton() {
+    generateButtonRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    generateButtonRef.current?.focus();
   }
 
   /* ===============================
@@ -590,6 +600,7 @@ export default function EvaluationEditor(props: {
           </button>
 
           <button
+            ref={generateButtonRef}
             onClick={finalize}
             disabled={!canFinalize || finalizing || discarding}
             className={`rounded-lg px-4 py-2 text-sm font-medium ${
@@ -711,6 +722,26 @@ export default function EvaluationEditor(props: {
           />
         </Card>
       </div>
+      <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="text-sm font-medium text-zinc-900">
+              ¿Terminaste de completar todos los pilares?
+            </div>
+            <div className="mt-1 text-sm text-zinc-600">
+              Subí al encabezado para revisar y generar la evaluación final.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={scrollToGenerateButton}
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+          >
+            Ir a generar evaluación
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -805,17 +836,17 @@ function PillarFields({
   value,
   onChange,
 }: {
-  fields: readonly [string, string][];
+  fields: [string, string][];
   value: Record<string, FieldAssessment | undefined>;
   onChange: (patch: Record<string, FieldAssessment>) => void;
 }) {
   const OPTIONS = [
-    { label: "Muy favorable", value: 90 },
-    { label: "Favorable", value: 75 },
-    { label: "Intermedia", value: 60 },
+    { label: "Robusto", value: 90 },
+    { label: "Adecuado", value: 75 },
+    { label: "Aceptable con observaciones", value: 60 },
     { label: "Débil", value: 40 },
-    { label: "Crítica", value: 20 },
-  ];
+    { label: "Crítico", value: 20 },
+  ] as const;
 
   return (
     <div className="grid gap-3 md:grid-cols-2">
@@ -823,7 +854,7 @@ function PillarFields({
         <label key={key} className="space-y-1.5">
           <div className="text-sm font-medium text-zinc-700">{label}</div>
           <select
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-400"
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
             value={value[key]?.value ?? ""}
             onChange={(e) => {
               const v = Number(e.target.value);
