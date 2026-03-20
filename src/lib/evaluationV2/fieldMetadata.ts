@@ -66,24 +66,24 @@ export const PILLAR_ORDER: PillarKey[] = [
 ];
 
 export const PILLAR_LABELS: Record<PillarKey, string> = {
-  financial: "Financiero",
-  commercial: "Comercial",
-  operational: "Operativo",
-  legal: "Legal",
-  strategic: "Estratégico",
+  financial: "Solidez financiera",
+  commercial: "Riesgo comercial y de relación",
+  operational: "Continuidad operativa",
+  legal: "Cumplimiento y formalidad",
+  strategic: "Gobierno y seguimiento",
 };
 
 export const PILLAR_OBJECTIVES: Record<PillarKey, string> = {
   financial:
-    "Evalúa la capacidad del tercero para sostener operación y cumplir financieramente con estabilidad razonable.",
+    "Evalúa la capacidad del tercero para sostener sus compromisos financieros, mantener estabilidad económica y operar sin señales relevantes de tensión.",
   commercial:
-    "Evalúa fortaleza comercial y sostenibilidad de la generación de negocio.",
+    "Evalúa la solidez de la relación comercial, la exposición por concentración y la confiabilidad general de la contraparte.",
   operational:
-    "Mide capacidad de ejecución, continuidad y respuesta ante contingencias.",
+    "Mide la capacidad de ejecución, continuidad operativa y respuesta ante incidentes o dependencias críticas.",
   legal:
-    "Evalúa cumplimiento mínimo, formalización y contingencias legales relevantes.",
+    "Evalúa nivel de formalidad, respaldo documental, cumplimiento básico y contingencias legales o regulatorias relevantes.",
   strategic:
-    "Mide dirección, resiliencia y capacidad de sostenerse frente al entorno.",
+    "Mide la calidad del seguimiento interno, la actualización de información y la capacidad de gestionar desvíos con criterio y continuidad.",
 };
 
 export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {

@@ -6,6 +6,14 @@ import type {
   EvaluationFormData,
   FieldAssessment,
 } from "@/lib/types/evaluationForm";
+import {
+  FIELD_METADATA,
+  FIELDS_BY_PILLAR,
+  PILLAR_LABELS,
+  PILLAR_OBJECTIVES,
+  PILLAR_ORDER,
+} from "@/lib/evaluationV2/fieldMetadata";
+import type { FieldKey } from "@/lib/types/evaluationForm";
 /* ===============================
    Helpers
 =================================*/
@@ -20,40 +28,12 @@ function getAssessmentValue(
   return field?.value;
 }
 
-const FINANCIAL_FIELDS = [
-  "liquidity",
-  "debtLevel",
-  "revenueStability",
-  "externalDependency",
-] as const;
-
-const COMMERCIAL_FIELDS = [
-  "clientConcentration",
-  "competitivePosition",
-  "sectorDependency",
-  "contractGeneration",
-] as const;
-
-const OPERATIONAL_FIELDS = [
-  "keyPersonDependency",
-  "structureFormalization",
-  "operationalRisk",
-  "adaptability",
-] as const;
-
-const LEGAL_FIELDS = [
-  "compliance",
-  "litigation",
-  "contractFormalization",
-  "regulatoryRisk",
-] as const;
-
-const STRATEGIC_FIELDS = [
-  "strategicClarity",
-  "macroDependency",
-  "innovationLevel",
-  "resilience",
-] as const;
+function allComplete(fd: EvaluationFormData) {
+  return PILLAR_ORDER.every(
+    (pillar) =>
+      sectionStatusByKeys(fd[pillar], FIELDS_BY_PILLAR[pillar]) === "complete",
+  );
+}
 
 function sectionStatusByKeys<
   T extends Record<string, FieldAssessment | undefined>,
@@ -67,16 +47,6 @@ function sectionStatusByKeys<
   if (filled === 0) return "empty" as const;
   if (filled < requiredKeys.length) return "partial" as const;
   return "complete" as const;
-}
-
-function allComplete(fd: EvaluationFormData) {
-  return (
-    sectionStatusByKeys(fd.financial, FINANCIAL_FIELDS) === "complete" &&
-    sectionStatusByKeys(fd.commercial, COMMERCIAL_FIELDS) === "complete" &&
-    sectionStatusByKeys(fd.operational, OPERATIONAL_FIELDS) === "complete" &&
-    sectionStatusByKeys(fd.legal, LEGAL_FIELDS) === "complete" &&
-    sectionStatusByKeys(fd.strategic, STRATEGIC_FIELDS) === "complete"
-  );
 }
 
 function categoryStyles(category: string | null) {
@@ -157,23 +127,23 @@ export default function EvaluationEditor(props: {
   const [access, setAccess] = useState<EvaluationAccessResponse | null>(null);
 
   const financialStatus = useMemo(
-    () => sectionStatusByKeys(data.financial, FINANCIAL_FIELDS),
+    () => sectionStatusByKeys(data.financial, FIELDS_BY_PILLAR.financial),
     [data.financial],
   );
   const commercialStatus = useMemo(
-    () => sectionStatusByKeys(data.commercial, COMMERCIAL_FIELDS),
+    () => sectionStatusByKeys(data.commercial, FIELDS_BY_PILLAR.commercial),
     [data.commercial],
   );
   const operationalStatus = useMemo(
-    () => sectionStatusByKeys(data.operational, OPERATIONAL_FIELDS),
+    () => sectionStatusByKeys(data.operational, FIELDS_BY_PILLAR.operational),
     [data.operational],
   );
   const legalStatus = useMemo(
-    () => sectionStatusByKeys(data.legal, LEGAL_FIELDS),
+    () => sectionStatusByKeys(data.legal, FIELDS_BY_PILLAR.legal),
     [data.legal],
   );
   const strategicStatus = useMemo(
-    () => sectionStatusByKeys(data.strategic, STRATEGIC_FIELDS),
+    () => sectionStatusByKeys(data.strategic, FIELDS_BY_PILLAR.strategic),
     [data.strategic],
   );
 
@@ -392,7 +362,7 @@ export default function EvaluationEditor(props: {
               href={`/companies/${props.companyId}/evaluations/new`}
               className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
             >
-              Nueva evaluación
+              Nueva revisión mensual{" "}
             </a>
           </div>
         </div>
@@ -628,99 +598,50 @@ export default function EvaluationEditor(props: {
         </div>
       </div>
 
+      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        Esta revisión fue precargada con la información del último ciclo
+        finalizado. Revisá solo los cambios relevantes y generá la nueva
+        evaluación mensual.
+      </div>
+
       <div className="grid gap-4">
-        <Card title="Financiero" status={financialStatus}>
-          <PillarFields
-            fields={[
-              ["liquidity", "Liquidez actual"],
-              ["debtLevel", "Nivel de endeudamiento"],
-              ["revenueStability", "Estabilidad de ingresos"],
-              ["externalDependency", "Dependencia financiera de terceros"],
-            ]}
-            value={data.financial ?? {}}
-            onChange={(patch) =>
-              setData((d) => ({
-                ...d,
-                financial: { ...(d.financial ?? {}), ...patch },
-              }))
-            }
-          />
-        </Card>
+        {PILLAR_ORDER.map((pillar) => {
+          const status =
+            pillar === "financial"
+              ? financialStatus
+              : pillar === "commercial"
+                ? commercialStatus
+                : pillar === "operational"
+                  ? operationalStatus
+                  : pillar === "legal"
+                    ? legalStatus
+                    : strategicStatus;
 
-        <Card title="Comercial" status={commercialStatus}>
-          <PillarFields
-            fields={[
-              ["clientConcentration", "Concentración de clientes"],
-              ["competitivePosition", "Posicionamiento competitivo"],
-              ["sectorDependency", "Dependencia sectorial"],
-              ["contractGeneration", "Generación de nuevos contratos"],
-            ]}
-            value={data.commercial ?? {}}
-            onChange={(patch) =>
-              setData((d) => ({
-                ...d,
-                commercial: { ...(d.commercial ?? {}), ...patch },
-              }))
-            }
-          />
-        </Card>
+          const pillarValue = data[pillar] ?? {};
 
-        <Card title="Operativo" status={operationalStatus}>
-          <PillarFields
-            fields={[
-              ["keyPersonDependency", "Dependencia de persona clave"],
-              [
-                "structureFormalization",
-                "Estructura organizacional formalizada",
-              ],
-              ["operationalRisk", "Riesgo operativo identificado"],
-              ["adaptability", "Capacidad de adaptación"],
-            ]}
-            value={data.operational ?? {}}
-            onChange={(patch) =>
-              setData((d) => ({
-                ...d,
-                operational: { ...(d.operational ?? {}), ...patch },
-              }))
-            }
-          />
-        </Card>
-
-        <Card title="Legal" status={legalStatus}>
-          <PillarFields
-            fields={[
-              ["compliance", "Cumplimiento regulatorio"],
-              ["litigation", "Litigios activos"],
-              ["contractFormalization", "Formalización contractual"],
-              ["regulatoryRisk", "Riesgo regulatorio futuro"],
-            ]}
-            value={data.legal ?? {}}
-            onChange={(patch) =>
-              setData((d) => ({
-                ...d,
-                legal: { ...(d.legal ?? {}), ...patch },
-              }))
-            }
-          />
-        </Card>
-
-        <Card title="Estratégico" status={strategicStatus}>
-          <PillarFields
-            fields={[
-              ["strategicClarity", "Claridad estratégica"],
-              ["macroDependency", "Dependencia macroeconómica"],
-              ["innovationLevel", "Inversión en mejora / innovación"],
-              ["resilience", "Resiliencia ante shocks"],
-            ]}
-            value={data.strategic ?? {}}
-            onChange={(patch) =>
-              setData((d) => ({
-                ...d,
-                strategic: { ...(d.strategic ?? {}), ...patch },
-              }))
-            }
-          />
-        </Card>
+          return (
+            <Card
+              key={pillar}
+              title={PILLAR_LABELS[pillar]}
+              description={PILLAR_OBJECTIVES[pillar]}
+              status={status}
+            >
+              <PillarFields
+                fields={FIELDS_BY_PILLAR[pillar]}
+                value={pillarValue}
+                onChange={(patch) =>
+                  setData((d) => ({
+                    ...d,
+                    [pillar]: {
+                      ...(d[pillar] ?? {}),
+                      ...patch,
+                    },
+                  }))
+                }
+              />
+            </Card>
+          );
+        })}
       </div>
       <div className="rounded-2xl border bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -799,10 +720,12 @@ function MetricCard({
 
 function Card({
   title,
+  description,
   status,
   children,
 }: {
   title: string;
+  description?: string;
   status: "empty" | "partial" | "complete";
   children: React.ReactNode;
 }) {
@@ -822,10 +745,19 @@ function Card({
 
   return (
     <div className="rounded-2xl border bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-lg font-medium text-zinc-900">{title}</div>
-        <div className={`text-sm font-medium ${color}`}>{label}</div>
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <div className="text-lg font-medium text-zinc-900">{title}</div>
+          {description ? (
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-600">
+              {description}
+            </p>
+          ) : null}
+        </div>
+
+        <div className={`shrink-0 text-sm font-medium ${color}`}>{label}</div>
       </div>
+
       <div className="space-y-4">{children}</div>
     </div>
   );
@@ -836,49 +768,71 @@ function PillarFields({
   value,
   onChange,
 }: {
-  fields: [string, string][];
+  fields: FieldKey[];
   value: Record<string, FieldAssessment | undefined>;
   onChange: (patch: Record<string, FieldAssessment>) => void;
 }) {
-  const OPTIONS = [
-    { label: "Robusto", value: 90 },
-    { label: "Adecuado", value: 75 },
-    { label: "Aceptable con observaciones", value: 60 },
-    { label: "Débil", value: 40 },
-    { label: "Crítico", value: 20 },
-  ] as const;
-
   return (
-    <div className="grid gap-3 md:grid-cols-2">
-      {fields.map(([key, label]) => (
-        <label key={key} className="space-y-1.5">
-          <div className="text-sm font-medium text-zinc-700">{label}</div>
-          <select
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-            value={value[key]?.value ?? ""}
-            onChange={(e) => {
-              const v = Number(e.target.value);
-              if (!Number.isFinite(v)) return;
+    <div className="grid gap-4 md:grid-cols-2">
+      {fields.map((key) => {
+        const meta = FIELD_METADATA[key];
+        const selectedValue = value[key]?.value;
+        const selectedOption = meta.options.find(
+          (option) => option.value === selectedValue,
+        );
 
-              onChange({
-                [key]: {
-                  ...(value[key] ?? {}),
-                  value: v as 20 | 40 | 60 | 75 | 90,
-                },
-              });
-            }}
+        return (
+          <div
+            key={key}
+            className="rounded-xl border border-zinc-200 bg-zinc-50 p-4"
           >
-            <option value="" disabled className="text-zinc-500">
-              Seleccionar…
-            </option>
-            {OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
+            <div className="text-sm font-semibold text-zinc-900">
+              {meta.label}
+            </div>
+
+            <p className="mt-1 text-sm text-zinc-700">{meta.summary}</p>
+
+            <p className="mt-2 text-xs leading-5 text-zinc-500">
+              {meta.helpText}
+            </p>
+
+            <select
+              className="mt-3 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+              value={selectedValue ?? ""}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (!Number.isFinite(v)) return;
+
+                onChange({
+                  [key]: {
+                    ...(value[key] ?? {}),
+                    value: v as 20 | 40 | 60 | 75 | 90,
+                  },
+                });
+              }}
+            >
+              <option value="" disabled className="text-zinc-500">
+                Seleccionar…
               </option>
-            ))}
-          </select>
-        </label>
-      ))}
+
+              {meta.options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            {selectedOption ? (
+              <div className="mt-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs leading-5 text-zinc-600">
+                <span className="font-medium text-zinc-800">
+                  Criterio seleccionado:
+                </span>{" "}
+                {selectedOption.criterion}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }

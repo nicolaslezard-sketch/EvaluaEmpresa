@@ -153,10 +153,10 @@ function buildExecutiveSummary({
 
   const criticalityText =
     criticality === "HIGH"
-      ? " Dado que se trata de una relación de alta criticidad, cualquier desvío relevante debe tratarse con seguimiento prioritario."
+      ? " Dado que se trata de una relación de alta criticidad, conviene sostener seguimiento mensual y tratar cualquier desvío relevante con prioridad."
       : criticality === "MEDIUM"
-        ? " Al tratarse de una relación de criticidad media, conviene sostener monitoreo periódico y revisar cambios relevantes sin demoras."
-        : " La criticidad actual permite una frecuencia de seguimiento más espaciada, siempre que no aparezcan nuevas señales de deterioro.";
+        ? " Al tratarse de una relación de criticidad media, conviene sostener revisión mensual y validar cambios relevantes sin demoras."
+        : " Aun con criticidad baja, se recomienda revisión mensual liviana para detectar cambios tempranos y mantener el perfil actualizado.";
 
   const alertText =
     alertCount === 0
@@ -308,7 +308,7 @@ function buildRecommendations({
 
   if (deltas.overall < 0) {
     recommendations.push(
-      "Realizar una reevaluación focalizada sobre los factores que explican la caída del score general antes del próximo ciclo regular.",
+      "Realizar una revisión focalizada sobre los factores que explican la caída del score general antes del próximo cierre mensual.",
     );
   }
 
@@ -337,14 +337,14 @@ function buildRecommendations({
   if (recommendations.length === 0) {
     if (overallState === "strong") {
       recommendations.push(
-        "Mantener monitoreo periódico estándar y actualizar la evaluación ante cualquier cambio relevante en la contraparte o en la operatoria.",
+        "Mantener seguimiento mensual y actualizar la evaluación ante cualquier cambio relevante en la contraparte o en la operatoria.",
       );
       recommendations.push(
-        "Conservar trazabilidad documental y señales tempranas para anticipar eventuales desvíos antes del próximo ciclo.",
+        "Conservar trazabilidad documental y señales tempranas para anticipar eventuales desvíos antes de la próxima revisión mensual.",
       );
     } else {
       recommendations.push(
-        "Mantener monitoreo periódico y actualizar la evaluación ante cualquier cambio relevante en la relación o en la operatoria.",
+        "Mantener seguimiento mensual y actualizar la evaluación ante cualquier cambio relevante en la relación o en la operatoria.",
       );
     }
   }
@@ -352,24 +352,8 @@ function buildRecommendations({
   return recommendations.slice(0, 4);
 }
 
-function suggestNextReviewDays({
-  criticality,
-  score,
-  alerts,
-}: Pick<BuildReportDataInput, "criticality" | "score" | "alerts">):
-  | number
-  | null {
-  const hasCriticalAlert = alerts.some((a) => a.severity === "CRITICAL");
-  const hasAnyAlert = alerts.length > 0;
-
-  if (hasCriticalAlert) return 30;
-  if (criticality === "HIGH" && score.overallScore < 70) return 30;
-  if (criticality === "HIGH") return 45;
-  if (hasAnyAlert) return 60;
-  if (criticality === "MEDIUM") return 90;
-  if (criticality === "LOW" && score.overallScore >= 75) return 180;
-
-  return 120;
+function suggestNextReviewDays(): number | null {
+  return 30;
 }
 
 export function buildReportData(input: BuildReportDataInput): ReportData {
@@ -378,6 +362,6 @@ export function buildReportData(input: BuildReportDataInput): ReportData {
     keyFindings: buildKeyFindings(input),
     priorityRisks: buildPriorityRisks(input),
     recommendations: buildRecommendations(input),
-    nextReviewSuggestedDays: suggestNextReviewDays(input),
+    nextReviewSuggestedDays: suggestNextReviewDays(),
   };
 }

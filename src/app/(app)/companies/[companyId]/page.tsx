@@ -216,7 +216,7 @@ export default async function CompanyPage({
             href={`/companies/${data.id}/evaluations/new`}
             className="inline-flex rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
           >
-            Nueva evaluación
+            {latestFinalized ? "Nueva revisión mensual" : "Primera evaluación"}
           </Link>
         </div>
       </div>

@@ -59,7 +59,7 @@ export async function createOrReuseDraftForUser(
 ) {
   await getOwnedCompanyOrThrow(userId, companyId);
 
-  const existing = await prisma.evaluation.findFirst({
+  const existingDraft = await prisma.evaluation.findFirst({
     where: {
       companyId,
       status: "DRAFT",
@@ -69,9 +69,26 @@ export async function createOrReuseDraftForUser(
     },
   });
 
-  if (existing) {
-    return existing;
+  if (existingDraft) {
+    return existingDraft;
   }
+
+  const latestFinalized = await prisma.evaluation.findFirst({
+    where: {
+      companyId,
+      status: "FINALIZED",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const baseFormData =
+    latestFinalized?.formData &&
+    typeof latestFinalized.formData === "object" &&
+    !Array.isArray(latestFinalized.formData)
+      ? (structuredClone(latestFinalized.formData) as EvaluationFormData)
+      : createEmptyEvaluationFormData();
 
   return prisma.evaluation.create({
     data: {
@@ -79,7 +96,7 @@ export async function createOrReuseDraftForUser(
       status: "DRAFT",
       engineVersion: "1.0.0",
       schemaVersion: 2,
-      formData: createEmptyEvaluationFormData(),
+      formData: baseFormData,
     },
   });
 }
