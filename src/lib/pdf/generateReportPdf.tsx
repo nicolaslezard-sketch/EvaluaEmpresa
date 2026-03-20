@@ -655,7 +655,8 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 
         <Polygon
           points={dataPolygon}
-          fill="#33415518"
+          fill="#334155"
+          fillOpacity={0.12}
           stroke={COLORS.dark}
           strokeWidth={1.5}
         />
