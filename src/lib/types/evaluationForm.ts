@@ -20,6 +20,7 @@ export type MitigationStatus = "NONE" | "PARTIAL" | "DEFINED";
 
 export type FieldConditionalAnswers = {
   issueNature?: string;
+  primaryIssue?: string;
   impactLevel?: ImpactLevel;
   mitigationStatus?: MitigationStatus;
 };

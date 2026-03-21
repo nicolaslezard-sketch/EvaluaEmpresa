@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
+  ActionRecommendation,
   EvaluationFormData,
   FieldAssessment,
+  FieldKey,
 } from "@/lib/types/evaluationForm";
 import {
   FIELD_METADATA,
@@ -13,7 +15,6 @@ import {
   PILLAR_OBJECTIVES,
   PILLAR_ORDER,
 } from "@/lib/evaluationV2/fieldMetadata";
-import type { FieldKey } from "@/lib/types/evaluationForm";
 /* ===============================
    Helpers
 =================================*/
@@ -62,6 +63,31 @@ function categoryStyles(category: string | null) {
     default:
       return "bg-zinc-100 text-zinc-700";
   }
+}
+
+function getConditionalValidationErrors(fd: EvaluationFormData) {
+  const errors: string[] = [];
+
+  for (const pillar of PILLAR_ORDER) {
+    for (const fieldKey of FIELDS_BY_PILLAR[pillar]) {
+      const meta = FIELD_METADATA[fieldKey];
+      const pillarData = fd[pillar] as
+        | Record<string, FieldAssessment | undefined>
+        | undefined;
+      const field = pillarData?.[fieldKey];
+      if (!field?.value) continue;
+
+      if (field.value <= 40 && !field.rationale?.trim()) {
+        errors.push(`${meta.label}: falta explicar la situación detectada.`);
+      }
+
+      if (field.value <= 20 && !field.actionRecommendation) {
+        errors.push(`${meta.label}: falta definir una acción recomendada.`);
+      }
+    }
+  }
+
+  return errors;
 }
 
 function deltaStyles(delta: number | null) {
@@ -147,8 +173,13 @@ export default function EvaluationEditor(props: {
     [data.strategic],
   );
 
-  const canFinalize = useMemo(() => allComplete(data), [data]);
+  const conditionalValidationErrors = useMemo(
+    () => getConditionalValidationErrors(data),
+    [data],
+  );
 
+  const canFinalize =
+    allComplete(data) && conditionalValidationErrors.length === 0;
   const sectionStatuses = [
     financialStatus,
     commercialStatus,
@@ -569,6 +600,19 @@ export default function EvaluationEditor(props: {
             {discarding ? "Descartando..." : "Descartar borrador"}
           </button>
 
+          {conditionalValidationErrors.length > 0 ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <div className="font-medium">
+                Faltan detalles obligatorios en campos débiles o críticos.
+              </div>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {conditionalValidationErrors.slice(0, 5).map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
           <button
             ref={generateButtonRef}
             onClick={finalize}
@@ -763,6 +807,30 @@ function Card({
   );
 }
 
+function requiresRationale(
+  selectedValue: number | undefined,
+  threshold: number,
+) {
+  return typeof selectedValue === "number" && selectedValue <= threshold;
+}
+
+function actionLabel(action: ActionRecommendation) {
+  switch (action) {
+    case "MONITOR":
+      return "Monitorear";
+    case "REQUEST_INFO":
+      return "Solicitar información";
+    case "LIMIT_EXPOSURE":
+      return "Limitar exposición";
+    case "ESCALATE":
+      return "Escalar internamente";
+    case "REASSESS_EARLY":
+      return "Reevaluar antes";
+    default:
+      return action;
+  }
+}
+
 function PillarFields({
   fields,
   value,
@@ -776,10 +844,38 @@ function PillarFields({
     <div className="grid gap-4 md:grid-cols-2">
       {fields.map((key) => {
         const meta = FIELD_METADATA[key];
-        const selectedValue = value[key]?.value;
+        const current = value[key];
+        const selectedValue = current?.value;
         const selectedOption = meta.options.find(
           (option) => option.value === selectedValue,
         );
+
+        const showRationale = requiresRationale(
+          selectedValue,
+          meta.requiresRationaleAtOrBelow,
+        );
+        const showConditional = requiresRationale(
+          selectedValue,
+          meta.requiresConditionalAtOrBelow,
+        );
+        const showAction = requiresRationale(
+          selectedValue,
+          meta.requiresActionAtOrBelow,
+        );
+
+        const rationaleRequired =
+          selectedValue !== undefined && selectedValue <= 40;
+        const actionRequired =
+          selectedValue !== undefined && selectedValue <= 20;
+
+        function patchField(partial: Partial<FieldAssessment>) {
+          onChange({
+            [key]: {
+              ...(current ?? {}),
+              ...partial,
+            },
+          });
+        }
 
         return (
           <div
@@ -803,11 +899,28 @@ function PillarFields({
                 const v = Number(e.target.value);
                 if (!Number.isFinite(v)) return;
 
+                const nextValue = v as 20 | 40 | 60 | 75 | 90;
+
+                const nextField: FieldAssessment = {
+                  ...(current ?? {}),
+                  value: nextValue,
+                };
+
+                if (nextValue > meta.requiresRationaleAtOrBelow) {
+                  delete nextField.rationale;
+                  delete nextField.evidenceNote;
+                }
+
+                if (nextValue > meta.requiresConditionalAtOrBelow) {
+                  delete nextField.conditionalAnswers;
+                }
+
+                if (nextValue > meta.requiresActionAtOrBelow) {
+                  delete nextField.actionRecommendation;
+                }
+
                 onChange({
-                  [key]: {
-                    ...(value[key] ?? {}),
-                    value: v as 20 | 40 | 60 | 75 | 90,
-                  },
+                  [key]: nextField,
                 });
               }}
             >
@@ -828,6 +941,109 @@ function PillarFields({
                   Criterio seleccionado:
                 </span>{" "}
                 {selectedOption.criterion}
+              </div>
+            ) : null}
+
+            {showRationale ? (
+              <div className="mt-4 space-y-3 rounded-xl border border-zinc-200 bg-white p-3">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-700">
+                    ¿Qué situación explica esta evaluación?
+                    {rationaleRequired ? " *" : ""}
+                  </label>
+
+                  <textarea
+                    value={current?.rationale ?? ""}
+                    onChange={(e) =>
+                      patchField({
+                        rationale: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                    placeholder={
+                      selectedValue === 60
+                        ? "Describí la observación principal."
+                        : selectedValue === 40
+                          ? "Describí la debilidad detectada."
+                          : "Describí la situación crítica detectada."
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-zinc-700">
+                    Dato o evidencia breve
+                  </label>
+
+                  <input
+                    type="text"
+                    value={current?.evidenceNote ?? ""}
+                    onChange={(e) =>
+                      patchField({
+                        evidenceNote: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                    placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas, incidente operativo."
+                  />
+                </div>
+
+                {showConditional ? (
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-700">
+                      Tipo principal de problema
+                    </label>
+
+                    <select
+                      value={current?.conditionalAnswers?.primaryIssue ?? ""}
+                      onChange={(e) =>
+                        patchField({
+                          conditionalAnswers: {
+                            ...(current?.conditionalAnswers ?? {}),
+                            primaryIssue: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                    >
+                      <option value="">Seleccionar…</option>
+                      {meta.conditionalIssueOptions.map((issue) => (
+                        <option key={issue} value={issue}>
+                          {issue}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
+
+                {showAction ? (
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-zinc-700">
+                      Acción recomendada
+                      {actionRequired ? " *" : ""}
+                    </label>
+
+                    <select
+                      value={current?.actionRecommendation ?? ""}
+                      onChange={(e) =>
+                        patchField({
+                          actionRecommendation:
+                            (e.target.value as ActionRecommendation) ||
+                            undefined,
+                        })
+                      }
+                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                    >
+                      <option value="">Seleccionar…</option>
+                      {meta.suggestedActions.map((action) => (
+                        <option key={action} value={action}>
+                          {actionLabel(action)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>

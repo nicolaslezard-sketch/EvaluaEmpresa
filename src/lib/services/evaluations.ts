@@ -180,6 +180,37 @@ export async function patchDraftForUser(
   });
 }
 
+function validateConditionalFieldRequirements(formData: EvaluationFormData) {
+  const errors: string[] = [];
+
+  const pillars = [
+    "financial",
+    "commercial",
+    "operational",
+    "legal",
+    "strategic",
+  ] as const;
+
+  for (const pillar of pillars) {
+    const pillarData = formData[pillar];
+    if (!pillarData) continue;
+
+    for (const [fieldKey, field] of Object.entries(pillarData)) {
+      if (!field?.value) continue;
+
+      if (field.value <= 40 && !field.rationale?.trim()) {
+        errors.push(`${pillar}.${fieldKey}: rationale required`);
+      }
+
+      if (field.value <= 20 && !field.actionRecommendation) {
+        errors.push(`${pillar}.${fieldKey}: actionRecommendation required`);
+      }
+    }
+  }
+
+  return errors;
+}
+
 /**
  * 4️⃣ Finalize con ownership
  */
@@ -221,6 +252,14 @@ export async function finalizeEvaluationForUser(
 
     if (validation) {
       throw new Error("Incomplete evaluation sections");
+    }
+
+    const conditionalValidationErrors = validateConditionalFieldRequirements(
+      evaluation.formData as EvaluationFormData,
+    );
+
+    if (conditionalValidationErrors.length > 0) {
+      throw new Error("Incomplete conditional evaluation details");
     }
 
     const previous = await tx.evaluation.findFirst({
