@@ -65,6 +65,38 @@ function categoryStyles(category: string | null) {
   }
 }
 
+function findingSeverityStyles(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
+  switch (severity) {
+    case "CRITICO":
+      return "bg-red-100 text-red-700";
+    case "DEBIL":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-blue-100 text-blue-700";
+  }
+}
+
+function actionRecommendationLabel(
+  action: ReportFinding["actionRecommendation"],
+) {
+  switch (action) {
+    case "MONITOR":
+      return "Monitorear";
+    case "REQUEST_INFO":
+      return "Solicitar información";
+    case "LIMIT_EXPOSURE":
+      return "Limitar exposición";
+    case "ESCALATE":
+      return "Escalar internamente";
+    case "REASSESS_EARLY":
+      return "Reevaluar antes";
+    case "NONE":
+      return "Sin acción definida";
+    default:
+      return null;
+  }
+}
+
 function getConditionalValidationErrors(fd: EvaluationFormData) {
   const errors: string[] = [];
 
@@ -104,12 +136,33 @@ type EvaluationAccessResponse = {
   reason: "subscription" | "one_time" | "pending" | "none";
 };
 
+type ReportFinding = {
+  pillar: "financial" | "commercial" | "operational" | "legal" | "strategic";
+  pillarLabel: string;
+  fieldKey: string;
+  fieldLabel: string;
+  severity: "OBSERVACION" | "DEBIL" | "CRITICO";
+  value: 60 | 40 | 20;
+  rationale: string | null;
+  evidenceNote: string | null;
+  primaryIssue: string | null;
+  actionRecommendation:
+    | "NONE"
+    | "MONITOR"
+    | "REQUEST_INFO"
+    | "ESCALATE"
+    | "LIMIT_EXPOSURE"
+    | "REASSESS_EARLY"
+    | null;
+};
+
 type ReportData = {
   executiveSummary: string;
   keyFindings: string[];
   priorityRisks: string[];
   recommendations: string[];
   nextReviewSuggestedDays: number | null;
+  priorityFindings: ReportFinding[];
 };
 
 /* ===============================
@@ -481,6 +534,75 @@ export default function EvaluationEditor(props: {
             )}
           </div>
         </div>
+
+        {props.reportData?.priorityFindings?.length ? (
+          <SectionCard title="Hallazgos priorizados del ciclo">
+            <div className="space-y-4">
+              {props.reportData.priorityFindings.map((finding) => (
+                <div
+                  key={`${finding.pillar}-${finding.fieldKey}`}
+                  className="rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-900">
+                      {finding.fieldLabel}
+                    </span>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${findingSeverityStyles(
+                        finding.severity,
+                      )}`}
+                    >
+                      {finding.severity}
+                    </span>
+                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
+                      {finding.pillarLabel}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 space-y-2 text-sm text-zinc-700">
+                    {finding.rationale ? (
+                      <p>
+                        <span className="font-medium text-zinc-900">
+                          Situación:
+                        </span>{" "}
+                        {finding.rationale}
+                      </p>
+                    ) : null}
+
+                    {finding.evidenceNote ? (
+                      <p>
+                        <span className="font-medium text-zinc-900">
+                          Evidencia:
+                        </span>{" "}
+                        {finding.evidenceNote}
+                      </p>
+                    ) : null}
+
+                    {finding.primaryIssue ? (
+                      <p>
+                        <span className="font-medium text-zinc-900">
+                          Problema principal:
+                        </span>{" "}
+                        {finding.primaryIssue}
+                      </p>
+                    ) : null}
+
+                    {actionRecommendationLabel(finding.actionRecommendation) ? (
+                      <p>
+                        <span className="font-medium text-zinc-900">
+                          Acción sugerida:
+                        </span>{" "}
+                        {actionRecommendationLabel(
+                          finding.actionRecommendation,
+                        )}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        ) : null}
 
         {accessLoading ? (
           <div className="rounded-2xl border bg-white p-8 shadow-sm">
@@ -960,6 +1082,7 @@ function PillarFields({
                       })
                     }
                     rows={3}
+                    maxLength={280}
                     className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
                     placeholder={
                       selectedValue === 60
@@ -969,6 +1092,9 @@ function PillarFields({
                           : "Describí la situación crítica detectada."
                     }
                   />
+                  <div className="mt-1 text-right text-xs text-zinc-500">
+                    {(current?.rationale ?? "").length}/280
+                  </div>
                 </div>
 
                 <div>
@@ -984,9 +1110,13 @@ function PillarFields({
                         evidenceNote: e.target.value,
                       })
                     }
+                    maxLength={140}
                     className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
                     placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas, incidente operativo."
                   />
+                  <div className="mt-1 text-right text-xs text-zinc-500">
+                    {(current?.evidenceNote ?? "").length}/140
+                  </div>
                 </div>
 
                 {showConditional ? (

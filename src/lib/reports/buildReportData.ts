@@ -1,8 +1,31 @@
+import {
+  FIELD_METADATA,
+  PILLAR_LABELS,
+} from "@/lib/evaluationV2/fieldMetadata";
+import type {
+  ActionRecommendation,
+  EvaluationFormData,
+  FieldAssessment,
+  PillarKey,
+} from "@/lib/types/evaluationForm";
 import type {
   AlertSeverity,
   CriticalityLevel,
   ExecutiveCategory,
 } from "@prisma/client";
+
+export type ReportFinding = {
+  pillar: PillarKey;
+  pillarLabel: string;
+  fieldKey: string;
+  fieldLabel: string;
+  severity: "OBSERVACION" | "DEBIL" | "CRITICO";
+  value: 60 | 40 | 20;
+  rationale: string | null;
+  evidenceNote: string | null;
+  primaryIssue: string | null;
+  actionRecommendation: ActionRecommendation | null;
+};
 
 export type ReportData = {
   executiveSummary: string;
@@ -10,6 +33,7 @@ export type ReportData = {
   priorityRisks: string[];
   recommendations: string[];
   nextReviewSuggestedDays: number | null;
+  priorityFindings: ReportFinding[];
 };
 
 type ScorePayload = {
@@ -47,6 +71,7 @@ type BuildReportDataInput = {
   score: ScorePayload;
   deltas: DeltaPayload;
   alerts: InputAlert[];
+  formData: EvaluationFormData;
 };
 
 function pillarLabel(key: keyof ScorePayload["pillars"]) {
@@ -62,6 +87,61 @@ function pillarLabel(key: keyof ScorePayload["pillars"]) {
     case "strategic":
       return "Estratégico";
   }
+}
+
+function findingSeverityLabel(value: 60 | 40 | 20) {
+  switch (value) {
+    case 20:
+      return "CRITICO" as const;
+    case 40:
+      return "DEBIL" as const;
+    default:
+      return "OBSERVACION" as const;
+  }
+}
+
+function buildPriorityFindings(formData: EvaluationFormData): ReportFinding[] {
+  const findings: ReportFinding[] = [];
+  const pillars: PillarKey[] = [
+    "financial",
+    "commercial",
+    "operational",
+    "legal",
+    "strategic",
+  ];
+
+  for (const pillar of pillars) {
+    const pillarData = formData[pillar] as
+      | Record<string, FieldAssessment | undefined>
+      | undefined;
+
+    if (!pillarData) continue;
+
+    for (const [fieldKey, field] of Object.entries(pillarData)) {
+      if (!field?.value) continue;
+      if (field.value !== 60 && field.value !== 40 && field.value !== 20) {
+        continue;
+      }
+
+      const meta = FIELD_METADATA[fieldKey as keyof typeof FIELD_METADATA];
+      if (!meta) continue;
+
+      findings.push({
+        pillar,
+        pillarLabel: PILLAR_LABELS[pillar],
+        fieldKey,
+        fieldLabel: meta.label,
+        severity: findingSeverityLabel(field.value),
+        value: field.value,
+        rationale: field.rationale?.trim() || null,
+        evidenceNote: field.evidenceNote?.trim() || null,
+        primaryIssue: field.conditionalAnswers?.primaryIssue?.trim() || null,
+        actionRecommendation: field.actionRecommendation ?? null,
+      });
+    }
+  }
+
+  return findings.sort((a, b) => a.value - b.value).slice(0, 6);
 }
 
 function getWeakestPillars(
@@ -363,5 +443,6 @@ export function buildReportData(input: BuildReportDataInput): ReportData {
     priorityRisks: buildPriorityRisks(input),
     recommendations: buildRecommendations(input),
     nextReviewSuggestedDays: suggestNextReviewDays(),
+    priorityFindings: buildPriorityFindings(input.formData),
   };
 }

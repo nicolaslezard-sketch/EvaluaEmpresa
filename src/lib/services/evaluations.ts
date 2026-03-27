@@ -205,6 +205,14 @@ function validateConditionalFieldRequirements(formData: EvaluationFormData) {
       if (field.value <= 20 && !field.actionRecommendation) {
         errors.push(`${pillar}.${fieldKey}: actionRecommendation required`);
       }
+
+      if (field.rationale && field.rationale.length > 280) {
+        errors.push(`${pillar}.${fieldKey}: rationale too long`);
+      }
+
+      if (field.evidenceNote && field.evidenceNote.length > 140) {
+        errors.push(`${pillar}.${fieldKey}: evidenceNote too long`);
+      }
     }
   }
 
@@ -298,6 +306,7 @@ export async function finalizeEvaluationForUser(
     const reportData = buildReportData({
       companyName: evaluation.company.name,
       criticality: evaluation.company.criticality,
+      formData: evaluation.formData as EvaluationFormData,
       score: {
         overallScore: score.overallScore,
         executiveCategory: score.executiveCategory,

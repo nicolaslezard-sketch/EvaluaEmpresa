@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import EvaluationEditor from "@/components/app/evaluation/EvaluationEditor";
+import type { ReportData } from "@/lib/reports/buildReportData";
 import type { EvaluationFormData } from "@/lib/types/evaluationForm";
 
 export default async function EvaluationPage({
@@ -46,6 +47,7 @@ export default async function EvaluationPage({
         legal: evaluation.deltaLegal,
         strategic: evaluation.deltaStrategic,
       }}
+      reportData={evaluation.reportData as ReportData | null}
     />
   );
 }
