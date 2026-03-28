@@ -2,6 +2,23 @@ import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import type { CriticalityLevel } from "@prisma/client";
 
+export async function getActiveCompanyUsage(ownerId: string) {
+  const ent = await getUserEntitlements(ownerId);
+
+  const activeCount = await prisma.company.count({
+    where: {
+      ownerId,
+      status: "ACTIVE",
+    },
+  });
+
+  return {
+    plan: ent.plan,
+    used: activeCount,
+    limit: ent.maxCompanies,
+  };
+}
+
 export async function createCompany(params: {
   ownerId: string;
   name: string;
@@ -11,22 +28,12 @@ export async function createCompany(params: {
   criticality?: CriticalityLevel;
   description?: string | null;
 }) {
-  // 🔒 1. Entitlements
-  const ent = await getUserEntitlements(params.ownerId);
+  const usage = await getActiveCompanyUsage(params.ownerId);
 
-  // 🔢 2. Conteo actual
-  const companiesCount = await prisma.company.count({
-    where: {
-      ownerId: params.ownerId,
-    },
-  });
-
-  // 🛑 3. Límite de plan
-  if (companiesCount >= ent.maxCompanies) {
+  if (usage.used >= usage.limit) {
     throw new Error("PLAN_LIMIT_COMPANIES");
   }
 
-  // 🏗 4. Crear empresa
   return prisma.company.create({
     data: {
       ownerId: params.ownerId,

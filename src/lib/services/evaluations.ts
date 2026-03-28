@@ -293,13 +293,19 @@ export async function finalizeEvaluationForUser(
           },
         }
       : null;
-
+    const previousFormData =
+      previous?.formData &&
+      typeof previous.formData === "object" &&
+      !Array.isArray(previous.formData)
+        ? (previous.formData as EvaluationFormData)
+        : null;
     const deltas = computeDeltas(score, prevPayload);
 
     const baseReportData = buildReportData({
       companyName: evaluation.company.name,
       criticality: evaluation.company.criticality,
       formData: evaluation.formData as EvaluationFormData,
+      previousFormData,
       score: {
         overallScore: score.overallScore,
         executiveCategory: score.executiveCategory,
@@ -343,6 +349,7 @@ export async function finalizeEvaluationForUser(
       companyName: evaluation.company.name,
       criticality: evaluation.company.criticality,
       formData: evaluation.formData as EvaluationFormData,
+      previousFormData,
       score: {
         overallScore: score.overallScore,
         executiveCategory: score.executiveCategory,

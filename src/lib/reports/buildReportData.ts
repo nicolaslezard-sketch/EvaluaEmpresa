@@ -27,6 +27,24 @@ export type ReportFinding = {
   actionRecommendation: ActionRecommendation | null;
 };
 
+export type ReportCycleChange = {
+  kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED";
+  pillar: PillarKey;
+  pillarLabel: string;
+  fieldKey: string;
+  fieldLabel: string;
+  previousValue: number | null;
+  currentValue: number;
+  delta: number | null;
+  currentSeverity:
+    | "FAVORABLE"
+    | "ESTABLE"
+    | "OBSERVACION"
+    | "DEBIL"
+    | "CRITICO";
+  rationale: string | null;
+};
+
 export type ReportData = {
   executiveSummary: string;
   keyFindings: string[];
@@ -34,6 +52,7 @@ export type ReportData = {
   recommendations: string[];
   nextReviewSuggestedDays: number | null;
   priorityFindings: ReportFinding[];
+  relevantCycleChanges: ReportCycleChange[];
 };
 
 type ScorePayload = {
@@ -72,6 +91,7 @@ type BuildReportDataInput = {
   deltas: DeltaPayload;
   alerts: InputAlert[];
   formData: EvaluationFormData;
+  previousFormData?: EvaluationFormData | null;
 };
 
 function pillarLabel(key: keyof ScorePayload["pillars"]) {
@@ -152,6 +172,127 @@ function buildPriorityFindings(formData: EvaluationFormData): ReportFinding[] {
   }
 
   return sorted.slice(0, 6);
+}
+
+function cycleSeverityLabel(
+  value: number | undefined,
+): "FAVORABLE" | "ESTABLE" | "OBSERVACION" | "DEBIL" | "CRITICO" {
+  if (value === 20) return "CRITICO";
+  if (value === 40) return "DEBIL";
+  if (value === 60) return "OBSERVACION";
+  if (value === 75) return "ESTABLE";
+  return "FAVORABLE";
+}
+
+function buildRelevantCycleChanges(
+  currentFormData: EvaluationFormData,
+  previousFormData?: EvaluationFormData | null,
+): ReportCycleChange[] {
+  if (!previousFormData) return [];
+
+  const pillars: PillarKey[] = [
+    "financial",
+    "commercial",
+    "operational",
+    "legal",
+    "strategic",
+  ];
+
+  const worsened: ReportCycleChange[] = [];
+  const persisting: ReportCycleChange[] = [];
+  const improved: ReportCycleChange[] = [];
+
+  for (const pillar of pillars) {
+    const currentPillar = currentFormData[pillar] as
+      | Record<string, FieldAssessment | undefined>
+      | undefined;
+
+    const previousPillar = previousFormData[pillar] as
+      | Record<string, FieldAssessment | undefined>
+      | undefined;
+
+    if (!currentPillar) continue;
+
+    for (const [fieldKey, currentField] of Object.entries(currentPillar)) {
+      const currentValue = currentField?.value;
+      const previousValue = previousPillar?.[fieldKey]?.value;
+
+      if (
+        typeof currentValue !== "number" ||
+        typeof previousValue !== "number"
+      ) {
+        continue;
+      }
+
+      const meta = FIELD_METADATA[fieldKey as keyof typeof FIELD_METADATA];
+      if (!meta) continue;
+
+      const delta = currentValue - previousValue;
+
+      const base: ReportCycleChange = {
+        kind: "WORSENED",
+        pillar,
+        pillarLabel: PILLAR_LABELS[pillar],
+        fieldKey,
+        fieldLabel: meta.label,
+        previousValue,
+        currentValue,
+        delta,
+        currentSeverity: cycleSeverityLabel(currentValue),
+        rationale: currentField?.rationale?.trim() || null,
+      };
+
+      if (delta < 0) {
+        worsened.push({
+          ...base,
+          kind: "WORSENED",
+        });
+        continue;
+      }
+
+      if (delta > 0) {
+        improved.push({
+          ...base,
+          kind: "IMPROVED",
+        });
+        continue;
+      }
+
+      if (currentValue <= 40 && previousValue <= 40) {
+        persisting.push({
+          ...base,
+          kind: "PERSISTING_RISK",
+        });
+      }
+    }
+  }
+
+  worsened.sort((a, b) => {
+    if ((a.currentValue ?? 999) !== (b.currentValue ?? 999)) {
+      return (a.currentValue ?? 999) - (b.currentValue ?? 999);
+    }
+    return (a.delta ?? 0) - (b.delta ?? 0);
+  });
+
+  persisting.sort((a, b) => {
+    if ((a.currentValue ?? 999) !== (b.currentValue ?? 999)) {
+      return (a.currentValue ?? 999) - (b.currentValue ?? 999);
+    }
+    return a.fieldLabel.localeCompare(b.fieldLabel);
+  });
+
+  improved.sort((a, b) => {
+    if ((b.delta ?? 0) !== (a.delta ?? 0)) {
+      return (b.delta ?? 0) - (a.delta ?? 0);
+    }
+    return a.fieldLabel.localeCompare(b.fieldLabel);
+  });
+
+  return [
+    ...worsened.slice(0, 2),
+    ...persisting.slice(0, 2),
+    ...improved.slice(0, 2),
+  ].slice(0, 6);
 }
 
 function actionRecommendationLabel(
@@ -526,5 +667,9 @@ export function buildReportData(input: BuildReportDataInput): ReportData {
     recommendations: buildRecommendations(input),
     nextReviewSuggestedDays: suggestNextReviewDays(),
     priorityFindings: buildPriorityFindings(input.formData),
+    relevantCycleChanges: buildRelevantCycleChanges(
+      input.formData,
+      input.previousFormData,
+    ),
   };
 }

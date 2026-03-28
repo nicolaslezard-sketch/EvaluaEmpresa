@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { createCompany, getActiveCompanies } from "@/lib/services/companies";
-import { getUserEntitlements } from "@/lib/access/getEntitlements";
-import { prisma } from "@/lib/prisma";
+import {
+  createCompany,
+  getActiveCompanies,
+  getActiveCompanyUsage,
+} from "@/lib/services/companies";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -24,21 +26,9 @@ export async function POST(req: NextRequest) {
   }
 
   const userId = session.user.id;
+  const usage = await getActiveCompanyUsage(userId);
 
-  // 🔒 Entitlements
-  const ent = await getUserEntitlements(userId);
-
-  // 🔢 Contamos empresas del usuario
-  const companiesCount = await prisma.company.count({
-    where: {
-      ownerId: userId,
-    },
-  });
-  console.log("PLAN:", ent.plan);
-  console.log("MAX COMPANIES:", ent.maxCompanies);
-  console.log("CURRENT COUNT:", companiesCount);
-
-  if (companiesCount >= ent.maxCompanies) {
+  if (usage.used >= usage.limit) {
     return NextResponse.json(
       { error: "PLAN_LIMIT_COMPANIES" },
       { status: 403 },

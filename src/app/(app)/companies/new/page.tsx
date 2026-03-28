@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { createCompany } from "@/lib/services/companies";
+import { createCompany, getActiveCompanyUsage } from "@/lib/services/companies";
 
 /* =========================
    SERVER ACTION
@@ -48,19 +48,58 @@ async function createCompanyAction(formData: FormData) {
    PAGE
 ========================= */
 
+function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
+  switch (plan) {
+    case "PRO":
+      return "PRO";
+    case "BUSINESS":
+      return "BUSINESS";
+    default:
+      return "FREE";
+  }
+}
+
 export default async function NewCompanyPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
+  const usage = await getActiveCompanyUsage(session.user.id);
+  const limitReached = usage.used >= usage.limit;
+
   return (
     <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-zinc-900">Nueva empresa</h1>
-        <p className="mt-2 text-sm text-zinc-600">
-          Registrá una empresa para comenzar a evaluarla bajo la metodología
-          E-Score™.
-        </p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-zinc-900">
+            Nueva empresa
+          </h1>
+          <p className="mt-2 text-sm text-zinc-600">
+            Registrá una empresa para comenzar a evaluarla bajo la metodología
+            E-Score™.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-white px-5 py-4 shadow-sm">
+          <div className="text-sm text-zinc-600">Uso del plan</div>
+          <div className="mt-1 text-2xl font-semibold text-zinc-900">
+            {usage.used}/{usage.limit}
+          </div>
+          <div className="mt-1 text-sm text-zinc-500">
+            Empresas activas · {planLabel(usage.plan)}
+          </div>
+        </div>
       </div>
+
+      {limitReached ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+          Alcanzaste el límite de empresas activas de tu plan ({usage.used}/
+          {usage.limit}). Para cargar una nueva empresa, necesitás actualizar el
+          plan.
+          <a href="/billing" className="ml-2 font-medium underline">
+            Ver planes
+          </a>
+        </div>
+      ) : null}
 
       <form
         action={createCompanyAction}
@@ -139,7 +178,12 @@ export default async function NewCompanyPage() {
         <div className="pt-4">
           <button
             type="submit"
-            className="inline-flex rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            disabled={limitReached}
+            className={`inline-flex rounded-lg px-5 py-2 text-sm font-medium ${
+              limitReached
+                ? "cursor-not-allowed bg-zinc-100 text-zinc-500"
+                : "bg-zinc-900 text-white hover:bg-zinc-800"
+            }`}
           >
             Crear empresa
           </button>

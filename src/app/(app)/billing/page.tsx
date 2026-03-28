@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { UpgradeButton } from "@/components/billing/UpgradeButton";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
+import { prisma } from "@/lib/prisma";
 
 export default async function BillingPage() {
   const session = await getServerSession(authOptions);
@@ -11,17 +12,35 @@ export default async function BillingPage() {
   const ent = await getUserEntitlements(session.user.id);
   const currentPlan = ent.plan;
 
+  const activeCompanyCount = await prisma.company.count({
+    where: {
+      ownerId: session.user.id,
+      status: "ACTIVE",
+    },
+  });
+
   return (
     <div className="space-y-12">
-      <h1 className="text-2xl font-semibold text-zinc-900">
-        Plan & Facturación
-      </h1>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <h1 className="text-2xl font-semibold text-zinc-900">
+          Plan & Facturación
+        </h1>
+
+        <div className="rounded-2xl border bg-white px-5 py-4 shadow-sm">
+          <div className="text-sm text-zinc-600">Uso actual</div>
+          <div className="mt-1 text-2xl font-semibold text-zinc-900">
+            {activeCompanyCount}/{ent.maxCompanies}
+          </div>
+          <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
+        </div>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         <PlanCard
           title="FREE"
           price="$0"
           current={currentPlan === "FREE"}
+          usage={currentPlan === "FREE" ? `${activeCompanyCount}/1` : undefined}
           features={["1 empresa activa", "1 evaluación total", "Score general"]}
         />
 
@@ -29,6 +48,7 @@ export default async function BillingPage() {
           title="PRO"
           price="ARS 95.000 / mes"
           current={currentPlan === "PRO"}
+          usage={currentPlan === "PRO" ? `${activeCompanyCount}/3` : undefined}
           features={[
             "Hasta 3 empresas",
             "Evaluaciones ilimitadas",
@@ -42,6 +62,9 @@ export default async function BillingPage() {
           title="BUSINESS"
           price="ARS 210.000 / mes"
           current={currentPlan === "BUSINESS"}
+          usage={
+            currentPlan === "BUSINESS" ? `${activeCompanyCount}/15` : undefined
+          }
           features={[
             "Hasta 15 empresas",
             "Tendencia extendida (6 ciclos)",
@@ -61,12 +84,14 @@ function PlanCard({
   features,
   current,
   upgrade,
+  usage,
 }: {
   title: "FREE" | "PRO" | "BUSINESS";
   price: string;
   features: string[];
   current?: boolean;
   upgrade?: boolean;
+  usage?: string;
 }) {
   return (
     <div
@@ -74,7 +99,15 @@ function PlanCard({
         current ? "border-zinc-900" : ""
       }`}
     >
-      <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
+
+        {current && usage ? (
+          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
+            {usage}
+          </span>
+        ) : null}
+      </div>
 
       <div className="mt-4 text-2xl font-semibold text-zinc-900">{price}</div>
 

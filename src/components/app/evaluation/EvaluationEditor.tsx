@@ -76,6 +76,49 @@ function findingSeverityStyles(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
   }
 }
 
+function cycleChangeKindStyles(kind: string) {
+  switch (kind) {
+    case "WORSENED":
+      return "bg-red-100 text-red-700";
+    case "PERSISTING_RISK":
+      return "bg-amber-100 text-amber-700";
+    case "IMPROVED":
+      return "bg-emerald-100 text-emerald-700";
+    default:
+      return "bg-zinc-100 text-zinc-700";
+  }
+}
+
+function cycleChangeKindLabel(kind: string) {
+  switch (kind) {
+    case "WORSENED":
+      return "Empeoró";
+    case "PERSISTING_RISK":
+      return "Sigue débil";
+    case "IMPROVED":
+      return "Mejoró";
+    default:
+      return kind;
+  }
+}
+
+function fieldLevelLabel(value: number | null | undefined) {
+  switch (value) {
+    case 20:
+      return "Crítico";
+    case 40:
+      return "Débil";
+    case 60:
+      return "Observación";
+    case 75:
+      return "Estable";
+    case 90:
+      return "Muy favorable";
+    default:
+      return "—";
+  }
+}
+
 function actionRecommendationLabel(
   action: ReportFinding["actionRecommendation"],
 ) {
@@ -156,6 +199,24 @@ type ReportFinding = {
     | null;
 };
 
+type ReportCycleChange = {
+  kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED";
+  pillar: "financial" | "commercial" | "operational" | "legal" | "strategic";
+  pillarLabel: string;
+  fieldKey: string;
+  fieldLabel: string;
+  previousValue: number | null;
+  currentValue: number;
+  delta: number | null;
+  currentSeverity:
+    | "FAVORABLE"
+    | "ESTABLE"
+    | "OBSERVACION"
+    | "DEBIL"
+    | "CRITICO";
+  rationale: string | null;
+};
+
 type ReportData = {
   executiveSummary: string;
   keyFindings: string[];
@@ -163,6 +224,7 @@ type ReportData = {
   recommendations: string[];
   nextReviewSuggestedDays: number | null;
   priorityFindings: ReportFinding[];
+  relevantCycleChanges: ReportCycleChange[];
 };
 
 /* ===============================
@@ -534,6 +596,77 @@ export default function EvaluationEditor(props: {
             )}
           </div>
         </div>
+
+        {props.reportData?.relevantCycleChanges?.length ? (
+          <SectionCard title="Cambios relevantes del ciclo">
+            <div className="space-y-4">
+              {props.reportData.relevantCycleChanges.map((change) => (
+                <div
+                  key={`${change.kind}-${change.pillar}-${change.fieldKey}`}
+                  className="rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-zinc-900">
+                      {change.fieldLabel}
+                    </span>
+
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${cycleChangeKindStyles(
+                        change.kind,
+                      )}`}
+                    >
+                      {cycleChangeKindLabel(change.kind)}
+                    </span>
+
+                    <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
+                      {change.pillarLabel}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 text-sm text-zinc-700">
+                    {change.kind === "PERSISTING_RISK" ? (
+                      <p>
+                        Se mantiene en nivel{" "}
+                        <span className="font-medium text-zinc-900">
+                          {fieldLevelLabel(change.currentValue)}
+                        </span>{" "}
+                        respecto del ciclo anterior.
+                      </p>
+                    ) : (
+                      <p>
+                        Pasó de{" "}
+                        <span className="font-medium text-zinc-900">
+                          {fieldLevelLabel(change.previousValue)}
+                        </span>{" "}
+                        a{" "}
+                        <span className="font-medium text-zinc-900">
+                          {fieldLevelLabel(change.currentValue)}
+                        </span>
+                        {typeof change.delta === "number" ? (
+                          <>
+                            {" "}
+                            (Δ campo {change.delta > 0 ? "+" : ""}
+                            {change.delta})
+                          </>
+                        ) : null}
+                        .
+                      </p>
+                    )}
+
+                    {change.rationale ? (
+                      <p className="mt-2">
+                        <span className="font-medium text-zinc-900">
+                          Contexto:
+                        </span>{" "}
+                        {change.rationale}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        ) : null}
 
         {props.reportData?.priorityFindings?.length ? (
           <SectionCard title="Hallazgos priorizados del ciclo">
