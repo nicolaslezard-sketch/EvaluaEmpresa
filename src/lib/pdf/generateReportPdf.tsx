@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 14,
+    marginTop: 12,
   },
   pillarGridTitle: {
     fontSize: 14,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   pillarGridItem: {
     width: "48.5%",
-    marginBottom: 10,
+    marginBottom: 8,
   },
 
   section: {
@@ -1060,7 +1060,7 @@ export async function generateReportPdf(
           </Text>
         </View>
 
-        <View style={styles.twoCol}>
+        <View style={styles.twoCol} wrap={false}>
           <View style={styles.colLeft}>
             <View style={styles.infoCard} wrap={false}>
               <Text style={styles.sectionTitle}>Radar de pilares</Text>
@@ -1079,8 +1079,8 @@ export async function generateReportPdf(
           </View>
         </View>
 
-        <View style={[styles.section, { marginTop: 14 }]} wrap={false}>
-          <Text style={styles.sectionTitle}>Vista por pilar</Text>
+        <View style={styles.pillarGridWrap} wrap={false}>
+          <Text style={styles.pillarGridTitle}>Vista por pilar</Text>
 
           <View style={styles.pillarGrid}>
             <View style={styles.pillarGridItem}>
