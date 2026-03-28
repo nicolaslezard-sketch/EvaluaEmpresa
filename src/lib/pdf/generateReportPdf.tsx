@@ -123,23 +123,22 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 12,
+    marginTop: 10,
   },
   pillarGridTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "bold",
     color: COLORS.dark,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   pillarGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginTop: 4,
   },
   pillarGridItem: {
     width: "48.5%",
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   section: {
@@ -1080,8 +1079,8 @@ export async function generateReportPdf(
         </View>
 
         <View style={styles.pillarGridWrap}>
-          {" "}
           <Text style={styles.pillarGridTitle}>Vista por pilar</Text>
+
           <View style={styles.pillarGrid}>
             <View style={styles.pillarGridItem}>
               <PillarCard
@@ -1235,6 +1234,15 @@ export async function generateReportPdf(
             items={data.reportData.recommendations}
             emptyText="No se definieron recomendaciones específicas para este ciclo."
           />
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.smallText}>
+            Informe orientativo basado en información estructurada cargada en la
+            plataforma. No constituye asesoramiento legal, contable ni
+            financiero. El PDF es una exportación del sistema de monitoreo
+            continuo y no reemplaza un proceso de due diligence formal.
+          </Text>
         </View>
       </Page>
     </Document>
