@@ -38,6 +38,30 @@ export type DeterministicPdfData = {
     priorityRisks: string[];
     recommendations: string[];
     nextReviewSuggestedDays: number | null;
+    priorityFindings: Array<{
+      pillar:
+        | "financial"
+        | "commercial"
+        | "operational"
+        | "legal"
+        | "strategic";
+      pillarLabel: string;
+      fieldKey: string;
+      fieldLabel: string;
+      severity: "OBSERVACION" | "DEBIL" | "CRITICO";
+      value: 60 | 40 | 20;
+      rationale: string | null;
+      evidenceNote: string | null;
+      primaryIssue: string | null;
+      actionRecommendation:
+        | "NONE"
+        | "MONITOR"
+        | "REQUEST_INFO"
+        | "ESCALATE"
+        | "LIMIT_EXPOSURE"
+        | "REASSESS_EARLY"
+        | null;
+    }>;
   };
 };
 
@@ -235,6 +259,58 @@ const styles = StyleSheet.create({
     padding: 14,
     backgroundColor: "#ffffff",
     marginBottom: 12,
+  },
+
+  findingCard: {
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#ffffff",
+    marginBottom: 10,
+  },
+  findingHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  findingTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    marginRight: 8,
+  },
+  findingBadge: {
+    fontSize: 9,
+    fontWeight: "bold",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginRight: 6,
+  },
+  findingPillarBadge: {
+    fontSize: 9,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "#f3f4f6",
+    color: COLORS.slate,
+  },
+  findingRow: {
+    flexDirection: "row",
+    marginTop: 4,
+  },
+  findingLabel: {
+    width: 92,
+    fontSize: 10,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  findingValue: {
+    flex: 1,
+    fontSize: 10,
+    lineHeight: 1.4,
+    color: COLORS.slate,
   },
 
   bulletRow: {
@@ -757,6 +833,54 @@ function BulletList({
   );
 }
 
+function findingSeverityPalette(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
+  switch (severity) {
+    case "CRITICO":
+      return {
+        bg: COLORS.redBg,
+        text: COLORS.redText,
+      };
+    case "DEBIL":
+      return {
+        bg: COLORS.amberBg,
+        text: COLORS.amberText,
+      };
+    default:
+      return {
+        bg: COLORS.blueBg,
+        text: COLORS.blueText,
+      };
+  }
+}
+
+function actionRecommendationLabel(
+  action:
+    | "NONE"
+    | "MONITOR"
+    | "REQUEST_INFO"
+    | "ESCALATE"
+    | "LIMIT_EXPOSURE"
+    | "REASSESS_EARLY"
+    | null,
+) {
+  switch (action) {
+    case "MONITOR":
+      return "Monitorear";
+    case "REQUEST_INFO":
+      return "Solicitar información";
+    case "LIMIT_EXPOSURE":
+      return "Limitar exposición";
+    case "ESCALATE":
+      return "Escalar internamente";
+    case "REASSESS_EARLY":
+      return "Reevaluar antes";
+    case "NONE":
+      return "Sin acción definida";
+    default:
+      return null;
+  }
+}
+
 export async function generateReportPdf(
   data: DeterministicPdfData,
 ): Promise<Buffer> {
@@ -936,6 +1060,94 @@ export async function generateReportPdf(
                 items={data.reportData.priorityRisks}
                 emptyText="No hay riesgos prioritarios identificados para este ciclo."
               />
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                Hallazgos priorizados del ciclo
+              </Text>
+
+              {data.reportData.priorityFindings?.length ? (
+                <View>
+                  {data.reportData.priorityFindings.map((finding) => {
+                    const palette = findingSeverityPalette(finding.severity);
+                    const actionText = actionRecommendationLabel(
+                      finding.actionRecommendation,
+                    );
+
+                    return (
+                      <View
+                        key={`${finding.pillar}-${finding.fieldKey}`}
+                        style={styles.findingCard}
+                        wrap={false}
+                      >
+                        <View style={styles.findingHeader}>
+                          <Text style={styles.findingTitle}>
+                            {finding.fieldLabel}
+                          </Text>
+
+                          <Text
+                            style={[
+                              styles.findingBadge,
+                              {
+                                backgroundColor: palette.bg,
+                                color: palette.text,
+                              },
+                            ]}
+                          >
+                            {finding.severity}
+                          </Text>
+
+                          <Text style={styles.findingPillarBadge}>
+                            {finding.pillarLabel}
+                          </Text>
+                        </View>
+
+                        {finding.rationale ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Situación:</Text>
+                            <Text style={styles.findingValue}>
+                              {finding.rationale}
+                            </Text>
+                          </View>
+                        ) : null}
+
+                        {finding.evidenceNote ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Evidencia:</Text>
+                            <Text style={styles.findingValue}>
+                              {finding.evidenceNote}
+                            </Text>
+                          </View>
+                        ) : null}
+
+                        {finding.primaryIssue ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Problema:</Text>
+                            <Text style={styles.findingValue}>
+                              {finding.primaryIssue}
+                            </Text>
+                          </View>
+                        ) : null}
+
+                        {actionText ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Acción:</Text>
+                            <Text style={styles.findingValue}>
+                              {actionText}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text style={styles.bodyText}>
+                  No se registraron hallazgos priorizados relevantes en este
+                  ciclo.
+                </Text>
+              )}
             </View>
 
             <View style={styles.infoCard} wrap={false}>

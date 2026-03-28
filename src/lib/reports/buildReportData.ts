@@ -141,7 +141,66 @@ function buildPriorityFindings(formData: EvaluationFormData): ReportFinding[] {
     }
   }
 
-  return findings.sort((a, b) => a.value - b.value).slice(0, 6);
+  const sorted = findings.sort((a, b) => a.value - b.value);
+
+  const severeFindings = sorted.filter(
+    (finding) => finding.severity === "CRITICO" || finding.severity === "DEBIL",
+  );
+
+  if (severeFindings.length > 0) {
+    return severeFindings.slice(0, 6);
+  }
+
+  return sorted.slice(0, 6);
+}
+
+function actionRecommendationLabel(
+  action: ActionRecommendation | null | undefined,
+) {
+  switch (action) {
+    case "MONITOR":
+      return "mantener seguimiento mensual";
+    case "REQUEST_INFO":
+      return "solicitar información complementaria";
+    case "LIMIT_EXPOSURE":
+      return "limitar exposición";
+    case "ESCALATE":
+      return "escalar internamente";
+    case "REASSESS_EARLY":
+      return "reevaluar antes del próximo cierre mensual";
+    default:
+      return null;
+  }
+}
+
+function recommendationFromFinding(finding: ReportFinding): string | null {
+  const actionText = actionRecommendationLabel(finding.actionRecommendation);
+
+  if (finding.severity === "CRITICO") {
+    if (actionText) {
+      return `Priorizar ${finding.fieldLabel.toLowerCase()} en ${finding.pillarLabel.toLowerCase()} y ${actionText}.`;
+    }
+
+    if (finding.primaryIssue) {
+      return `Priorizar ${finding.fieldLabel.toLowerCase()} en ${finding.pillarLabel.toLowerCase()} y tratar el problema principal informado: ${finding.primaryIssue.toLowerCase()}.`;
+    }
+
+    return `Priorizar ${finding.fieldLabel.toLowerCase()} en ${finding.pillarLabel.toLowerCase()} con seguimiento reforzado e intervención inmediata.`;
+  }
+
+  if (finding.severity === "DEBIL") {
+    if (actionText) {
+      return `Revisar ${finding.fieldLabel.toLowerCase()} en ${finding.pillarLabel.toLowerCase()} y ${actionText}.`;
+    }
+
+    if (finding.primaryIssue) {
+      return `Revisar ${finding.fieldLabel.toLowerCase()} en ${finding.pillarLabel.toLowerCase()} por el foco detectado: ${finding.primaryIssue.toLowerCase()}.`;
+    }
+
+    return `Revisar ${finding.fieldLabel.toLowerCase()} en ${finding.pillarLabel.toLowerCase()} y validar medidas correctivas antes del próximo cierre mensual.`;
+  }
+
+  return null;
 }
 
 function getWeakestPillars(
@@ -373,63 +432,86 @@ function buildPriorityRisks({
   return risks.slice(0, 4);
 }
 
-function buildRecommendations({
-  criticality,
-  score,
-  deltas,
-  alerts,
-}: Pick<
-  BuildReportDataInput,
-  "criticality" | "score" | "deltas" | "alerts"
->): string[] {
+function buildRecommendations(input: BuildReportDataInput): string[] {
+  const { score, deltas, alerts, formData } = input;
   const recommendations: string[] = [];
-  const weakest = getWeakestPillars(score.pillars, 2);
-  const overallState = scoreState(score.overallScore);
 
-  if (deltas.overall < 0) {
+  const priorityFindings = buildPriorityFindings(formData);
+
+  const criticalFindings = priorityFindings.filter(
+    (finding) => finding.severity === "CRITICO",
+  );
+  const weakFindings = priorityFindings.filter(
+    (finding) => finding.severity === "DEBIL",
+  );
+
+  for (const finding of criticalFindings) {
+    const recommendation = recommendationFromFinding(finding);
+    if (recommendation) recommendations.push(recommendation);
+  }
+
+  for (const finding of weakFindings.slice(0, 2)) {
+    const recommendation = recommendationFromFinding(finding);
+    if (recommendation) recommendations.push(recommendation);
+  }
+
+  if (criticalFindings.length === 0 && weakFindings.length >= 2) {
+    recommendations.push(
+      "Consolidar un seguimiento focalizado sobre los frentes débiles detectados antes del próximo cierre mensual.",
+    );
+  }
+
+  if ((deltas.overall ?? 0) <= -8) {
     recommendations.push(
       "Realizar una revisión focalizada sobre los factores que explican la caída del score general antes del próximo cierre mensual.",
     );
   }
 
-  for (const pillar of weakest) {
-    if (pillar.value < 65) {
-      recommendations.push(
-        `Profundizar el análisis del frente ${pillarLabel(
-          pillar.key,
-        ).toLowerCase()} y validar controles, mitigaciones o medidas correctivas específicas.`,
-      );
-    }
+  if (score.pillars.financial < 65) {
+    recommendations.push(
+      "Profundizar la revisión de la solidez financiera y validar capacidad de pago, liquidez y exposición antes del próximo cierre mensual.",
+    );
+  }
+
+  if (score.pillars.operational < 65) {
+    recommendations.push(
+      "Revisar continuidad operativa, dependencias críticas y capacidad de respuesta ante incidentes.",
+    );
+  }
+
+  if (score.pillars.legal < 65) {
+    recommendations.push(
+      "Validar formalidad, documentación crítica y contingencias regulatorias o contractuales pendientes.",
+    );
+  }
+
+  if (score.pillars.commercial < 65) {
+    recommendations.push(
+      "Revisar confiabilidad comercial, concentración y estabilidad de la relación para reducir exposición innecesaria.",
+    );
+  }
+
+  if (score.pillars.strategic < 65) {
+    recommendations.push(
+      "Fortalecer seguimiento interno, actualización de información y gestión de desvíos con responsables claros.",
+    );
   }
 
   if (alerts.some((a) => a.severity === "CRITICAL")) {
     recommendations.push(
-      "Escalar internamente la revisión del caso y definir si corresponde seguimiento extraordinario o medidas adicionales de mitigación.",
+      "Mantener seguimiento mensual reforzado hasta estabilizar los focos críticos activos.",
     );
-  }
-
-  if (criticality === "HIGH") {
+  } else if (alerts.length > 0) {
     recommendations.push(
-      "Mantener una frecuencia de monitoreo corta dada la criticidad de la relación, aun cuando no existan incidentes inmediatos.",
+      "Mantener seguimiento mensual y actualizar la evaluación ante cualquier cambio relevante en la contraparte o en la operatoria.",
+    );
+  } else {
+    recommendations.push(
+      "Conservar trazabilidad documental y señales tempranas para anticipar eventuales desvíos antes de la próxima revisión mensual.",
     );
   }
 
-  if (recommendations.length === 0) {
-    if (overallState === "strong") {
-      recommendations.push(
-        "Mantener seguimiento mensual y actualizar la evaluación ante cualquier cambio relevante en la contraparte o en la operatoria.",
-      );
-      recommendations.push(
-        "Conservar trazabilidad documental y señales tempranas para anticipar eventuales desvíos antes de la próxima revisión mensual.",
-      );
-    } else {
-      recommendations.push(
-        "Mantener seguimiento mensual y actualizar la evaluación ante cualquier cambio relevante en la relación o en la operatoria.",
-      );
-    }
-  }
-
-  return recommendations.slice(0, 4);
+  return [...new Set(recommendations)].slice(0, 5);
 }
 
 function suggestNextReviewDays(): number | null {
