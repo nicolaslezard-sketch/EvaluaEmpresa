@@ -1079,9 +1079,9 @@ export async function generateReportPdf(
           </View>
         </View>
 
-        <View style={styles.pillarGridWrap} wrap={false}>
+        <View style={styles.pillarGridWrap}>
+          {" "}
           <Text style={styles.pillarGridTitle}>Vista por pilar</Text>
-
           <View style={styles.pillarGrid}>
             <View style={styles.pillarGridItem}>
               <PillarCard
