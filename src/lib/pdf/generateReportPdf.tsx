@@ -105,6 +105,43 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
+  overviewGrid: {
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "flex-start",
+  },
+  overviewLeft: {
+    width: "56%",
+  },
+  overviewRight: {
+    width: "44%",
+  },
+  overviewBlock: {
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+    padding: 14,
+  },
+  pillarGridWrap: {
+    marginTop: 14,
+  },
+  pillarGridTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    marginBottom: 10,
+  },
+  pillarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 4,
+  },
+  pillarGridItem: {
+    width: "48.5%",
+    marginBottom: 10,
+  },
+
   section: {
     marginTop: 18,
   },
@@ -379,11 +416,6 @@ const styles = StyleSheet.create({
     color: COLORS.slate,
   },
 
-  pillarGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 4,
-  },
   pillarCard: {
     width: "48.5%",
     border: `1 solid ${COLORS.line}`,
@@ -552,19 +584,6 @@ function monitoringStatusShort(score: number) {
   if (score >= 65) return "Preventivo";
   if (score >= 50) return "Reforzado";
   return "Inmediato";
-}
-
-function scoreReading(score: number) {
-  if (score >= 80) {
-    return "Perfil robusto con exposición acotada y necesidad de monitoreo estándar.";
-  }
-  if (score >= 65) {
-    return "Perfil razonablemente estable, con focos puntuales a seguir de cerca.";
-  }
-  if (score >= 50) {
-    return "Perfil vulnerable, con señales que justifican seguimiento reforzado.";
-  }
-  return "Perfil crítico, con exposición elevada y necesidad de acción prioritaria.";
 }
 
 function pickStrongestPillars(data: DeterministicPdfData) {
@@ -833,6 +852,10 @@ function BulletList({
   );
 }
 
+function limitOverviewRisks(items: string[]) {
+  return items.slice(0, 3);
+}
+
 function findingSeverityPalette(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
   switch (severity) {
     case "CRITICO":
@@ -886,14 +909,6 @@ export async function generateReportPdf(
 ): Promise<Buffer> {
   const categoryPalette = getCategoryPalette(data.executiveCategory);
   const overall = safeScore(data.overallScore);
-
-  const pillarRows: Array<keyof DeterministicPdfData["pillars"]> = [
-    "financial",
-    "commercial",
-    "operational",
-    "legal",
-    "strategic",
-  ];
 
   const highlights = executiveHighlights(data);
 
@@ -1057,145 +1072,63 @@ export async function generateReportPdf(
             <View style={styles.infoCard} wrap={false}>
               <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
               <BulletList
-                items={data.reportData.priorityRisks}
+                items={limitOverviewRisks(data.reportData.priorityRisks)}
                 emptyText="No hay riesgos prioritarios identificados para este ciclo."
-              />
-            </View>
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>
-                Hallazgos priorizados del ciclo
-              </Text>
-
-              {data.reportData.priorityFindings?.length ? (
-                <View>
-                  {data.reportData.priorityFindings.map((finding) => {
-                    const palette = findingSeverityPalette(finding.severity);
-                    const actionText = actionRecommendationLabel(
-                      finding.actionRecommendation,
-                    );
-
-                    return (
-                      <View
-                        key={`${finding.pillar}-${finding.fieldKey}`}
-                        style={styles.findingCard}
-                        wrap={false}
-                      >
-                        <View style={styles.findingHeader}>
-                          <Text style={styles.findingTitle}>
-                            {finding.fieldLabel}
-                          </Text>
-
-                          <Text
-                            style={[
-                              styles.findingBadge,
-                              {
-                                backgroundColor: palette.bg,
-                                color: palette.text,
-                              },
-                            ]}
-                          >
-                            {finding.severity}
-                          </Text>
-
-                          <Text style={styles.findingPillarBadge}>
-                            {finding.pillarLabel}
-                          </Text>
-                        </View>
-
-                        {finding.rationale ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Situación:</Text>
-                            <Text style={styles.findingValue}>
-                              {finding.rationale}
-                            </Text>
-                          </View>
-                        ) : null}
-
-                        {finding.evidenceNote ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Evidencia:</Text>
-                            <Text style={styles.findingValue}>
-                              {finding.evidenceNote}
-                            </Text>
-                          </View>
-                        ) : null}
-
-                        {finding.primaryIssue ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Problema:</Text>
-                            <Text style={styles.findingValue}>
-                              {finding.primaryIssue}
-                            </Text>
-                          </View>
-                        ) : null}
-
-                        {actionText ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Acción:</Text>
-                            <Text style={styles.findingValue}>
-                              {actionText}
-                            </Text>
-                          </View>
-                        ) : null}
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : (
-                <Text style={styles.bodyText}>
-                  No se registraron hallazgos priorizados relevantes en este
-                  ciclo.
-                </Text>
-              )}
-            </View>
-
-            <View style={styles.infoCard} wrap={false}>
-              <Text style={styles.sectionTitle}>Recomendaciones</Text>
-              <BulletList
-                items={data.reportData.recommendations}
-                emptyText="No hay recomendaciones disponibles para este ciclo."
               />
             </View>
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, { marginTop: 14 }]} wrap={false}>
           <Text style={styles.sectionTitle}>Vista por pilar</Text>
+
           <View style={styles.pillarGrid}>
-            <PillarCard
-              pillarKey="financial"
-              title="Financiero"
-              score={data.pillars.financial}
-              delta={data.deltas.financial}
-              odd
-            />
-            <PillarCard
-              pillarKey="commercial"
-              title="Comercial"
-              score={data.pillars.commercial}
-              delta={data.deltas.commercial}
-            />
-            <PillarCard
-              pillarKey="operational"
-              title="Operativo"
-              score={data.pillars.operational}
-              delta={data.deltas.operational}
-              odd
-            />
-            <PillarCard
-              pillarKey="legal"
-              title="Legal"
-              score={data.pillars.legal}
-              delta={data.deltas.legal}
-            />
-            <PillarCard
-              pillarKey="strategic"
-              title="Estratégico"
-              score={data.pillars.strategic}
-              delta={data.deltas.strategic}
-              odd
-            />
+            <View style={styles.pillarGridItem}>
+              <PillarCard
+                pillarKey="financial"
+                title="Financiero"
+                score={data.pillars.financial}
+                delta={data.deltas.financial}
+              />
+            </View>
+
+            <View style={styles.pillarGridItem}>
+              <PillarCard
+                pillarKey="commercial"
+                title="Comercial"
+                score={data.pillars.commercial}
+                delta={data.deltas.commercial}
+                odd
+              />
+            </View>
+
+            <View style={styles.pillarGridItem}>
+              <PillarCard
+                pillarKey="operational"
+                title="Operativo"
+                score={data.pillars.operational}
+                delta={data.deltas.operational}
+              />
+            </View>
+
+            <View style={styles.pillarGridItem}>
+              <PillarCard
+                pillarKey="legal"
+                title="Legal"
+                score={data.pillars.legal}
+                delta={data.deltas.legal}
+                odd
+              />
+            </View>
+
+            <View style={styles.pillarGridItem}>
+              <PillarCard
+                pillarKey="strategic"
+                title="Estratégico"
+                score={data.pillars.strategic}
+                delta={data.deltas.strategic}
+              />
+            </View>
           </View>
         </View>
       </Page>
@@ -1204,7 +1137,7 @@ export async function generateReportPdf(
       <Page size="A4" style={styles.page}>
         <View style={styles.pageHeader}>
           <Text style={styles.pageHeaderTitle}>
-            Lectura detallada por pilar
+            Hallazgos y recomendaciones
           </Text>
           <Text style={styles.pageHeaderSub}>
             Empresa evaluada: {data.companyName} · Categoría:{" "}
@@ -1213,93 +1146,95 @@ export async function generateReportPdf(
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hallazgos clave</Text>
-          <View style={styles.infoCard} wrap={false}>
-            <BulletList
-              items={data.reportData.keyFindings}
-              emptyText="No hay hallazgos clave disponibles para este ciclo."
-            />
-          </View>
-        </View>
+          <Text style={styles.sectionTitle}>
+            Hallazgos priorizados del ciclo
+          </Text>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Lectura por pilar</Text>
+          {data.reportData.priorityFindings?.length ? (
+            <View>
+              {data.reportData.priorityFindings.map((finding) => {
+                const palette = findingSeverityPalette(finding.severity);
+                const actionText = actionRecommendationLabel(
+                  finding.actionRecommendation,
+                );
 
-          <View style={styles.tableWrap}>
-            <View style={styles.tableHeader}>
-              <View style={styles.tableColPillar}>
-                <Text style={styles.tableHeadText}>Pilar</Text>
-              </View>
-              <View style={styles.tableColScore}>
-                <Text style={styles.tableHeadText}>Score</Text>
-              </View>
-              <View style={styles.tableColDelta}>
-                <Text style={styles.tableHeadText}>Delta</Text>
-              </View>
-              <View style={styles.tableColState}>
-                <Text style={styles.tableHeadText}>Estado</Text>
-              </View>
-              <View style={styles.tableColReading}>
-                <Text style={styles.tableHeadText}>Lectura</Text>
-              </View>
+                return (
+                  <View
+                    key={`${finding.pillar}-${finding.fieldKey}`}
+                    style={styles.findingCard}
+                  >
+                    <View style={styles.findingHeader}>
+                      <Text style={styles.findingTitle}>
+                        {finding.fieldLabel}
+                      </Text>
+
+                      <Text
+                        style={[
+                          styles.findingBadge,
+                          {
+                            backgroundColor: palette.bg,
+                            color: palette.text,
+                          },
+                        ]}
+                      >
+                        {finding.severity}
+                      </Text>
+
+                      <Text style={styles.findingPillarBadge}>
+                        {finding.pillarLabel}
+                      </Text>
+                    </View>
+
+                    {finding.rationale ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Situación:</Text>
+                        <Text style={styles.findingValue}>
+                          {finding.rationale}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {finding.evidenceNote ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Evidencia:</Text>
+                        <Text style={styles.findingValue}>
+                          {finding.evidenceNote}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {finding.primaryIssue ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Problema:</Text>
+                        <Text style={styles.findingValue}>
+                          {finding.primaryIssue}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {actionText ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Acción:</Text>
+                        <Text style={styles.findingValue}>{actionText}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })}
             </View>
-
-            {pillarRows.map((key, index) => {
-              const score = data.pillars[key];
-              const delta = data.deltas[key];
-
-              return (
-                <View
-                  key={key}
-                  wrap={false}
-                  style={
-                    index === pillarRows.length - 1
-                      ? [
-                          styles.tableRow,
-                          { borderBottom: "0 solid transparent" },
-                        ]
-                      : styles.tableRow
-                  }
-                >
-                  <View style={styles.tableColPillar}>
-                    <Text style={styles.tableText}>{pillarLabel(key)}</Text>
-                  </View>
-                  <View style={styles.tableColScore}>
-                    <Text style={styles.tableText}>{formatScore(score)}</Text>
-                  </View>
-                  <View style={styles.tableColDelta}>
-                    <Text style={styles.tableText}>{formatDelta(delta)}</Text>
-                  </View>
-                  <View style={styles.tableColState}>
-                    <Text style={styles.tableText}>{scoreState(score)}</Text>
-                  </View>
-                  <View style={styles.tableColReading}>
-                    <Text style={styles.tableText}>
-                      {scoreReading(safeScore(score))}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })}
-          </View>
+          ) : (
+            <Text style={styles.bodyText}>
+              No se registraron hallazgos priorizados relevantes en este ciclo.
+            </Text>
+          )}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Próximo ciclo sugerido</Text>
-          <Text style={styles.bodyText}>
-            {data.reportData.nextReviewSuggestedDays !== null
-              ? `Se recomienda una nueva revisión en aproximadamente ${data.reportData.nextReviewSuggestedDays} días, ajustando la intensidad del seguimiento según la evolución de los pilares más sensibles.`
-              : "No hay una sugerencia de revisión disponible para este ciclo."}
-          </Text>
-        </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.smallText}>
-            Informe orientativo basado en información estructurada cargada en la
-            plataforma. No constituye asesoramiento legal, contable ni
-            financiero. El PDF es una exportación del sistema de monitoreo
-            continuo y no reemplaza un proceso de due diligence formal.
-          </Text>
+          <Text style={styles.sectionTitle}>Recomendaciones</Text>
+          <BulletList
+            items={data.reportData.recommendations}
+            emptyText="No se definieron recomendaciones específicas para este ciclo."
+          />
         </View>
       </Page>
     </Document>
