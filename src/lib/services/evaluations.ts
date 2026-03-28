@@ -296,11 +296,47 @@ export async function finalizeEvaluationForUser(
 
     const deltas = computeDeltas(score, prevPayload);
 
+    const baseReportData = buildReportData({
+      companyName: evaluation.company.name,
+      criticality: evaluation.company.criticality,
+      formData: evaluation.formData as EvaluationFormData,
+      score: {
+        overallScore: score.overallScore,
+        executiveCategory: score.executiveCategory,
+        pillars: {
+          financial: score.pillars.financial,
+          commercial: score.pillars.commercial,
+          operational: score.pillars.operational,
+          legal: score.pillars.legal,
+          strategic: score.pillars.strategic,
+        },
+      },
+      deltas: {
+        overall: deltas.overall ?? 0,
+        pillars: {
+          financial: deltas.pillars.financial ?? 0,
+          commercial: deltas.pillars.commercial ?? 0,
+          operational: deltas.pillars.operational ?? 0,
+          legal: deltas.pillars.legal ?? 0,
+          strategic: deltas.pillars.strategic ?? 0,
+        },
+      },
+      alerts: [],
+    });
+
     const alerts = generateAlerts({
       companyCriticality: evaluation.company.criticality,
       current: score,
       previous: prevPayload,
       deltas,
+      priorityFindings: baseReportData.priorityFindings.map((finding) => ({
+        pillarLabel: finding.pillarLabel,
+        fieldLabel: finding.fieldLabel,
+        severity: finding.severity,
+        rationale: finding.rationale,
+        primaryIssue: finding.primaryIssue,
+        actionRecommendation: finding.actionRecommendation,
+      })),
     });
 
     const reportData = buildReportData({

@@ -22,12 +22,19 @@ export function generateAlerts(params: {
   current: ScoreResult;
   previous: ScoreResult | null;
   deltas: DeltaResult;
-  // Para regla consecutive_drop necesitamos last-2:
-  // se lo pasás desde service si tenés prevPrev; si no, null.
   prevPrev?: ScoreResult | null;
+  priorityFindings?: Array<{
+    pillarLabel: string;
+    fieldLabel: string;
+    severity: "OBSERVACION" | "DEBIL" | "CRITICO";
+    rationale: string | null;
+    primaryIssue: string | null;
+    actionRecommendation: string | null;
+  }>;
 }): GeneratedAlert[] {
   const { companyCriticality, current, previous, deltas, prevPrev } = params;
   const out: GeneratedAlert[] = [];
+  const priorityFindings = params.priorityFindings ?? [];
 
   // Si no hay previous finalized, no hay reglas que dependan de delta
   const deltaOverall = deltas.overall;
@@ -114,5 +121,51 @@ export function generateAlerts(params: {
     }
   }
 
-  return out;
+  for (const finding of priorityFindings) {
+    if (finding.severity !== "CRITICO") continue;
+
+    const detail =
+      finding.primaryIssue ??
+      finding.rationale ??
+      "Se detectó una condición crítica que requiere seguimiento inmediato.";
+
+    out.push({
+      type: "LOW_SCORE_HIGH_CRITICALITY",
+      severity: sev("CRITICAL"),
+      message: msg(
+        "LOW_SCORE_HIGH_CRITICALITY",
+        `${finding.fieldLabel} en estado crítico (${finding.pillarLabel}). ${detail}`,
+      ),
+    });
+  }
+
+  const weakFindings = priorityFindings.filter(
+    (finding) => finding.severity === "DEBIL",
+  );
+
+  if (weakFindings.length >= 2) {
+    const topWeak = weakFindings
+      .slice(0, 2)
+      .map((f) => f.fieldLabel)
+      .join(", ");
+
+    out.push({
+      type: "PILLAR_DROP",
+      severity: sev("WARNING"),
+      message: msg(
+        "PILLAR_DROP",
+        `Se detectaron múltiples focos débiles en este ciclo: ${topWeak}.`,
+      ),
+    });
+  }
+
+  return out.filter(
+    (alert, index, arr) =>
+      arr.findIndex(
+        (a) =>
+          a.type === alert.type &&
+          a.severity === alert.severity &&
+          a.message === alert.message,
+      ) === index,
+  );
 }
