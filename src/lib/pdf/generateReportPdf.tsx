@@ -5,10 +5,6 @@ import {
   Text,
   View,
   StyleSheet,
-  Svg,
-  Polygon,
-  Line,
-  Circle,
 } from "@react-pdf/renderer";
 import { getNextReviewInfo } from "@/lib/reviews/getNextReviewInfo";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
@@ -243,7 +239,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 12,
+    marginTop: 14,
   },
   pillarGridTitle: {
     fontSize: 12,
@@ -518,19 +514,19 @@ const styles = StyleSheet.create({
   },
 
   radarCardPage2: {
-    height: 236,
-    paddingBottom: 10,
+    height: 184,
+    paddingBottom: 8,
   },
   risksCardPage2: {
-    height: 236,
-    paddingBottom: 10,
+    height: 184,
+    paddingBottom: 8,
   },
 
   radarSummaryList: {
-    marginTop: 4,
+    marginTop: 2,
   },
   radarSummaryRow: {
-    marginBottom: 9,
+    marginBottom: 8,
   },
   radarSummaryTop: {
     flexDirection: "row",
@@ -541,7 +537,6 @@ const styles = StyleSheet.create({
   radarSummaryLabelWrap: {
     flexDirection: "row",
     alignItems: "center",
-    maxWidth: "72%",
   },
   radarSummaryDot: {
     width: 7,
@@ -550,16 +545,15 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   radarSummaryLabel: {
-    fontSize: 9.2,
+    fontSize: 9.5,
+    fontWeight: "bold",
     color: COLORS.dark,
-    fontWeight: 700,
   },
   radarSummaryValue: {
-    fontSize: 9.2,
+    fontSize: 9.5,
+    fontWeight: "bold",
     color: COLORS.slate,
-    fontWeight: 700,
   },
-
   radarMiniTrack: {
     height: 6,
     borderRadius: 999,
@@ -570,17 +564,17 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 999,
   },
-
+  bulletRowCompact: {
+    flexDirection: "row",
+    marginBottom: 5,
+  },
   bulletTextCompact: {
     flex: 1,
     fontSize: 9.2,
     lineHeight: 1.28,
     color: COLORS.slate,
   },
-  bulletRowCompact: {
-    flexDirection: "row",
-    marginBottom: 5,
-  },
+
   radarChartBox: {
     height: 176,
     justifyContent: "center",
@@ -925,38 +919,37 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
 
   return (
     <View style={styles.radarSummaryList} wrap={false}>
-      {entries.map((entry) => {
-        const width = `${Math.max(0, Math.min(100, entry.value))}%`;
-
-        return (
-          <View key={entry.key} style={styles.radarSummaryRow}>
-            <View style={styles.radarSummaryTop}>
-              <View style={styles.radarSummaryLabelWrap}>
-                <View
-                  style={[
-                    styles.radarSummaryDot,
-                    { backgroundColor: entry.color },
-                  ]}
-                />
-                <Text style={styles.radarSummaryLabel}>{entry.label}</Text>
-              </View>
-
-              <Text style={styles.radarSummaryValue}>
-                {entry.value.toFixed(1)}
-              </Text>
-            </View>
-
-            <View style={styles.radarMiniTrack}>
+      {entries.map((entry) => (
+        <View key={entry.key} style={styles.radarSummaryRow}>
+          <View style={styles.radarSummaryTop}>
+            <View style={styles.radarSummaryLabelWrap}>
               <View
                 style={[
-                  styles.radarMiniFill,
-                  { width, backgroundColor: entry.color },
+                  styles.radarSummaryDot,
+                  { backgroundColor: entry.color },
                 ]}
               />
+              <Text style={styles.radarSummaryLabel}>{entry.label}</Text>
             </View>
+
+            <Text style={styles.radarSummaryValue}>
+              {entry.value.toFixed(1)}
+            </Text>
           </View>
-        );
-      })}
+
+          <View style={styles.radarMiniTrack}>
+            <View
+              style={[
+                styles.radarMiniFill,
+                {
+                  width: `${Math.max(0, Math.min(100, entry.value))}%`,
+                  backgroundColor: entry.color,
+                },
+              ]}
+            />
+          </View>
+        </View>
+      ))}
     </View>
   );
 }
@@ -1371,7 +1364,6 @@ export async function generateReportPdf(
               wrap={false}
             >
               <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-
               <BulletListCompact
                 items={limitOverviewRisks(
                   data.reportData.priorityRisks ?? [],
