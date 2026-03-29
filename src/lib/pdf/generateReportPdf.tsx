@@ -137,6 +137,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 12,
   },
+  coverInfoGrid: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
+    marginBottom: 12,
+  },
   infoCard: {
     flex: 1,
     borderWidth: 1,
@@ -390,6 +396,19 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#ffffff",
   },
+  coverFocusCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: COLORS.panel,
+  },
+  coverFocusTopBar: {
+    height: 3,
+    borderRadius: 999,
+    marginBottom: 10,
+  },
 
   findingCard: {
     border: `1 solid ${COLORS.line}`,
@@ -480,17 +499,30 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   colLeft: {
-    width: "50%",
+    width: "58%",
     paddingRight: 8,
   },
   colRight: {
-    width: "50%",
+    width: "42%",
     paddingLeft: 8,
   },
 
   radarWrap: {
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 0,
+  },
+  radarCard: {
+    minHeight: 310,
+  },
+  sideStack: {
+    gap: 10,
+  },
+  compactInfoCard: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    padding: 12,
   },
   radarLegendRow: {
     flexDirection: "row",
@@ -832,9 +864,9 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
     },
   ];
 
-  const size = 220;
+  const size = 250;
   const center = size / 2;
-  const radius = 68;
+  const radius = 82;
   const levels = [20, 40, 60, 80, 100];
 
   function pointFor(index: number, valuePct: number, r = radius) {
@@ -1017,6 +1049,34 @@ function findingSeverityPalette(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
   }
 }
 
+function getFocusAreaHeading(actionTitle: string) {
+  switch (actionTitle) {
+    case "Analizar deterioros del último ciclo":
+      return "Revisar desvíos recientes";
+    case "Revisar alertas activas":
+      return "Validar alertas activas";
+    case "Nueva revisión mensual recomendada":
+      return "Actualizar seguimiento";
+    case "Monitoreo al día":
+      return "Sostener monitoreo";
+    default:
+      return actionTitle;
+  }
+}
+
+function coverFocusAccent(tone: "neutral" | "ok" | "warning" | "danger") {
+  switch (tone) {
+    case "ok":
+      return COLORS.greenText;
+    case "warning":
+      return COLORS.blueText;
+    case "danger":
+      return COLORS.amberText;
+    default:
+      return COLORS.dark;
+  }
+}
+
 function actionRecommendationLabel(
   action:
     | "NONE"
@@ -1069,8 +1129,12 @@ export async function generateReportPdf(
     worsenedChangesCount,
   });
 
-  const actionPalette = pdfTonePalette(actionCard.tone);
   const nextReviewPalette = pdfTonePalette(nextReviewInfo.tone);
+  const focusAccent = coverFocusAccent(actionCard.tone);
+  const focusHeading = getFocusAreaHeading(actionCard.title);
+  const topPriorityRisks = limitOverviewRisks(
+    data.reportData.priorityRisks,
+  ).slice(0, 2);
   const doc = (
     <Document>
       {/* PAGE 1 */}
@@ -1124,31 +1188,19 @@ export async function generateReportPdf(
         </View>
 
         <View style={styles.heroCard} wrap={false}>
-          <View style={styles.infoGrid} wrap={false}>
-            <View
-              style={[
-                styles.summaryInfoCard,
-                {
-                  backgroundColor: actionPalette.bg,
-                  borderColor: actionPalette.bg,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.infoCardTitle, { color: actionPalette.text }]}
-              >
-                Acción recomendada
+          <View style={styles.coverInfoGrid} wrap={false}>
+            <View style={styles.coverFocusCard}>
+              <View
+                style={[
+                  styles.coverFocusTopBar,
+                  { backgroundColor: focusAccent },
+                ]}
+              />
+              <Text style={styles.infoCardTitle}>
+                Enfoque sugerido del ciclo
               </Text>
-              <Text
-                style={[styles.infoCardHeadline, { color: actionPalette.text }]}
-              >
-                {actionCard.title}
-              </Text>
-              <Text
-                style={[styles.infoCardBody, { color: actionPalette.text }]}
-              >
-                {actionCard.description}
-              </Text>
+              <Text style={styles.infoCardHeadline}>{focusHeading}</Text>
+              <Text style={styles.infoCardBody}>{actionCard.description}</Text>
             </View>
 
             <View
@@ -1228,11 +1280,12 @@ export async function generateReportPdf(
                 </View>
                 <View style={styles.kpiSpacer} />
                 <View style={styles.kpiCard}>
-                  <Text style={styles.kpiLabel}>Próxima revisión</Text>
+                  <Text style={styles.kpiLabel}>Próxima revisión sugerida</Text>
                   <Text style={styles.kpiValue}>
-                    {data.reportData.nextReviewSuggestedDays !== null
-                      ? `${data.reportData.nextReviewSuggestedDays} días`
-                      : "Sin fecha"}
+                    {nextReviewInfo.suggestedDateLabel}
+                  </Text>
+                  <Text style={[styles.smallText, { marginTop: 4 }]}>
+                    {nextReviewInfo.statusLabel}
                   </Text>
                 </View>
                 <View style={styles.kpiSpacer} />
@@ -1257,7 +1310,7 @@ export async function generateReportPdf(
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Puntos destacados del ciclo</Text>
           <BulletList
-            items={highlights}
+            items={highlights.slice(0, 2)}
             emptyText="No hay observaciones destacadas disponibles para este ciclo."
           />
         </View>
@@ -1285,19 +1338,29 @@ export async function generateReportPdf(
 
         <View style={styles.twoCol} wrap={false}>
           <View style={styles.colLeft}>
-            <View style={styles.infoCard} wrap={false}>
+            <View style={[styles.infoCard, styles.radarCard]} wrap={false}>
               <Text style={styles.sectionTitle}>Radar de pilares</Text>
               <RadarChart data={data.pillars} />
             </View>
           </View>
 
           <View style={styles.colRight}>
-            <View style={styles.infoCard} wrap={false}>
-              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-              <BulletList
-                items={limitOverviewRisks(data.reportData.priorityRisks)}
-                emptyText="No hay riesgos prioritarios identificados para este ciclo."
-              />
+            <View style={styles.sideStack}>
+              <View style={styles.compactInfoCard} wrap={false}>
+                <Text style={styles.sectionTitle}>Lectura rápida</Text>
+                <Text style={styles.bodyText}>
+                  Los pilares más expuestos actualmente son{" "}
+                  {pickWeakestPillars(data).join(" y ")}.
+                </Text>
+              </View>
+
+              <View style={styles.compactInfoCard} wrap={false}>
+                <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
+                <BulletList
+                  items={topPriorityRisks}
+                  emptyText="No hay riesgos prioritarios identificados para este ciclo."
+                />
+              </View>
             </View>
           </View>
         </View>
@@ -1443,7 +1506,7 @@ export async function generateReportPdf(
 
           {data.reportData.priorityFindings?.length ? (
             <View>
-              {data.reportData.priorityFindings.map((finding) => {
+              {data.reportData.priorityFindings.slice(0, 4).map((finding) => {
                 const palette = findingSeverityPalette(finding.severity);
                 const actionText = actionRecommendationLabel(
                   finding.actionRecommendation,
