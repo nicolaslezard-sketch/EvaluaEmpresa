@@ -165,12 +165,36 @@ const styles = StyleSheet.create({
     color: COLORS.slate,
     lineHeight: 1.45,
   },
+  summaryInfoCardNeutral: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#e2e8f0",
+  },
+  infoCardTitleNeutral: {
+    fontSize: 9,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    color: "#475569",
+    marginBottom: 6,
+  },
+  infoCardHeadlineNeutral: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: "#0f172a",
+    marginBottom: 6,
+    lineHeight: 1.25,
+  },
+  infoCardBodyNeutral: {
+    fontSize: 9.5,
+    color: "#475569",
+    lineHeight: 1.45,
+  },
   cycleChangeCard: {
     borderWidth: 1,
     borderColor: COLORS.line,
     borderRadius: 12,
-    padding: 9,
-    marginBottom: 7,
+    padding: 10,
+    marginBottom: 8,
     backgroundColor: "#ffffff",
   },
   cycleChangeTop: {
@@ -196,9 +220,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   cycleChangeBody: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: COLORS.ink,
-    lineHeight: 1.35,
+    lineHeight: 1.4,
   },
 
   overviewGrid: {
@@ -219,13 +243,13 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 6,
+    marginTop: 2,
   },
   pillarGridTitle: {
-    fontSize: 11.5,
+    fontSize: 12,
     fontWeight: "bold",
     color: COLORS.dark,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   pillarGrid: {
     flexDirection: "row",
@@ -234,21 +258,17 @@ const styles = StyleSheet.create({
   },
   pillarGridItem: {
     width: "48.5%",
-    marginBottom: 4,
+    marginBottom: 8,
   },
 
   section: {
-    marginTop: 14,
+    marginTop: 18,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: "bold",
     marginBottom: 8,
     color: COLORS.dark,
-  },
-  compactSectionTitle: {
-    fontSize: 12,
-    marginBottom: 6,
   },
   bodyText: {
     fontSize: 10.5,
@@ -401,9 +421,9 @@ const styles = StyleSheet.create({
   findingCard: {
     border: `1 solid ${COLORS.line}`,
     borderRadius: 12,
-    padding: 10,
+    padding: 12,
     backgroundColor: "#ffffff",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   findingHeader: {
     flexDirection: "row",
@@ -412,7 +432,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   findingTitle: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "bold",
     color: COLORS.dark,
     marginRight: 8,
@@ -438,15 +458,15 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   findingLabel: {
-    width: 82,
-    fontSize: 9.5,
+    width: 92,
+    fontSize: 10,
     fontWeight: "bold",
     color: COLORS.dark,
   },
   findingValue: {
     flex: 1,
-    fontSize: 9.2,
-    lineHeight: 1.35,
+    fontSize: 10,
+    lineHeight: 1.4,
     color: COLORS.slate,
   },
 
@@ -485,34 +505,53 @@ const styles = StyleSheet.create({
   twoCol: {
     flexDirection: "row",
     marginTop: 4,
+    marginBottom: 8,
+    alignItems: "flex-start",
   },
   colLeft: {
-    width: "58%",
+    width: "56%",
     paddingRight: 8,
   },
   colRight: {
-    width: "42%",
+    width: "44%",
     paddingLeft: 8,
   },
 
+  radarCardPage2: {
+    minHeight: 240,
+    paddingBottom: 10,
+  },
+  risksCardPage2: {
+    minHeight: 240,
+    paddingBottom: 10,
+  },
+  radarChartBox: {
+    height: 176,
+    overflow: "hidden",
+    justifyContent: "center",
+  },
   radarWrap: {
     alignItems: "center",
-    marginTop: 2,
+    marginTop: 0,
   },
-  radarLegendRow: {
+  radarLegendCompact: {
+    marginTop: 4,
+    width: "100%",
+  },
+  radarLegendCompactRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 3,
+    marginBottom: 2,
   },
   radarLegendDot: {
-    width: 7,
-    height: 7,
+    width: 6,
+    height: 6,
     borderRadius: 999,
-    marginRight: 6,
+    marginRight: 5,
     marginTop: 1,
   },
-  radarLegendText: {
-    fontSize: 8.8,
+  radarLegendCompactText: {
+    fontSize: 8.2,
     color: COLORS.slate,
   },
 
@@ -521,9 +560,12 @@ const styles = StyleSheet.create({
     border: `1 solid ${COLORS.line}`,
     borderRadius: 12,
     backgroundColor: "#ffffff",
-    padding: 11,
-    marginBottom: 8,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
   },
+  pillarCardOdd: {},
   pillarTitle: {
     fontSize: 10.5,
     fontWeight: "bold",
@@ -541,7 +583,7 @@ const styles = StyleSheet.create({
     color: COLORS.dark,
   },
   pillarDelta: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: COLORS.slate,
   },
   barTrack: {
@@ -557,7 +599,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.dark,
   },
   pillarState: {
-    fontSize: 9.2,
+    fontSize: 9,
     color: COLORS.slate,
   },
 
@@ -836,9 +878,9 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
     },
   ];
 
-  const size = 190;
+  const size = 148;
   const center = size / 2;
-  const radius = 60;
+  const radius = 46;
   const levels = [20, 40, 60, 80, 100];
 
   function pointFor(index: number, valuePct: number, r = radius) {
@@ -897,7 +939,7 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
           points={dataPolygon}
           fill="#CBD5E1"
           stroke={COLORS.dark}
-          strokeWidth={1.5}
+          strokeWidth={1.3}
         />
 
         {entries.map((entry, i) => {
@@ -907,25 +949,20 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
               key={`dot-${entry.key}`}
               cx={p.x}
               cy={p.y}
-              r={3.2}
+              r={2.6}
               fill={entry.color}
             />
           );
         })}
       </Svg>
 
-      <View style={{ marginTop: 2, width: "100%" }}>
+      <View style={styles.radarLegendCompact}>
         {entries.map((entry) => (
-          <View key={entry.key} style={styles.radarLegendRow}>
+          <View key={entry.key} style={styles.radarLegendCompactRow}>
             <View
               style={[styles.radarLegendDot, { backgroundColor: entry.color }]}
             />
-            <Text
-              style={[
-                styles.radarLegendText,
-                { color: entry.color, fontWeight: "bold" },
-              ]}
-            >
+            <Text style={styles.radarLegendCompactText}>
               {entry.label}: {entry.value.toFixed(1)}
             </Text>
           </View>
@@ -940,17 +977,24 @@ function PillarCard({
   title,
   score,
   delta,
+  odd,
 }: {
   pillarKey: keyof DeterministicPdfData["pillars"];
   title: string;
   score: number | null;
   delta: number | null;
+  odd?: boolean;
 }) {
   const width = `${Math.max(0, Math.min(100, safeScore(score)))}%`;
   const accent = pillarColor(pillarKey);
 
   return (
-    <View wrap={false} style={styles.pillarCard}>
+    <View
+      wrap={false}
+      style={
+        odd ? [styles.pillarCard, styles.pillarCardOdd] : styles.pillarCard
+      }
+    >
       <Text style={[styles.pillarTitleAccent, { color: accent }]}>{title}</Text>
 
       <View style={styles.pillarScoreRow}>
@@ -994,8 +1038,10 @@ function limitOverviewRisks(items: string[]) {
   return items.slice(0, 2);
 }
 
-function limitHighlights(items: string[]) {
-  return items.slice(0, 2);
+function limitCycleChanges(
+  items: DeterministicPdfData["reportData"]["relevantCycleChanges"],
+) {
+  return items.slice(0, 4);
 }
 
 function limitPriorityFindings(
@@ -1006,6 +1052,24 @@ function limitPriorityFindings(
 
 function limitRecommendations(items: string[]) {
   return items.slice(0, 5);
+}
+
+function softenActionTitle(title: string) {
+  const normalized = title.trim().toLowerCase();
+  if (normalized === "analizar deterioros del último ciclo") {
+    return "Revisar desvíos recientes";
+  }
+  if (normalized === "revisar alertas activas") {
+    return "Revisar focos activos";
+  }
+  return title;
+}
+
+function softenActionDescription(description: string) {
+  return description
+    .replace("Se detectaron deterioros", "Se detectaron cambios")
+    .replace("Conviene revisar los deterioros", "Conviene revisar el detalle")
+    .replace("antes de la próxima revisión.", "en este ciclo.");
 }
 
 function findingSeverityPalette(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
@@ -1056,32 +1120,22 @@ function actionRecommendationLabel(
   }
 }
 
-function softenActionTitle(title: string) {
-  const normalized = title.trim();
-  if (/analizar deterioros del último ciclo/i.test(normalized))
-    return "Revisar desvíos recientes";
-  if (/resolver alertas vencidas/i.test(normalized))
-    return "Regularizar revisión pendiente";
-  return normalized;
-}
-
-function softenActionDescription(description: string) {
-  return description
-    .replace(/requiere atención inmediata/gi, "conviene atender sin demoras")
-    .replace(
-      /debe revisarse de inmediato/gi,
-      "conviene revisarse a la brevedad",
-    )
-    .replace(/acciones urgentes/gi, "acciones prioritarias");
-}
-
 export async function generateReportPdf(
   data: DeterministicPdfData,
 ): Promise<Buffer> {
   const categoryPalette = getCategoryPalette(data.executiveCategory);
   const overall = safeScore(data.overallScore);
 
-  const highlights = executiveHighlights(data);
+  const highlights = executiveHighlights(data).slice(0, 2);
+  const cycleChanges = limitCycleChanges(
+    data.reportData.relevantCycleChanges ?? [],
+  );
+  const priorityFindings = limitPriorityFindings(
+    data.reportData.priorityFindings ?? [],
+  );
+  const recommendations = limitRecommendations(
+    data.reportData.recommendations ?? [],
+  );
 
   const reviewStatus = getReviewStatus(new Date(data.evaluationCreatedAtISO));
   const nextReviewInfo = getNextReviewInfo(
@@ -1099,8 +1153,6 @@ export async function generateReportPdf(
     worsenedChangesCount,
   });
 
-  const actionPalette = pdfTonePalette(actionCard.tone);
-  const nextReviewPalette = pdfTonePalette(nextReviewInfo.tone);
   const doc = (
     <Document>
       {/* PAGE 1 */}
@@ -1156,64 +1208,32 @@ export async function generateReportPdf(
         <View style={styles.heroCard} wrap={false}>
           <View style={styles.infoGrid} wrap={false}>
             <View
-              style={[
-                styles.summaryInfoCard,
-                {
-                  backgroundColor: actionPalette.bg,
-                  borderColor: actionPalette.bg,
-                },
-              ]}
+              style={[styles.summaryInfoCard, styles.summaryInfoCardNeutral]}
             >
-              <Text
-                style={[styles.infoCardTitle, { color: actionPalette.text }]}
-              >
+              <Text style={styles.infoCardTitleNeutral}>
                 Enfoque sugerido del ciclo
               </Text>
-              <Text
-                style={[styles.infoCardHeadline, { color: actionPalette.text }]}
-              >
+              <Text style={styles.infoCardHeadlineNeutral}>
                 {softenActionTitle(actionCard.title)}
               </Text>
-              <Text
-                style={[styles.infoCardBody, { color: actionPalette.text }]}
-              >
+              <Text style={styles.infoCardBodyNeutral}>
                 {softenActionDescription(actionCard.description)}
               </Text>
             </View>
 
             <View
-              style={[
-                styles.summaryInfoCard,
-                {
-                  backgroundColor: nextReviewPalette.bg,
-                  borderColor: nextReviewPalette.bg,
-                },
-              ]}
+              style={[styles.summaryInfoCard, styles.summaryInfoCardNeutral]}
             >
-              <Text
-                style={[
-                  styles.infoCardTitle,
-                  { color: nextReviewPalette.text },
-                ]}
-              >
+              <Text style={styles.infoCardTitleNeutral}>
                 Próxima revisión sugerida
               </Text>
-              <Text
-                style={[
-                  styles.infoCardHeadline,
-                  { color: nextReviewPalette.text },
-                ]}
-              >
+              <Text style={styles.infoCardHeadlineNeutral}>
                 {nextReviewInfo.suggestedDateLabel}
               </Text>
-              <Text
-                style={[styles.infoCardBody, { color: nextReviewPalette.text }]}
-              >
+              <Text style={styles.infoCardBodyNeutral}>
                 {nextReviewInfo.statusLabel}
               </Text>
-              <Text
-                style={[styles.infoCardBody, { color: nextReviewPalette.text }]}
-              >
+              <Text style={styles.infoCardBodyNeutral}>
                 {nextReviewInfo.helperText}
               </Text>
             </View>
@@ -1262,7 +1282,7 @@ export async function generateReportPdf(
                   <Text style={styles.kpiValue}>
                     {nextReviewInfo.suggestedDateLabel}
                   </Text>
-                  <Text style={[styles.smallText, { marginTop: 4 }]}>
+                  <Text style={styles.smallText}>
                     {nextReviewInfo.statusLabel}
                   </Text>
                 </View>
@@ -1288,7 +1308,7 @@ export async function generateReportPdf(
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Puntos destacados del ciclo</Text>
           <BulletList
-            items={limitHighlights(highlights)}
+            items={highlights}
             emptyText="No hay observaciones destacadas disponibles para este ciclo."
           />
         </View>
@@ -1317,26 +1337,34 @@ export async function generateReportPdf(
         <View style={styles.twoCol} wrap={false}>
           <View style={styles.colLeft}>
             <View
-              style={[styles.infoCard, styles.compactInfoCard]}
+              style={[
+                styles.infoCard,
+                styles.compactInfoCard,
+                styles.radarCardPage2,
+              ]}
               wrap={false}
             >
-              <Text style={[styles.sectionTitle, styles.compactSectionTitle]}>
-                Radar de pilares
-              </Text>
-              <RadarChart data={data.pillars} />
+              <Text style={styles.sectionTitle}>Radar de pilares</Text>
+              <View style={styles.radarChartBox}>
+                <RadarChart data={data.pillars} />
+              </View>
             </View>
           </View>
 
           <View style={styles.colRight}>
             <View
-              style={[styles.infoCard, styles.compactInfoCard]}
+              style={[
+                styles.infoCard,
+                styles.compactInfoCard,
+                styles.risksCardPage2,
+              ]}
               wrap={false}
             >
-              <Text style={[styles.sectionTitle, styles.compactSectionTitle]}>
-                Riesgos prioritarios
-              </Text>
+              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
               <BulletList
-                items={limitOverviewRisks(data.reportData.priorityRisks)}
+                items={limitOverviewRisks(
+                  data.reportData.priorityRisks ?? [],
+                ).slice(0, 2)}
                 emptyText="No hay riesgos prioritarios identificados para este ciclo."
               />
             </View>
@@ -1362,6 +1390,7 @@ export async function generateReportPdf(
                 title="Comercial"
                 score={data.pillars.commercial}
                 delta={data.deltas.commercial}
+                odd
               />
             </View>
 
@@ -1380,6 +1409,7 @@ export async function generateReportPdf(
                 title="Legal"
                 score={data.pillars.legal}
                 delta={data.deltas.legal}
+                odd
               />
             </View>
 
@@ -1410,9 +1440,9 @@ export async function generateReportPdf(
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Cambios relevantes del ciclo</Text>
 
-          {data.reportData.relevantCycleChanges?.length ? (
+          {cycleChanges.length ? (
             <View>
-              {data.reportData.relevantCycleChanges.map((change, index) => {
+              {cycleChanges.map((change, index) => {
                 const badgePalette =
                   change.kind === "IMPROVED"
                     ? { bg: COLORS.greenBg, text: COLORS.greenText }
@@ -1476,79 +1506,77 @@ export async function generateReportPdf(
             Hallazgos priorizados del ciclo
           </Text>
 
-          {data.reportData.priorityFindings?.length ? (
+          {priorityFindings.length ? (
             <View>
-              {limitPriorityFindings(data.reportData.priorityFindings).map(
-                (finding) => {
-                  const palette = findingSeverityPalette(finding.severity);
-                  const actionText = actionRecommendationLabel(
-                    finding.actionRecommendation,
-                  );
+              {priorityFindings.map((finding) => {
+                const palette = findingSeverityPalette(finding.severity);
+                const actionText = actionRecommendationLabel(
+                  finding.actionRecommendation,
+                );
 
-                  return (
-                    <View
-                      key={`${finding.pillar}-${finding.fieldKey}`}
-                      style={styles.findingCard}
-                    >
-                      <View style={styles.findingHeader}>
-                        <Text style={styles.findingTitle}>
-                          {finding.fieldLabel}
-                        </Text>
+                return (
+                  <View
+                    key={`${finding.pillar}-${finding.fieldKey}`}
+                    style={styles.findingCard}
+                  >
+                    <View style={styles.findingHeader}>
+                      <Text style={styles.findingTitle}>
+                        {finding.fieldLabel}
+                      </Text>
 
-                        <Text
-                          style={[
-                            styles.findingBadge,
-                            {
-                              backgroundColor: palette.bg,
-                              color: palette.text,
-                            },
-                          ]}
-                        >
-                          {finding.severity}
-                        </Text>
+                      <Text
+                        style={[
+                          styles.findingBadge,
+                          {
+                            backgroundColor: palette.bg,
+                            color: palette.text,
+                          },
+                        ]}
+                      >
+                        {finding.severity}
+                      </Text>
 
-                        <Text style={styles.findingPillarBadge}>
-                          {finding.pillarLabel}
+                      <Text style={styles.findingPillarBadge}>
+                        {finding.pillarLabel}
+                      </Text>
+                    </View>
+
+                    {finding.rationale ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Situación:</Text>
+                        <Text style={styles.findingValue}>
+                          {finding.rationale}
                         </Text>
                       </View>
+                    ) : null}
 
-                      {finding.rationale ? (
-                        <View style={styles.findingRow}>
-                          <Text style={styles.findingLabel}>Situación:</Text>
-                          <Text style={styles.findingValue}>
-                            {finding.rationale}
-                          </Text>
-                        </View>
-                      ) : null}
+                    {finding.evidenceNote ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Evidencia:</Text>
+                        <Text style={styles.findingValue}>
+                          {finding.evidenceNote}
+                        </Text>
+                      </View>
+                    ) : null}
 
-                      {finding.evidenceNote ? (
-                        <View style={styles.findingRow}>
-                          <Text style={styles.findingLabel}>Evidencia:</Text>
-                          <Text style={styles.findingValue}>
-                            {finding.evidenceNote}
-                          </Text>
-                        </View>
-                      ) : null}
+                    {finding.primaryIssue ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Problema:</Text>
+                        <Text style={styles.findingValue}>
+                          {finding.primaryIssue}
+                        </Text>
+                      </View>
+                    ) : null}
 
-                      {finding.primaryIssue ? (
-                        <View style={styles.findingRow}>
-                          <Text style={styles.findingLabel}>Problema:</Text>
-                          <Text style={styles.findingValue}>
-                            {finding.primaryIssue}
-                          </Text>
-                        </View>
-                      ) : null}
-
-                      {actionText ? (
-                        <View style={styles.findingRow}>
-                          <Text style={styles.findingLabel}>Acción:</Text>
-                          <Text style={styles.findingValue}>{actionText}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  );
-                },
-              )}
+                    {actionText ? (
+                      <View style={styles.findingRow}>
+                        <Text style={styles.findingLabel}>Acción:</Text>
+                        <Text style={styles.findingValue}>{actionText}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                );
+              })}
             </View>
           ) : (
             <Text style={styles.bodyText}>
@@ -1560,7 +1588,7 @@ export async function generateReportPdf(
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recomendaciones</Text>
           <BulletList
-            items={limitRecommendations(data.reportData.recommendations)}
+            items={recommendations}
             emptyText="No se definieron recomendaciones específicas para este ciclo."
           />
         </View>
