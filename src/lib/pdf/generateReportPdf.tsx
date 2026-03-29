@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 2,
+    marginTop: 12,
   },
   pillarGridTitle: {
     fontSize: 12,
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   twoCol: {
     flexDirection: "row",
     marginTop: 4,
-    marginBottom: 8,
+    marginBottom: 12,
     alignItems: "flex-start",
   },
   colLeft: {
@@ -518,40 +518,47 @@ const styles = StyleSheet.create({
   },
 
   radarCardPage2: {
-    minHeight: 240,
+    height: 236,
     paddingBottom: 10,
   },
   risksCardPage2: {
-    minHeight: 240,
+    height: 236,
     paddingBottom: 10,
   },
   radarChartBox: {
     height: 176,
-    overflow: "hidden",
     justifyContent: "center",
+    alignItems: "center",
   },
   radarWrap: {
+    height: 176,
+    width: "100%",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 0,
+  },
+  radarSvgBox: {
+    height: 122,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   radarLegendCompact: {
-    marginTop: 4,
     width: "100%",
+    marginTop: 0,
   },
   radarLegendCompactRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 2,
+    marginBottom: 3,
   },
   radarLegendDot: {
     width: 6,
     height: 6,
     borderRadius: 999,
     marginRight: 5,
-    marginTop: 1,
   },
   radarLegendCompactText: {
-    fontSize: 8.2,
+    fontSize: 8.3,
     color: COLORS.slate,
   },
 
@@ -791,24 +798,6 @@ function executiveHighlights(data: DeterministicPdfData) {
   ];
 }
 
-function pdfTonePalette(
-  tone: "neutral" | "ok" | "soon" | "overdue" | "warning" | "danger",
-) {
-  switch (tone) {
-    case "ok":
-      return { bg: COLORS.greenBg, text: COLORS.greenText };
-    case "soon":
-      return { bg: COLORS.blueBg, text: COLORS.blueText };
-    case "overdue":
-    case "warning":
-      return { bg: COLORS.amberBg, text: COLORS.amberText };
-    case "danger":
-      return { bg: COLORS.redBg, text: COLORS.redText };
-    default:
-      return { bg: "#f3f4f6", text: COLORS.dark };
-  }
-}
-
 function cycleChangeKindLabel(
   kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED",
 ) {
@@ -878,9 +867,9 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
     },
   ];
 
-  const size = 148;
+  const size = 122;
   const center = size / 2;
-  const radius = 46;
+  const radius = 38;
   const levels = [20, 40, 60, 80, 100];
 
   function pointFor(index: number, valuePct: number, r = radius) {
@@ -908,53 +897,55 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
     .join(" ");
 
   return (
-    <View style={styles.radarWrap}>
-      <Svg width={size} height={size}>
-        {levels.map((level) => (
-          <Polygon
-            key={`level-${level}`}
-            points={polygonPoints(level)}
-            stroke={COLORS.line}
-            strokeWidth={1}
-            fill="none"
-          />
-        ))}
-
-        {entries.map((entry, i) => {
-          const p = pointFor(i, 100);
-          return (
-            <Line
-              key={`axis-${entry.key}`}
-              x1={center}
-              y1={center}
-              x2={p.x}
-              y2={p.y}
-              stroke={entry.color}
+    <View style={styles.radarWrap} wrap={false}>
+      <View style={styles.radarSvgBox}>
+        <Svg width={size} height={size}>
+          {levels.map((level) => (
+            <Polygon
+              key={`level-${level}`}
+              points={polygonPoints(level)}
+              stroke={COLORS.line}
               strokeWidth={1}
+              fill="none"
             />
-          );
-        })}
+          ))}
 
-        <Polygon
-          points={dataPolygon}
-          fill="#CBD5E1"
-          stroke={COLORS.dark}
-          strokeWidth={1.3}
-        />
+          {entries.map((entry, i) => {
+            const p = pointFor(i, 100);
+            return (
+              <Line
+                key={`axis-${entry.key}`}
+                x1={center}
+                y1={center}
+                x2={p.x}
+                y2={p.y}
+                stroke={entry.color}
+                strokeWidth={1}
+              />
+            );
+          })}
 
-        {entries.map((entry, i) => {
-          const p = pointFor(i, entry.value);
-          return (
-            <Circle
-              key={`dot-${entry.key}`}
-              cx={p.x}
-              cy={p.y}
-              r={2.6}
-              fill={entry.color}
-            />
-          );
-        })}
-      </Svg>
+          <Polygon
+            points={dataPolygon}
+            fill="#CBD5E1"
+            stroke={COLORS.dark}
+            strokeWidth={1.2}
+          />
+
+          {entries.map((entry, i) => {
+            const p = pointFor(i, entry.value);
+            return (
+              <Circle
+                key={`dot-${entry.key}`}
+                cx={p.x}
+                cy={p.y}
+                r={2.3}
+                fill={entry.color}
+              />
+            );
+          })}
+        </Svg>
+      </View>
 
       <View style={styles.radarLegendCompact}>
         {entries.map((entry) => (
@@ -1371,7 +1362,7 @@ export async function generateReportPdf(
           </View>
         </View>
 
-        <View style={styles.pillarGridWrap}>
+        <View style={styles.pillarGridWrap} wrap={false}>
           <Text style={styles.pillarGridTitle}>Vista por pilar</Text>
 
           <View style={styles.pillarGrid}>
