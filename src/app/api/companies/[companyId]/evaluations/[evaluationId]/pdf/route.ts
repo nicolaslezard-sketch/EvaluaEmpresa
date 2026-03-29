@@ -68,11 +68,15 @@ export async function GET(
       );
     }
 
+    const reportData =
+      evaluation.reportData as DeterministicPdfData["reportData"];
+
     const pdfData: DeterministicPdfData = {
       companyName: evaluation.company.name,
       generatedAt: new Date(
         evaluation.updatedAt ?? evaluation.createdAt,
       ).toLocaleDateString("es-AR"),
+      evaluationCreatedAtISO: evaluation.createdAt.toISOString(),
       companyCriticality: evaluation.company.criticality,
       overallScore: evaluation.overallScore ?? 0,
       executiveCategory: evaluation.executiveCategory ?? "SIN_CATEGORIA",
@@ -91,7 +95,7 @@ export async function GET(
         legal: evaluation.deltaLegal,
         strategic: evaluation.deltaStrategic,
       },
-      reportData: evaluation.reportData as DeterministicPdfData["reportData"],
+      reportData,
     };
 
     const buffer = await generateReportPdf(pdfData);

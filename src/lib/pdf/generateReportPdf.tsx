@@ -10,10 +10,14 @@ import {
   Line,
   Circle,
 } from "@react-pdf/renderer";
+import { getNextReviewInfo } from "@/lib/reviews/getNextReviewInfo";
+import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
+import { getCompanyActionCard } from "@/lib/companies/getCompanyActionCard";
 
 export type DeterministicPdfData = {
   companyName: string;
   generatedAt: string;
+  evaluationCreatedAtISO: string;
   companyCriticality: string;
   overallScore: number;
   executiveCategory: string;
@@ -62,6 +66,28 @@ export type DeterministicPdfData = {
         | "REASSESS_EARLY"
         | null;
     }>;
+    relevantCycleChanges: Array<{
+      kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED";
+      pillar:
+        | "financial"
+        | "commercial"
+        | "operational"
+        | "legal"
+        | "strategic";
+      pillarLabel: string;
+      fieldKey: string;
+      fieldLabel: string;
+      previousValue: number | null;
+      currentValue: number;
+      delta: number | null;
+      currentSeverity:
+        | "FAVORABLE"
+        | "ESTABLE"
+        | "OBSERVACION"
+        | "DEBIL"
+        | "CRITICO";
+      rationale: string | null;
+    }>;
   };
 };
 
@@ -103,6 +129,73 @@ const styles = StyleSheet.create({
     fontFamily: "Helvetica",
     color: COLORS.ink,
     backgroundColor: "#ffffff",
+  },
+
+  infoGrid: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  infoCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#ffffff",
+  },
+  infoCardTitle: {
+    fontSize: 9,
+    color: COLORS.muted,
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  infoCardHeadline: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: COLORS.dark,
+    marginBottom: 6,
+  },
+  infoCardBody: {
+    fontSize: 9.5,
+    color: COLORS.slate,
+    lineHeight: 1.45,
+  },
+  cycleChangeCard: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    backgroundColor: "#ffffff",
+  },
+  cycleChangeTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  cycleChangeTitle: {
+    fontSize: 10,
+    fontWeight: 700,
+    color: COLORS.dark,
+    maxWidth: "72%",
+  },
+  cycleChangeBadge: {
+    fontSize: 8.5,
+    paddingVertical: 3,
+    paddingHorizontal: 7,
+    borderRadius: 999,
+  },
+  cycleChangeMeta: {
+    fontSize: 9,
+    color: COLORS.slate,
+    marginBottom: 4,
+  },
+  cycleChangeBody: {
+    fontSize: 9.5,
+    color: COLORS.ink,
+    lineHeight: 1.4,
   },
 
   overviewGrid: {
@@ -289,12 +382,13 @@ const styles = StyleSheet.create({
     lineHeight: 1.25,
   },
 
-  infoCard: {
-    border: `1 solid ${COLORS.line}`,
+  summaryInfoCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.line,
     borderRadius: 12,
-    padding: 14,
+    padding: 12,
     backgroundColor: "#ffffff",
-    marginBottom: 12,
   },
 
   findingCard: {
@@ -651,6 +745,54 @@ function executiveHighlights(data: DeterministicPdfData) {
   ];
 }
 
+function pdfTonePalette(
+  tone: "neutral" | "ok" | "soon" | "overdue" | "warning" | "danger",
+) {
+  switch (tone) {
+    case "ok":
+      return { bg: COLORS.greenBg, text: COLORS.greenText };
+    case "soon":
+      return { bg: COLORS.blueBg, text: COLORS.blueText };
+    case "overdue":
+    case "warning":
+      return { bg: COLORS.amberBg, text: COLORS.amberText };
+    case "danger":
+      return { bg: COLORS.redBg, text: COLORS.redText };
+    default:
+      return { bg: "#f3f4f6", text: COLORS.dark };
+  }
+}
+
+function cycleChangeKindLabel(
+  kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED",
+) {
+  switch (kind) {
+    case "WORSENED":
+      return "Empeoró";
+    case "PERSISTING_RISK":
+      return "Sigue débil";
+    case "IMPROVED":
+      return "Mejoró";
+  }
+}
+
+function fieldLevelLabel(value: number | null | undefined) {
+  switch (value) {
+    case 20:
+      return "Crítico";
+    case 40:
+      return "Débil";
+    case 60:
+      return "Observación";
+    case 75:
+      return "Estable";
+    case 90:
+      return "Muy favorable";
+    default:
+      return "—";
+  }
+}
+
 function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
   const entries: Array<{
     key: keyof DeterministicPdfData["pillars"];
@@ -911,6 +1053,24 @@ export async function generateReportPdf(
 
   const highlights = executiveHighlights(data);
 
+  const reviewStatus = getReviewStatus(new Date(data.evaluationCreatedAtISO));
+  const nextReviewInfo = getNextReviewInfo(
+    new Date(data.evaluationCreatedAtISO),
+  );
+  const worsenedChangesCount = (
+    data.reportData.relevantCycleChanges ?? []
+  ).filter((change) => change.kind === "WORSENED").length;
+
+  const actionCard = getCompanyActionCard({
+    hasLatestFinalized: true,
+    hasActiveDraft: false,
+    reviewTone: reviewStatus.tone,
+    activeAlertsCount: 0,
+    worsenedChangesCount,
+  });
+
+  const actionPalette = pdfTonePalette(actionCard.tone);
+  const nextReviewPalette = pdfTonePalette(nextReviewInfo.tone);
   const doc = (
     <Document>
       {/* PAGE 1 */}
@@ -964,6 +1124,70 @@ export async function generateReportPdf(
         </View>
 
         <View style={styles.heroCard} wrap={false}>
+          <View style={styles.infoGrid} wrap={false}>
+            <View
+              style={[
+                styles.summaryInfoCard,
+                {
+                  backgroundColor: actionPalette.bg,
+                  borderColor: actionPalette.bg,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.infoCardTitle, { color: actionPalette.text }]}
+              >
+                Acción recomendada
+              </Text>
+              <Text
+                style={[styles.infoCardHeadline, { color: actionPalette.text }]}
+              >
+                {actionCard.title}
+              </Text>
+              <Text
+                style={[styles.infoCardBody, { color: actionPalette.text }]}
+              >
+                {actionCard.description}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.summaryInfoCard,
+                {
+                  backgroundColor: nextReviewPalette.bg,
+                  borderColor: nextReviewPalette.bg,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.infoCardTitle,
+                  { color: nextReviewPalette.text },
+                ]}
+              >
+                Próxima revisión sugerida
+              </Text>
+              <Text
+                style={[
+                  styles.infoCardHeadline,
+                  { color: nextReviewPalette.text },
+                ]}
+              >
+                {nextReviewInfo.suggestedDateLabel}
+              </Text>
+              <Text
+                style={[styles.infoCardBody, { color: nextReviewPalette.text }]}
+              >
+                {nextReviewInfo.statusLabel}
+              </Text>
+              <Text
+                style={[styles.infoCardBody, { color: nextReviewPalette.text }]}
+              >
+                {nextReviewInfo.helperText}
+              </Text>
+            </View>
+          </View>
           <View style={styles.heroGrid}>
             <View style={styles.heroLeft}>
               <Text style={styles.heroLabel}>Score general</Text>
@@ -1144,6 +1368,74 @@ export async function generateReportPdf(
           </Text>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Cambios relevantes del ciclo</Text>
+
+          {data.reportData.relevantCycleChanges?.length ? (
+            <View>
+              {data.reportData.relevantCycleChanges
+                .slice(0, 6)
+                .map((change, index) => {
+                  const badgePalette =
+                    change.kind === "IMPROVED"
+                      ? { bg: COLORS.greenBg, text: COLORS.greenText }
+                      : change.kind === "PERSISTING_RISK"
+                        ? { bg: COLORS.amberBg, text: COLORS.amberText }
+                        : { bg: COLORS.redBg, text: COLORS.redText };
+
+                  return (
+                    <View
+                      key={`${change.kind}-${change.fieldKey}-${index}`}
+                      style={styles.cycleChangeCard}
+                    >
+                      <View style={styles.cycleChangeTop}>
+                        <Text style={styles.cycleChangeTitle}>
+                          {change.fieldLabel}
+                        </Text>
+
+                        <Text
+                          style={[
+                            styles.cycleChangeBadge,
+                            {
+                              backgroundColor: badgePalette.bg,
+                              color: badgePalette.text,
+                            },
+                          ]}
+                        >
+                          {cycleChangeKindLabel(change.kind)}
+                        </Text>
+                      </View>
+
+                      <Text style={styles.cycleChangeMeta}>
+                        {change.pillarLabel}
+                      </Text>
+
+                      <Text style={styles.cycleChangeBody}>
+                        {change.kind === "PERSISTING_RISK"
+                          ? `Se mantiene en nivel ${fieldLevelLabel(change.currentValue)}.`
+                          : `Pasó de ${fieldLevelLabel(change.previousValue)} a ${fieldLevelLabel(
+                              change.currentValue,
+                            )}.`}
+                      </Text>
+
+                      {change.rationale ? (
+                        <Text
+                          style={[styles.cycleChangeBody, { marginTop: 4 }]}
+                        >
+                          Contexto: {change.rationale}
+                        </Text>
+                      ) : null}
+                    </View>
+                  );
+                })}
+            </View>
+          ) : (
+            <Text style={styles.bodyText}>
+              No se registraron cambios relevantes del ciclo para esta
+              evaluación.
+            </Text>
+          )}
+        </View>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Hallazgos priorizados del ciclo

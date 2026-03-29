@@ -83,6 +83,57 @@ function stalePriorityDate(value: Date | string | null | undefined) {
   return new Date(value).getTime();
 }
 
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function daysBetween(from: Date, to: Date) {
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diff = to.getTime() - from.getTime();
+  return Math.floor(diff / msPerDay);
+}
+
+function buildNextReviewInfo(latestCreatedAt?: Date | null) {
+  if (!latestCreatedAt) {
+    return {
+      suggestedDateLabel: "Sin ciclo base",
+      statusLabel: "Primera evaluación pendiente",
+      toneClassName: "border-zinc-200 bg-zinc-50",
+    };
+  }
+
+  const today = new Date();
+  const suggestedDate = addDays(new Date(latestCreatedAt), 30);
+  const suggestedDateLabel = suggestedDate.toLocaleDateString();
+  const diffDays = daysBetween(today, suggestedDate);
+
+  if (diffDays < 0) {
+    return {
+      suggestedDateLabel,
+      statusLabel: `Atrasada por ${Math.abs(diffDays)} día${
+        Math.abs(diffDays) === 1 ? "" : "s"
+      }`,
+      toneClassName: "border-amber-200 bg-amber-50",
+    };
+  }
+
+  if (diffDays <= 7) {
+    return {
+      suggestedDateLabel,
+      statusLabel: `Revisar en ${diffDays} día${diffDays === 1 ? "" : "s"}`,
+      toneClassName: "border-blue-200 bg-blue-50",
+    };
+  }
+
+  return {
+    suggestedDateLabel,
+    statusLabel: "Al día",
+    toneClassName: "border-emerald-200 bg-emerald-50",
+  };
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
@@ -205,28 +256,35 @@ export default async function DashboardPage() {
     })
     .slice(0, 5);
 
-  const dashboardCards = companySummaries.map((item) => ({
-    id: item.company.id,
-    name: item.company.name,
-    criticality: item.company.criticality,
-    href: `/companies/${item.company.id}`,
-    evaluationHref: item.latest
-      ? `/companies/${item.company.id}/evaluations/${item.latest.id}`
-      : null,
-    newEvaluationHref: `/companies/${item.company.id}/evaluations/new`,
-    reviewLabel: item.reviewStatus.label,
-    reviewClassName: item.reviewStatus.className,
-    reviewTone: item.reviewStatus.tone,
-    executiveCategory: item.latest?.executiveCategory ?? null,
-    overallScore: item.latest?.overallScore ?? null,
-    deltaOverall: item.latest?.deltaOverall ?? null,
-    updatedAtLabel: item.latest
-      ? new Date(item.latest.createdAt).toLocaleDateString()
-      : null,
-    relevantCycleChangesCount: item.relevantCycleChanges.length,
-    worsenedChangesCount: item.worsenedChanges.length,
-    activeAlertsCount: item.activeAlerts.length,
-  }));
+  const dashboardCards = companySummaries.map((item) => {
+    const nextReviewInfo = buildNextReviewInfo(item.latest?.createdAt);
+
+    return {
+      id: item.company.id,
+      name: item.company.name,
+      criticality: item.company.criticality,
+      href: `/companies/${item.company.id}`,
+      evaluationHref: item.latest
+        ? `/companies/${item.company.id}/evaluations/${item.latest.id}`
+        : null,
+      newEvaluationHref: `/companies/${item.company.id}/evaluations/new`,
+      reviewLabel: item.reviewStatus.label,
+      reviewClassName: item.reviewStatus.className,
+      reviewTone: item.reviewStatus.tone,
+      executiveCategory: item.latest?.executiveCategory ?? null,
+      overallScore: item.latest?.overallScore ?? null,
+      deltaOverall: item.latest?.deltaOverall ?? null,
+      updatedAtLabel: item.latest
+        ? new Date(item.latest.createdAt).toLocaleDateString()
+        : null,
+      relevantCycleChangesCount: item.relevantCycleChanges.length,
+      worsenedChangesCount: item.worsenedChanges.length,
+      activeAlertsCount: item.activeAlerts.length,
+      nextReviewDateLabel: nextReviewInfo.suggestedDateLabel,
+      nextReviewStatusLabel: nextReviewInfo.statusLabel,
+      nextReviewToneClassName: nextReviewInfo.toneClassName,
+    };
+  });
 
   return (
     <div className="space-y-8">
@@ -254,66 +312,6 @@ export default async function DashboardPage() {
           <div className="mt-2 text-3xl font-semibold text-zinc-900">
             {activeCompanyCount}/{ent.maxCompanies}
           </div>
-          <div className="rounded-3xl border bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h2 className="text-lg font-medium text-zinc-900">
-                  Resumen ejecutivo
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Vista rápida de prioridades operativas del monitoreo actual.
-                </p>
-              </div>
-
-              <div className="text-sm text-zinc-500">
-                Enfoque: acción antes que visualización
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
-                <div className="text-sm text-zinc-600">
-                  Requieren acción ahora
-                </div>
-                <div className="mt-2 text-3xl font-semibold text-zinc-900">
-                  {needsActionNowCount}
-                </div>
-                <div className="mt-2 text-sm text-zinc-500">
-                  vencidas, con deterioro o alertas activas
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-                <div className="text-sm text-red-700">Empeoraron</div>
-                <div className="mt-2 text-3xl font-semibold text-red-700">
-                  {worsenedCount}
-                </div>
-                <div className="mt-2 text-sm text-red-600">
-                  empresas con cambios negativos en el último ciclo
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-                <div className="text-sm text-amber-700">Vencidas</div>
-                <div className="mt-2 text-3xl font-semibold text-amber-700">
-                  {overdueCount}
-                </div>
-                <div className="mt-2 text-sm text-amber-600">
-                  fuera de la frecuencia mensual esperada
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
-                <div className="text-sm text-orange-700">Con alertas</div>
-                <div className="mt-2 text-3xl font-semibold text-orange-700">
-                  {alertsCount}
-                </div>
-                <div className="mt-2 text-sm text-orange-600">
-                  empresas con alertas activas persistidas
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
@@ -334,6 +332,65 @@ export default async function DashboardPage() {
           <div className="text-sm text-zinc-600">Vencidas</div>
           <div className="mt-2 text-3xl font-semibold text-zinc-900">
             {overdueCount}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-lg font-medium text-zinc-900">
+              Resumen ejecutivo
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600">
+              Vista rápida de prioridades operativas del monitoreo actual.
+            </p>
+          </div>
+
+          <div className="text-sm text-zinc-500">
+            Enfoque: acción antes que visualización
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+            <div className="text-sm text-zinc-600">Requieren acción ahora</div>
+            <div className="mt-2 text-3xl font-semibold text-zinc-900">
+              {needsActionNowCount}
+            </div>
+            <div className="mt-2 text-sm text-zinc-500">
+              vencidas, con deterioro o alertas activas
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+            <div className="text-sm text-red-700">Empeoraron</div>
+            <div className="mt-2 text-3xl font-semibold text-red-700">
+              {worsenedCount}
+            </div>
+            <div className="mt-2 text-sm text-red-600">
+              empresas con cambios negativos en el último ciclo
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <div className="text-sm text-amber-700">Vencidas</div>
+            <div className="mt-2 text-3xl font-semibold text-amber-700">
+              {overdueCount}
+            </div>
+            <div className="mt-2 text-sm text-amber-600">
+              fuera de la frecuencia mensual esperada
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
+            <div className="text-sm text-orange-700">Con alertas</div>
+            <div className="mt-2 text-3xl font-semibold text-orange-700">
+              {alertsCount}
+            </div>
+            <div className="mt-2 text-sm text-orange-600">
+              empresas con alertas activas persistidas
+            </div>
           </div>
         </div>
       </div>

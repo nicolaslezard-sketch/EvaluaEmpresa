@@ -22,6 +22,9 @@ type DashboardCompanyCard = {
   relevantCycleChangesCount: number;
   worsenedChangesCount: number;
   activeAlertsCount: number;
+  nextReviewDateLabel: string;
+  nextReviewStatusLabel: string;
+  nextReviewToneClassName: string;
 };
 
 function categoryStyles(category: string | null) {
@@ -272,8 +275,22 @@ export function DashboardFilters({
                       ) : null}
                     </div>
 
-                    <div className="mt-6 text-sm text-zinc-500">
-                      Última actualización: {company.updatedAtLabel ?? "—"}
+                    <div
+                      className={`mt-6 rounded-xl border px-4 py-3 ${company.nextReviewToneClassName}`}
+                    >
+                      <div className="text-xs uppercase tracking-wide text-zinc-600">
+                        Próxima revisión sugerida
+                      </div>
+                      <div className="mt-1 text-base font-semibold text-zinc-900">
+                        {company.nextReviewDateLabel}
+                      </div>
+                      <div className="mt-1 text-sm text-zinc-700">
+                        {company.nextReviewStatusLabel}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 text-sm text-zinc-500">
+                      Última evaluación: {company.updatedAtLabel ?? "—"}
                     </div>
                   </>
                 ) : (
@@ -283,6 +300,20 @@ export function DashboardFilters({
                     </div>
                     <div className="mt-2 text-sm text-zinc-500">
                       Esta empresa todavía no tiene un score oficial generado.
+                    </div>
+
+                    <div
+                      className={`mt-6 rounded-xl border px-4 py-3 ${company.nextReviewToneClassName}`}
+                    >
+                      <div className="text-xs uppercase tracking-wide text-zinc-600">
+                        Próxima revisión sugerida
+                      </div>
+                      <div className="mt-1 text-base font-semibold text-zinc-900">
+                        {company.nextReviewDateLabel}
+                      </div>
+                      <div className="mt-1 text-sm text-zinc-700">
+                        {company.nextReviewStatusLabel}
+                      </div>
                     </div>
                   </>
                 )}
