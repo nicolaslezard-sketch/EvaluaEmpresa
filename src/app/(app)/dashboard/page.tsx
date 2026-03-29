@@ -154,6 +154,21 @@ export default async function DashboardPage() {
     (item) => item.reviewStatus.tone === "overdue",
   ).length;
 
+  const worsenedCount = companySummaries.filter(
+    (item) => item.worsenedChanges.length > 0,
+  ).length;
+
+  const alertsCount = companySummaries.filter(
+    (item) => item.activeAlerts.length > 0,
+  ).length;
+
+  const needsActionNowCount = companySummaries.filter(
+    (item) =>
+      item.reviewStatus.tone === "overdue" ||
+      item.worsenedChanges.length > 0 ||
+      item.activeAlerts.length > 0,
+  ).length;
+
   const worsenedCompanies = companySummaries
     .filter(
       (item) =>
@@ -195,6 +210,10 @@ export default async function DashboardPage() {
     name: item.company.name,
     criticality: item.company.criticality,
     href: `/companies/${item.company.id}`,
+    evaluationHref: item.latest
+      ? `/companies/${item.company.id}/evaluations/${item.latest.id}`
+      : null,
+    newEvaluationHref: `/companies/${item.company.id}/evaluations/new`,
     reviewLabel: item.reviewStatus.label,
     reviewClassName: item.reviewStatus.className,
     reviewTone: item.reviewStatus.tone,
@@ -234,6 +253,66 @@ export default async function DashboardPage() {
           <div className="text-sm text-zinc-600">Empresas activas</div>
           <div className="mt-2 text-3xl font-semibold text-zinc-900">
             {activeCompanyCount}/{ent.maxCompanies}
+          </div>
+          <div className="rounded-3xl border bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <h2 className="text-lg font-medium text-zinc-900">
+                  Resumen ejecutivo
+                </h2>
+                <p className="mt-1 text-sm text-zinc-600">
+                  Vista rápida de prioridades operativas del monitoreo actual.
+                </p>
+              </div>
+
+              <div className="text-sm text-zinc-500">
+                Enfoque: acción antes que visualización
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
+                <div className="text-sm text-zinc-600">
+                  Requieren acción ahora
+                </div>
+                <div className="mt-2 text-3xl font-semibold text-zinc-900">
+                  {needsActionNowCount}
+                </div>
+                <div className="mt-2 text-sm text-zinc-500">
+                  vencidas, con deterioro o alertas activas
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+                <div className="text-sm text-red-700">Empeoraron</div>
+                <div className="mt-2 text-3xl font-semibold text-red-700">
+                  {worsenedCount}
+                </div>
+                <div className="mt-2 text-sm text-red-600">
+                  empresas con cambios negativos en el último ciclo
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <div className="text-sm text-amber-700">Vencidas</div>
+                <div className="mt-2 text-3xl font-semibold text-amber-700">
+                  {overdueCount}
+                </div>
+                <div className="mt-2 text-sm text-amber-600">
+                  fuera de la frecuencia mensual esperada
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
+                <div className="text-sm text-orange-700">Con alertas</div>
+                <div className="mt-2 text-3xl font-semibold text-orange-700">
+                  {alertsCount}
+                </div>
+                <div className="mt-2 text-sm text-orange-600">
+                  empresas con alertas activas persistidas
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

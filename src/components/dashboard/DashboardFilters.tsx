@@ -4,11 +4,14 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 type ReviewTone = "ok" | "warning" | "overdue" | "none";
+
 type DashboardCompanyCard = {
   id: string;
   name: string;
   criticality: string;
   href: string;
+  evaluationHref: string | null;
+  newEvaluationHref: string;
   reviewLabel: string;
   reviewClassName: string;
   reviewTone: ReviewTone;
@@ -42,6 +45,66 @@ function deltaStyles(delta: number | null) {
 }
 
 type FilterKey = "all" | "worsened" | "overdue" | "alerts";
+
+function getPrimaryAction(
+  company: DashboardCompanyCard,
+  activeFilter: FilterKey,
+): { href: string; label: string } {
+  if (company.overallScore === null) {
+    return {
+      href: company.newEvaluationHref,
+      label: "Primera evaluación",
+    };
+  }
+
+  if (activeFilter === "overdue" || company.reviewTone === "overdue") {
+    return {
+      href: company.newEvaluationHref,
+      label: "Nueva revisión",
+    };
+  }
+
+  if (activeFilter === "worsened" || company.worsenedChangesCount > 0) {
+    return {
+      href: company.evaluationHref ?? company.href,
+      label: "Ver evaluación",
+    };
+  }
+
+  if (activeFilter === "alerts" || company.activeAlertsCount > 0) {
+    return {
+      href: company.href,
+      label: "Abrir empresa",
+    };
+  }
+
+  return {
+    href: company.href,
+    label: "Ver empresa",
+  };
+}
+
+function getSecondaryAction(
+  company: DashboardCompanyCard,
+  activeFilter: FilterKey,
+): { href: string; label: string } | null {
+  const primary = getPrimaryAction(company, activeFilter);
+
+  const candidates = [
+    company.href ? { href: company.href, label: "Ver empresa" } : null,
+    company.evaluationHref
+      ? { href: company.evaluationHref, label: "Última evaluación" }
+      : null,
+    { href: company.newEvaluationHref, label: "Nueva revisión" },
+  ].filter(Boolean) as Array<{ href: string; label: string }>;
+
+  return (
+    candidates.find(
+      (candidate) =>
+        candidate.href !== primary.href || candidate.label !== primary.label,
+    ) ?? null
+  );
+}
 
 export function DashboardFilters({
   companies,
@@ -126,110 +189,124 @@ export function DashboardFilters({
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
-          {filteredCompanies.map((company) => (
-            <div
-              key={company.id}
-              className="rounded-3xl border bg-white p-10 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold text-zinc-900">
-                    {company.name}
-                  </h2>
-                  <div className="mt-2 text-sm text-zinc-500">
-                    Criticidad: {company.criticality}
-                  </div>
-                </div>
+          {filteredCompanies.map((company) => {
+            const primaryAction = getPrimaryAction(company, activeFilter);
+            const secondaryAction = getSecondaryAction(company, activeFilter);
 
-                <div className="flex flex-col items-end gap-3">
-                  <span
-                    className={`rounded-full px-6 py-2 text-sm font-medium ${company.reviewClassName}`}
-                  >
-                    {company.reviewLabel}
-                  </span>
-
-                  {company.executiveCategory ? (
-                    <span
-                      className={`rounded-full px-6 py-2 text-sm font-medium ${categoryStyles(
-                        company.executiveCategory,
-                      )}`}
-                    >
-                      {company.executiveCategory}
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-
-              {company.overallScore !== null ? (
-                <>
-                  <div className="mt-10 flex items-end gap-4">
-                    <div className="text-6xl font-semibold leading-none text-zinc-900">
-                      {company.overallScore.toFixed(1)}
+            return (
+              <div
+                key={company.id}
+                className="rounded-3xl border bg-white p-10 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-zinc-900">
+                      {company.name}
+                    </h2>
+                    <div className="mt-2 text-sm text-zinc-500">
+                      Criticidad: {company.criticality}
                     </div>
+                  </div>
 
-                    {company.deltaOverall !== null ? (
-                      <div
-                        className={`pb-1 text-2xl font-medium ${deltaStyles(
-                          company.deltaOverall,
+                  <div className="flex flex-col items-end gap-3">
+                    <span
+                      className={`rounded-full px-6 py-2 text-sm font-medium ${company.reviewClassName}`}
+                    >
+                      {company.reviewLabel}
+                    </span>
+
+                    {company.executiveCategory ? (
+                      <span
+                        className={`rounded-full px-6 py-2 text-sm font-medium ${categoryStyles(
+                          company.executiveCategory,
                         )}`}
                       >
-                        Δ {company.deltaOverall > 0 ? "+" : ""}
-                        {company.deltaOverall.toFixed(1)}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-8 h-4 w-full rounded-full bg-zinc-100">
-                    <div
-                      className="h-4 rounded-full bg-zinc-900 transition-all"
-                      style={{
-                        width: `${Math.min(Math.max(company.overallScore, 0), 100)}%`,
-                      }}
-                    />
-                  </div>
-
-                  <div className="mt-6 flex flex-wrap gap-2 text-sm">
-                    <span className="rounded-full bg-zinc-100 px-3 py-1 font-medium text-zinc-700">
-                      {company.relevantCycleChangesCount} cambios relevantes
-                    </span>
-
-                    <span className="rounded-full bg-red-100 px-3 py-1 font-medium text-red-700">
-                      {company.worsenedChangesCount} empeoraron
-                    </span>
-
-                    {canSeeAlerts ? (
-                      <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">
-                        {company.activeAlertsCount} alerta
-                        {company.activeAlertsCount === 1 ? "" : "s"}
+                        {company.executiveCategory}
                       </span>
                     ) : null}
                   </div>
+                </div>
 
-                  <div className="mt-6 text-sm text-zinc-500">
-                    Última actualización: {company.updatedAtLabel ?? "—"}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="mt-10 text-lg font-medium text-zinc-900">
-                    Sin evaluaciones finalizadas
-                  </div>
-                  <div className="mt-2 text-sm text-zinc-500">
-                    Esta empresa todavía no tiene un score oficial generado.
-                  </div>
-                </>
-              )}
+                {company.overallScore !== null ? (
+                  <>
+                    <div className="mt-10 flex items-end gap-4">
+                      <div className="text-6xl font-semibold leading-none text-zinc-900">
+                        {company.overallScore.toFixed(1)}
+                      </div>
 
-              <div className="mt-10">
-                <Link
-                  href={company.href}
-                  className="inline-flex rounded-2xl bg-zinc-900 px-8 py-4 text-xl font-medium text-white hover:bg-zinc-800"
-                >
-                  Ver empresa
-                </Link>
+                      {company.deltaOverall !== null ? (
+                        <div
+                          className={`pb-1 text-2xl font-medium ${deltaStyles(
+                            company.deltaOverall,
+                          )}`}
+                        >
+                          Δ {company.deltaOverall > 0 ? "+" : ""}
+                          {company.deltaOverall.toFixed(1)}
+                        </div>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-8 h-4 w-full rounded-full bg-zinc-100">
+                      <div
+                        className="h-4 rounded-full bg-zinc-900 transition-all"
+                        style={{
+                          width: `${Math.min(Math.max(company.overallScore, 0), 100)}%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="mt-6 flex flex-wrap gap-2 text-sm">
+                      <span className="rounded-full bg-zinc-100 px-3 py-1 font-medium text-zinc-700">
+                        {company.relevantCycleChangesCount} cambios relevantes
+                      </span>
+
+                      <span className="rounded-full bg-red-100 px-3 py-1 font-medium text-red-700">
+                        {company.worsenedChangesCount} empeoraron
+                      </span>
+
+                      {canSeeAlerts ? (
+                        <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">
+                          {company.activeAlertsCount} alerta
+                          {company.activeAlertsCount === 1 ? "" : "s"}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-6 text-sm text-zinc-500">
+                      Última actualización: {company.updatedAtLabel ?? "—"}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mt-10 text-lg font-medium text-zinc-900">
+                      Sin evaluaciones finalizadas
+                    </div>
+                    <div className="mt-2 text-sm text-zinc-500">
+                      Esta empresa todavía no tiene un score oficial generado.
+                    </div>
+                  </>
+                )}
+
+                <div className="mt-10 flex flex-wrap gap-3">
+                  <Link
+                    href={primaryAction.href}
+                    className="inline-flex rounded-2xl bg-zinc-900 px-8 py-4 text-xl font-medium text-white hover:bg-zinc-800"
+                  >
+                    {primaryAction.label}
+                  </Link>
+
+                  {secondaryAction ? (
+                    <Link
+                      href={secondaryAction.href}
+                      className="inline-flex rounded-2xl border border-zinc-300 px-8 py-4 text-xl font-medium text-zinc-900 hover:bg-zinc-50"
+                    >
+                      {secondaryAction.label}
+                    </Link>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

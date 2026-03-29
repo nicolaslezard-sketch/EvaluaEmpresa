@@ -35,6 +35,19 @@ type ReportDataLike = {
   relevantCycleChanges?: ReportCycleChange[];
 } | null;
 
+type CompanyActionCard = {
+  title: string;
+  description: string;
+  toneClassName: string;
+  primaryAction: {
+    href: string;
+    label: string;
+  };
+  secondaryAction?: {
+    href: string;
+    label: string;
+  } | null;
+};
 /* =========================
    HELPERS
 ========================= */
@@ -151,6 +164,131 @@ function parseReportData(reportData: unknown): ReportDataLike {
   return reportData as ReportDataLike;
 }
 
+function buildCompanyActionCard(params: {
+  companyId: string;
+  activeDraftId: string | null;
+  latestFinalizedId: string | null;
+  hasLatestFinalized: boolean;
+  reviewTone: "ok" | "warning" | "overdue" | "none";
+  activeAlertsCount: number;
+  worsenedChangesCount: number;
+}): CompanyActionCard {
+  const companyHref = `/companies/${params.companyId}`;
+  const newEvaluationHref = `/companies/${params.companyId}/evaluations/new`;
+  const latestEvaluationHref = params.latestFinalizedId
+    ? `/companies/${params.companyId}/evaluations/${params.latestFinalizedId}`
+    : null;
+  const activeDraftHref = params.activeDraftId
+    ? `/companies/${params.companyId}/evaluations/${params.activeDraftId}`
+    : null;
+
+  if (!params.hasLatestFinalized && activeDraftHref) {
+    return {
+      title: "Continuar evaluación en curso",
+      description:
+        "La empresa todavía no tiene una evaluación finalizada. Completar el borrador actual es la acción más importante para generar el primer score oficial y activar el monitoreo continuo.",
+      toneClassName: "border-amber-200 bg-amber-50",
+      primaryAction: {
+        href: activeDraftHref,
+        label: "Continuar evaluación",
+      },
+      secondaryAction: {
+        href: companyHref,
+        label: "Ver empresa",
+      },
+    };
+  }
+
+  if (!params.hasLatestFinalized) {
+    return {
+      title: "Iniciar primera evaluación",
+      description:
+        "Todavía no existe un ciclo base para esta empresa. Conviene generar la primera evaluación para obtener score, categoría ejecutiva e historial.",
+      toneClassName: "border-zinc-200 bg-zinc-50",
+      primaryAction: {
+        href: newEvaluationHref,
+        label: "Primera evaluación",
+      },
+      secondaryAction: {
+        href: companyHref,
+        label: "Ver empresa",
+      },
+    };
+  }
+
+  if (params.reviewTone === "overdue") {
+    return {
+      title: "Nueva revisión mensual recomendada",
+      description:
+        "La última evaluación quedó fuera de la frecuencia esperada. Conviene abrir un nuevo ciclo ahora para mantener vigente el monitoreo y detectar cambios antes de que escalen.",
+      toneClassName: "border-amber-200 bg-amber-50",
+      primaryAction: {
+        href: newEvaluationHref,
+        label: "Nueva revisión",
+      },
+      secondaryAction: latestEvaluationHref
+        ? {
+            href: latestEvaluationHref,
+            label: "Última evaluación",
+          }
+        : null,
+    };
+  }
+
+  if (params.activeAlertsCount > 0) {
+    return {
+      title: "Revisar alertas activas",
+      description:
+        "Hay alertas persistidas en el último ciclo. La prioridad es revisar la empresa y validar si requieren seguimiento operativo inmediato.",
+      toneClassName: "border-red-200 bg-red-50",
+      primaryAction: {
+        href: companyHref,
+        label: "Revisar alertas",
+      },
+      secondaryAction: latestEvaluationHref
+        ? {
+            href: latestEvaluationHref,
+            label: "Ver evaluación",
+          }
+        : null,
+    };
+  }
+
+  if (params.worsenedChangesCount > 0) {
+    return {
+      title: "Analizar deterioros del último ciclo",
+      description:
+        "Se detectaron campos que empeoraron respecto de la evaluación anterior. Conviene revisar el detalle del ciclo para entender impacto, contexto y próxima acción.",
+      toneClassName: "border-red-200 bg-red-50",
+      primaryAction: {
+        href: latestEvaluationHref ?? companyHref,
+        label: "Ver cambios del ciclo",
+      },
+      secondaryAction: {
+        href: newEvaluationHref,
+        label: "Nueva revisión",
+      },
+    };
+  }
+
+  return {
+    title: "Monitoreo al día",
+    description:
+      "La empresa no presenta deterioros prioritarios ni alertas activas y su revisión sigue vigente. El siguiente paso es sostener la frecuencia mensual.",
+    toneClassName: "border-emerald-200 bg-emerald-50",
+    primaryAction: {
+      href: newEvaluationHref,
+      label: "Nueva revisión",
+    },
+    secondaryAction: latestEvaluationHref
+      ? {
+          href: latestEvaluationHref,
+          label: "Ver última evaluación",
+        }
+      : null,
+  };
+}
+
 /* =========================
    DATA
 ========================= */
@@ -223,6 +361,19 @@ export default async function CompanyPage({
 
   const parsedReportData = parseReportData(latestFinalized?.reportData);
   const relevantCycleChanges = parsedReportData?.relevantCycleChanges ?? [];
+  const worsenedChanges = relevantCycleChanges.filter(
+    (change) => change.kind === "WORSENED",
+  );
+
+  const actionCard = buildCompanyActionCard({
+    companyId: data.id,
+    activeDraftId: activeDraft?.id ?? null,
+    latestFinalizedId: latestFinalized?.id ?? null,
+    hasLatestFinalized: !!latestFinalized,
+    reviewTone: reviewStatus.tone,
+    activeAlertsCount: activeAlerts.length,
+    worsenedChangesCount: worsenedChanges.length,
+  });
 
   return (
     <div className="space-y-10">
@@ -324,6 +475,40 @@ export default async function CompanyPage({
           </div>
         </div>
       )}
+
+      <div className={`rounded-2xl border p-6 ${actionCard.toneClassName}`}>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-3xl">
+            <div className="text-base font-semibold text-zinc-900">
+              Acción recomendada
+            </div>
+            <div className="mt-2 text-xl font-medium text-zinc-900">
+              {actionCard.title}
+            </div>
+            <div className="mt-2 text-sm text-zinc-700">
+              {actionCard.description}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={actionCard.primaryAction.href}
+              className="inline-flex rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            >
+              {actionCard.primaryAction.label}
+            </Link>
+
+            {actionCard.secondaryAction ? (
+              <Link
+                href={actionCard.secondaryAction.href}
+                className="inline-flex rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+              >
+                {actionCard.secondaryAction.label}
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </div>
 
       {latestFinalized ? (
         <div className="rounded-2xl border bg-white p-8 shadow-sm">
