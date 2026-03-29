@@ -289,6 +289,65 @@ function buildCompanyActionCard(params: {
   };
 }
 
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function daysBetween(from: Date, to: Date) {
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const diff = to.getTime() - from.getTime();
+  return Math.floor(diff / msPerDay);
+}
+
+function buildNextReviewInfo(latestCreatedAt?: Date | null) {
+  if (!latestCreatedAt) {
+    return {
+      suggestedDateLabel: "Sin ciclo base",
+      statusLabel: "Primera evaluación pendiente",
+      helperText:
+        "Todavía no existe una evaluación finalizada para calcular una próxima revisión sugerida.",
+      toneClassName: "border-zinc-200 bg-zinc-50",
+    };
+  }
+
+  const today = new Date();
+  const suggestedDate = addDays(new Date(latestCreatedAt), 30);
+  const suggestedDateLabel = suggestedDate.toLocaleDateString();
+
+  const diffDays = daysBetween(today, suggestedDate);
+
+  if (diffDays < 0) {
+    return {
+      suggestedDateLabel,
+      statusLabel: `Atrasada por ${Math.abs(diffDays)} día${
+        Math.abs(diffDays) === 1 ? "" : "s"
+      }`,
+      helperText:
+        "La revisión sugerida ya venció. Conviene abrir un nuevo ciclo cuanto antes.",
+      toneClassName: "border-amber-200 bg-amber-50",
+    };
+  }
+
+  if (diffDays <= 7) {
+    return {
+      suggestedDateLabel,
+      statusLabel: `Revisar en ${diffDays} día${diffDays === 1 ? "" : "s"}`,
+      helperText:
+        "La próxima revisión está próxima. Conviene prepararla para sostener la frecuencia mensual.",
+      toneClassName: "border-blue-200 bg-blue-50",
+    };
+  }
+
+  return {
+    suggestedDateLabel,
+    statusLabel: "Al día",
+    helperText: "La empresa sigue dentro de la frecuencia mensual esperada.",
+    toneClassName: "border-emerald-200 bg-emerald-50",
+  };
+}
+
 /* =========================
    DATA
 ========================= */
@@ -374,6 +433,8 @@ export default async function CompanyPage({
     activeAlertsCount: activeAlerts.length,
     worsenedChangesCount: worsenedChanges.length,
   });
+
+  const nextReviewInfo = buildNextReviewInfo(latestFinalized?.createdAt);
 
   return (
     <div className="space-y-10">
@@ -490,6 +551,34 @@ export default async function CompanyPage({
             </div>
           </div>
 
+          <div
+            className={`rounded-2xl border p-6 ${nextReviewInfo.toneClassName}`}
+          >
+            <div className="grid gap-5 md:grid-cols-3">
+              <div>
+                <div className="text-sm text-zinc-600">
+                  Próxima revisión sugerida
+                </div>
+                <div className="mt-2 text-2xl font-semibold text-zinc-900">
+                  {nextReviewInfo.suggestedDateLabel}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm text-zinc-600">Estado temporal</div>
+                <div className="mt-2 text-lg font-medium text-zinc-900">
+                  {nextReviewInfo.statusLabel}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-sm text-zinc-600">Contexto</div>
+                <div className="mt-2 text-sm text-zinc-700">
+                  {nextReviewInfo.helperText}
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-3">
             <Link
               href={actionCard.primaryAction.href}
