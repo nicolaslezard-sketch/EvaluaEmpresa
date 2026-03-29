@@ -525,6 +525,62 @@ const styles = StyleSheet.create({
     height: 236,
     paddingBottom: 10,
   },
+
+  radarSummaryList: {
+    marginTop: 4,
+  },
+  radarSummaryRow: {
+    marginBottom: 9,
+  },
+  radarSummaryTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  radarSummaryLabelWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    maxWidth: "72%",
+  },
+  radarSummaryDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    marginRight: 6,
+  },
+  radarSummaryLabel: {
+    fontSize: 9.2,
+    color: COLORS.dark,
+    fontWeight: 700,
+  },
+  radarSummaryValue: {
+    fontSize: 9.2,
+    color: COLORS.slate,
+    fontWeight: 700,
+  },
+
+  radarMiniTrack: {
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "#e5e7eb",
+    overflow: "hidden",
+  },
+  radarMiniFill: {
+    height: 6,
+    borderRadius: 999,
+  },
+
+  bulletTextCompact: {
+    flex: 1,
+    fontSize: 9.2,
+    lineHeight: 1.28,
+    color: COLORS.slate,
+  },
+  bulletRowCompact: {
+    flexDirection: "row",
+    marginBottom: 5,
+  },
   radarChartBox: {
     height: 176,
     justifyContent: "center",
@@ -867,98 +923,40 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
     },
   ];
 
-  const size = 122;
-  const center = size / 2;
-  const radius = 38;
-  const levels = [20, 40, 60, 80, 100];
-
-  function pointFor(index: number, valuePct: number, r = radius) {
-    const angle = (-90 + index * 72) * (Math.PI / 180);
-    const scaled = (r * valuePct) / 100;
-    const x = center + Math.cos(angle) * scaled;
-    const y = center + Math.sin(angle) * scaled;
-    return { x, y };
-  }
-
-  function polygonPoints(pct: number) {
-    return entries
-      .map((_, i) => {
-        const p = pointFor(i, pct);
-        return `${p.x},${p.y}`;
-      })
-      .join(" ");
-  }
-
-  const dataPolygon = entries
-    .map((entry, i) => {
-      const p = pointFor(i, entry.value);
-      return `${p.x},${p.y}`;
-    })
-    .join(" ");
-
   return (
-    <View style={styles.radarWrap} wrap={false}>
-      <View style={styles.radarSvgBox}>
-        <Svg width={size} height={size}>
-          {levels.map((level) => (
-            <Polygon
-              key={`level-${level}`}
-              points={polygonPoints(level)}
-              stroke={COLORS.line}
-              strokeWidth={1}
-              fill="none"
-            />
-          ))}
+    <View style={styles.radarSummaryList} wrap={false}>
+      {entries.map((entry) => {
+        const width = `${Math.max(0, Math.min(100, entry.value))}%`;
 
-          {entries.map((entry, i) => {
-            const p = pointFor(i, 100);
-            return (
-              <Line
-                key={`axis-${entry.key}`}
-                x1={center}
-                y1={center}
-                x2={p.x}
-                y2={p.y}
-                stroke={entry.color}
-                strokeWidth={1}
+        return (
+          <View key={entry.key} style={styles.radarSummaryRow}>
+            <View style={styles.radarSummaryTop}>
+              <View style={styles.radarSummaryLabelWrap}>
+                <View
+                  style={[
+                    styles.radarSummaryDot,
+                    { backgroundColor: entry.color },
+                  ]}
+                />
+                <Text style={styles.radarSummaryLabel}>{entry.label}</Text>
+              </View>
+
+              <Text style={styles.radarSummaryValue}>
+                {entry.value.toFixed(1)}
+              </Text>
+            </View>
+
+            <View style={styles.radarMiniTrack}>
+              <View
+                style={[
+                  styles.radarMiniFill,
+                  { width, backgroundColor: entry.color },
+                ]}
               />
-            );
-          })}
-
-          <Polygon
-            points={dataPolygon}
-            fill="#CBD5E1"
-            stroke={COLORS.dark}
-            strokeWidth={1.2}
-          />
-
-          {entries.map((entry, i) => {
-            const p = pointFor(i, entry.value);
-            return (
-              <Circle
-                key={`dot-${entry.key}`}
-                cx={p.x}
-                cy={p.y}
-                r={2.3}
-                fill={entry.color}
-              />
-            );
-          })}
-        </Svg>
-      </View>
-
-      <View style={styles.radarLegendCompact}>
-        {entries.map((entry) => (
-          <View key={entry.key} style={styles.radarLegendCompactRow}>
-            <View
-              style={[styles.radarLegendDot, { backgroundColor: entry.color }]}
-            />
-            <Text style={styles.radarLegendCompactText}>
-              {entry.label}: {entry.value.toFixed(1)}
-            </Text>
+            </View>
           </View>
-        ))}
-      </View>
+        );
+      })}
     </View>
   );
 }
@@ -1019,6 +1017,29 @@ function BulletList({
         <View key={`${item}-${index}`} style={styles.bulletRow}>
           <Text style={styles.bulletDot}>•</Text>
           <Text style={styles.bulletText}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function BulletListCompact({
+  items,
+  emptyText,
+}: {
+  items: string[];
+  emptyText: string;
+}) {
+  if (!items.length) {
+    return <Text style={styles.bodyText}>{emptyText}</Text>;
+  }
+
+  return (
+    <View>
+      {items.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.bulletRowCompact}>
+          <Text style={styles.bulletDot}>•</Text>
+          <Text style={styles.bulletTextCompact}>{item}</Text>
         </View>
       ))}
     </View>
@@ -1336,9 +1357,7 @@ export async function generateReportPdf(
               wrap={false}
             >
               <Text style={styles.sectionTitle}>Radar de pilares</Text>
-              <View style={styles.radarChartBox}>
-                <RadarChart data={data.pillars} />
-              </View>
+              <RadarChart data={data.pillars} />
             </View>
           </View>
 
@@ -1352,7 +1371,8 @@ export async function generateReportPdf(
               wrap={false}
             >
               <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-              <BulletList
+
+              <BulletListCompact
                 items={limitOverviewRisks(
                   data.reportData.priorityRisks ?? [],
                 ).slice(0, 2)}
