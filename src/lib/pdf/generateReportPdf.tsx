@@ -1624,7 +1624,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="commercial"
               title="Comercial"
-              score={safeScore(data.pillars.financial)}
+              score={safeScore(data.pillars.commercial)}
               delta={data.deltas.commercial}
             />
           </View>
@@ -1633,7 +1633,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="operational"
               title="Operativo"
-              score={safeScore(data.pillars.financial)}
+              score={safeScore(data.pillars.operational)}
               delta={data.deltas.operational}
             />
           </View>
@@ -1642,7 +1642,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="legal"
               title="Legal"
-              score={safeScore(data.pillars.financial)}
+              score={safeScore(data.pillars.legal)}
               delta={data.deltas.legal}
             />
           </View>
@@ -1651,7 +1651,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="strategic"
               title="Estratégico"
-              score={safeScore(data.pillars.financial)}
+              score={safeScore(data.pillars.strategic)}
               delta={data.deltas.strategic}
             />
           </View>
