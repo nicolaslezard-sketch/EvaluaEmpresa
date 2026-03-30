@@ -131,6 +131,31 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
+  findingCard: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    padding: 10,
+    marginBottom: 8,
+  },
+  findingTitle: {
+    fontSize: 10.5,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    marginBottom: 4,
+  },
+  findingMeta: {
+    fontSize: 9,
+    lineHeight: 1.3,
+    color: COLORS.slate,
+    marginBottom: 2,
+  },
+  findingMetaStrong: {
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+
   pillarDetailCard: {
     borderWidth: 1,
     borderColor: COLORS.line,
@@ -464,25 +489,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
-  findingCard: {
-    border: `1 solid ${COLORS.line}`,
-    borderRadius: 12,
-    padding: 12,
-    backgroundColor: "#ffffff",
-    marginBottom: 10,
-  },
   findingHeader: {
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
     marginBottom: 8,
   },
-  findingTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: COLORS.dark,
-    marginRight: 8,
-  },
+
   findingBadge: {
     fontSize: 9,
     fontWeight: "bold",
@@ -1189,6 +1202,13 @@ function getBestDeltaPillar(data: DeterministicPdfData) {
   );
 }
 
+function pillarStatusLabel(score: number) {
+  if (score >= 80) return "Fuerte";
+  if (score >= 70) return "Estable";
+  if (score >= 60) return "Vulnerable";
+  return "Crítico";
+}
+
 function getWorstDeltaPillar(data: DeterministicPdfData) {
   return (
     [...getPillarEntries(data)]
@@ -1268,7 +1288,7 @@ function PillarDetailCard({
   score: number;
   delta?: number | null;
 }) {
-  const status = monitoringStatusShort(score);
+  const status = pillarStatusLabel(score);
   const deltaLabel = formatDelta(delta);
   const narrative = getPillarNarrative(pillarKey, score, delta);
 
