@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 6,
   },
+
   cycleChangeTitle: {
     fontSize: 10,
     fontWeight: 700,
@@ -575,11 +576,6 @@ const styles = StyleSheet.create({
     color: COLORS.slate,
   },
 
-  radarChartBox: {
-    height: 176,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   radarWrap: {
     height: 176,
     width: "100%",
@@ -876,82 +872,6 @@ function fieldLevelLabel(value: number | null | undefined) {
     default:
       return "—";
   }
-}
-
-function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
-  const entries: Array<{
-    key: keyof DeterministicPdfData["pillars"];
-    label: string;
-    value: number;
-    color: string;
-  }> = [
-    {
-      key: "financial",
-      label: "Financiero",
-      value: safeScore(data.financial),
-      color: pillarColor("financial"),
-    },
-    {
-      key: "commercial",
-      label: "Comercial",
-      value: safeScore(data.commercial),
-      color: pillarColor("commercial"),
-    },
-    {
-      key: "operational",
-      label: "Operativo",
-      value: safeScore(data.operational),
-      color: pillarColor("operational"),
-    },
-    {
-      key: "legal",
-      label: "Legal",
-      value: safeScore(data.legal),
-      color: pillarColor("legal"),
-    },
-    {
-      key: "strategic",
-      label: "Estratégico",
-      value: safeScore(data.strategic),
-      color: pillarColor("strategic"),
-    },
-  ];
-
-  return (
-    <View style={styles.radarSummaryList} wrap={false}>
-      {entries.map((entry) => (
-        <View key={entry.key} style={styles.radarSummaryRow}>
-          <View style={styles.radarSummaryTop}>
-            <View style={styles.radarSummaryLabelWrap}>
-              <View
-                style={[
-                  styles.radarSummaryDot,
-                  { backgroundColor: entry.color },
-                ]}
-              />
-              <Text style={styles.radarSummaryLabel}>{entry.label}</Text>
-            </View>
-
-            <Text style={styles.radarSummaryValue}>
-              {entry.value.toFixed(1)}
-            </Text>
-          </View>
-
-          <View style={styles.radarMiniTrack}>
-            <View
-              style={[
-                styles.radarMiniFill,
-                {
-                  width: `${Math.max(0, Math.min(100, entry.value))}%`,
-                  backgroundColor: entry.color,
-                },
-              ]}
-            />
-          </View>
-        </View>
-      ))}
-    </View>
-  );
 }
 
 function PillarCard({
@@ -1340,19 +1260,7 @@ export async function generateReportPdf(
         </View>
 
         <View style={styles.twoCol} wrap={false}>
-          <View style={styles.colLeft}>
-            <View
-              style={[
-                styles.infoCard,
-                styles.compactInfoCard,
-                styles.radarCardPage2,
-              ]}
-              wrap={false}
-            >
-              <Text style={styles.sectionTitle}>Radar de pilares</Text>
-              <RadarChart data={data.pillars} />
-            </View>
-          </View>
+          <View style={styles.colLeft}></View>
 
           <View style={styles.colRight}>
             <View
