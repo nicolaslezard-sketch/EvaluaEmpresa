@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 22,
+    marginTop: 10,
   },
   pillarGridTitle: {
     fontSize: 12,
@@ -499,27 +499,103 @@ const styles = StyleSheet.create({
     color: COLORS.muted,
   },
 
-  twoCol: {
-    flexDirection: "row",
-    marginTop: 4,
-    marginBottom: 18,
-    alignItems: "flex-start",
+  page2Block: {
+    marginTop: 10,
+    marginBottom: 14,
+  },
+  page2Card: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    padding: 12,
+  },
+  page2CardTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    marginBottom: 8,
   },
 
-  colLeft: {
-    width: "56%",
-    paddingRight: 8,
+  exposureTable: {
+    marginTop: 2,
   },
-  colRight: {
-    width: "44%",
-    paddingLeft: 8,
+  exposureRow: {
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eef2f7",
+  },
+  exposureRowLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
+  },
+  exposureRowTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  exposureLabelWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    maxWidth: "62%",
+  },
+  exposureDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    marginRight: 6,
+  },
+  exposureLabel: {
+    fontSize: 9.5,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  exposureMeta: {
+    fontSize: 8.6,
+    color: COLORS.muted,
+    marginTop: 2,
+  },
+  exposureValue: {
+    fontSize: 9.5,
+    fontWeight: "bold",
+    color: COLORS.slate,
+  },
+  exposureTrack: {
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "#e5e7eb",
+    overflow: "hidden",
+  },
+  exposureFill: {
+    height: 5,
+    borderRadius: 999,
+  },
+
+  risksCompactCard: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    padding: 12,
+  },
+  riskCompactRow: {
+    flexDirection: "row",
+    marginBottom: 5,
+  },
+  riskCompactDot: {
+    width: 10,
+    fontSize: 12,
+    color: COLORS.dark,
+  },
+  riskCompactText: {
+    flex: 1,
+    fontSize: 9,
+    lineHeight: 1.2,
+    color: COLORS.slate,
   },
 
   exposureCardPage2: {
-    minHeight: 252,
-    paddingBottom: 10,
-  },
-  risksCardPage2: {
     minHeight: 252,
     paddingBottom: 10,
   },
@@ -577,38 +653,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 8.2,
     lineHeight: 1.12,
-    color: COLORS.slate,
-  },
-
-  radarWrap: {
-    height: 176,
-    width: "100%",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  radarSvgBox: {
-    height: 122,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  radarLegendCompact: {
-    width: "100%",
-    marginTop: 0,
-  },
-  radarLegendCompactRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 3,
-  },
-  radarLegendDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-    marginRight: 5,
-  },
-  radarLegendCompactText: {
-    fontSize: 8.3,
     color: COLORS.slate,
   },
 
@@ -940,6 +984,27 @@ function BulletList({
   );
 }
 
+function PriorityRisksCompact({ items }: { items: string[] }) {
+  if (!items.length) {
+    return (
+      <Text style={styles.bodyText}>
+        No hay riesgos prioritarios identificados para este ciclo.
+      </Text>
+    );
+  }
+
+  return (
+    <View>
+      {items.slice(0, 2).map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.riskCompactRow}>
+          <Text style={styles.riskCompactDot}>•</Text>
+          <Text style={styles.riskCompactText}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function BulletListCompact({
   items,
   emptyText,
@@ -1043,31 +1108,6 @@ function PillarExposureSummary({
               ]}
             />
           </View>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function PriorityRisksCompact({ items }: { items: string[] }) {
-  const normalized = items
-    .map((item) => trimPriorityRisk(item, 138))
-    .slice(0, 2);
-
-  if (!normalized.length) {
-    return (
-      <Text style={styles.bodyText}>
-        No hay riesgos prioritarios identificados para este ciclo.
-      </Text>
-    );
-  }
-
-  return (
-    <View>
-      {normalized.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.bulletRowCompact}>
-          <Text style={styles.bulletDot}>•</Text>
-          <Text style={styles.bulletTextCompact}>{item}</Text>
         </View>
       ))}
     </View>
@@ -1374,35 +1414,19 @@ export async function generateReportPdf(
           </Text>
         </View>
 
-        <View style={styles.twoCol} wrap={false}>
-          <View style={styles.colLeft}>
-            <View
-              style={[
-                styles.infoCard,
-                styles.compactInfoCard,
-                styles.exposureCardPage2,
-              ]}
-              wrap={false}
-            >
-              <Text style={styles.sectionTitle}>Mapa de exposición</Text>
-              <PillarExposureSummary data={data.pillars} />
-            </View>
+        <View style={styles.page2Block} wrap={false}>
+          <View style={styles.page2Card}>
+            <Text style={styles.page2CardTitle}>Mapa de exposición</Text>
+            <PillarExposureSummary data={data.pillars} />
           </View>
+        </View>
 
-          <View style={styles.colRight}>
-            <View
-              style={[
-                styles.infoCard,
-                styles.compactInfoCard,
-                styles.risksCardPage2,
-              ]}
-              wrap={false}
-            >
-              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-              <PriorityRisksCompact
-                items={limitOverviewRisks(data.reportData.priorityRisks ?? [])}
-              />
-            </View>
+        <View style={styles.page2Block} wrap={false}>
+          <View style={styles.risksCompactCard}>
+            <Text style={styles.page2CardTitle}>Riesgos prioritarios</Text>
+            <PriorityRisksCompact
+              items={limitOverviewRisks(data.reportData.priorityRisks ?? [])}
+            />
           </View>
         </View>
 
