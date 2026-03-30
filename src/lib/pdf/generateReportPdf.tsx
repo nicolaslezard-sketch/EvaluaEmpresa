@@ -131,6 +131,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
+  pillarDetailStatusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  pillarDetailStatusText: {
+    fontSize: 8.4,
+    fontWeight: "bold",
+  },
+
   findingCard: {
     borderWidth: 1,
     borderColor: COLORS.line,
@@ -1209,6 +1220,40 @@ function pillarStatusLabel(score: number) {
   return "Crítico";
 }
 
+function pillarStatusTone(score: number) {
+  const status = pillarStatusLabel(score);
+
+  if (status === "Crítico") {
+    return {
+      bg: "#FEF2F2",
+      text: "#B91C1C",
+      border: "#FECACA",
+    };
+  }
+
+  if (status === "Vulnerable") {
+    return {
+      bg: "#FFF7ED",
+      text: "#B45309",
+      border: "#FED7AA",
+    };
+  }
+
+  if (status === "Fuerte") {
+    return {
+      bg: "#ECFDF5",
+      text: "#047857",
+      border: "#A7F3D0",
+    };
+  }
+
+  return {
+    bg: "#F8FAFC",
+    text: "#475569",
+    border: "#CBD5E1",
+  };
+}
+
 function normalizeFindingSeverityLabel(value?: string | null) {
   if (!value) return "Estable";
 
@@ -1322,6 +1367,7 @@ function PillarDetailCard({
   delta?: number | null;
 }) {
   const status = pillarStatusLabel(score);
+  const statusTone = pillarStatusTone(score);
   const deltaLabel = formatDelta(delta);
   const narrative = getPillarNarrative(pillarKey, score, delta);
 
@@ -1333,7 +1379,22 @@ function PillarDetailCard({
         >
           {title}
         </Text>
-        <Text style={styles.pillarDetailStatus}>{status}</Text>
+
+        <View
+          style={[
+            styles.pillarDetailStatusBadge,
+            {
+              backgroundColor: statusTone.bg,
+              borderColor: statusTone.border,
+            },
+          ]}
+        >
+          <Text
+            style={[styles.pillarDetailStatusText, { color: statusTone.text }]}
+          >
+            {status}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.pillarDetailScoreRow}>
