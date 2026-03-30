@@ -5,6 +5,10 @@ import {
   Text,
   View,
   StyleSheet,
+  Svg,
+  Polygon,
+  Line,
+  Circle,
 } from "@react-pdf/renderer";
 import { getNextReviewInfo } from "@/lib/reviews/getNextReviewInfo";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
@@ -198,7 +202,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 6,
   },
-
   cycleChangeTitle: {
     fontSize: 10,
     fontWeight: 700,
@@ -240,7 +243,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 10,
+    marginTop: 12,
   },
   pillarGridTitle: {
     fontSize: 12,
@@ -499,161 +502,156 @@ const styles = StyleSheet.create({
     color: COLORS.muted,
   },
 
-  page2Block: {
-    marginTop: 10,
-    marginBottom: 14,
-  },
-  page2Card: {
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 12,
+  page2HeroCard: {
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 14,
     backgroundColor: "#ffffff",
-    padding: 12,
+    padding: 16,
   },
-  page2CardTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: COLORS.dark,
-    marginBottom: 8,
+  radarHeroWrap: {
+    alignItems: "center",
+    justifyContent: "center",
   },
-
-  exposureTable: {
-    marginTop: 2,
+  radarHeroLegend: {
+    marginTop: 10,
+    width: "86%",
   },
-  exposureRow: {
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eef2f7",
-  },
-  exposureRowLast: {
-    borderBottomWidth: 0,
-    paddingBottom: 0,
-  },
-  exposureRowTop: {
+  radarHeroLegendGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
+  },
+  radarHeroLegendItem: {
+    width: "48%",
+    flexDirection: "row",
     alignItems: "center",
     marginBottom: 4,
   },
-  exposureLabelWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    maxWidth: "62%",
-  },
-  exposureDot: {
+  radarHeroLegendDot: {
     width: 7,
     height: 7,
     borderRadius: 999,
     marginRight: 6,
   },
-  exposureLabel: {
-    fontSize: 9.5,
-    fontWeight: "bold",
-    color: COLORS.dark,
-  },
-  exposureMeta: {
-    fontSize: 8.6,
-    color: COLORS.muted,
-    marginTop: 2,
-  },
-  exposureValue: {
-    fontSize: 9.5,
-    fontWeight: "bold",
+  radarHeroLegendText: {
+    fontSize: 9,
     color: COLORS.slate,
   },
-  exposureTrack: {
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: "#e5e7eb",
-    overflow: "hidden",
+  page2InsightsCard: {
+    marginTop: 12,
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+    padding: 14,
   },
-  exposureFill: {
-    height: 5,
-    borderRadius: 999,
+  insightRowCompact: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    paddingVertical: 7,
+    borderBottom: `1 solid ${COLORS.line}`,
+  },
+  insightRowCompactLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
+  },
+  insightLabel: {
+    width: "34%",
+    fontSize: 9,
+    color: COLORS.muted,
+  },
+  insightValue: {
+    width: "64%",
+    fontSize: 9.6,
+    lineHeight: 1.35,
+    color: COLORS.dark,
   },
 
-  risksCompactCard: {
-    borderWidth: 1,
-    borderColor: COLORS.line,
+  pillarDetailGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 2,
+  },
+  pillarDetailItem: {
+    width: "48.5%",
+    marginBottom: 10,
+  },
+  pillarDetailItemFull: {
+    width: "100%",
+    marginBottom: 10,
+  },
+  pillarDetailCard: {
+    border: `1 solid ${COLORS.line}`,
     borderRadius: 12,
     backgroundColor: "#ffffff",
     padding: 12,
   },
-  riskCompactRow: {
-    flexDirection: "row",
-    marginBottom: 5,
-  },
-  riskCompactDot: {
-    width: 10,
-    fontSize: 12,
-    color: COLORS.dark,
-  },
-  riskCompactText: {
-    flex: 1,
-    fontSize: 9,
-    lineHeight: 1.2,
-    color: COLORS.slate,
-  },
-
-  exposureCardPage2: {
-    minHeight: 252,
-    paddingBottom: 10,
-  },
-
-  exposureSummaryList: {
-    marginTop: 4,
-  },
-
-  exposureSummaryLabelWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    maxWidth: "72%",
-  },
-  exposureSummaryDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 999,
-    marginRight: 6,
-  },
-  exposureSummaryRow: {
-    marginBottom: 7,
-  },
-  exposureSummaryTop: {
+  pillarDetailTop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 3,
+    alignItems: "flex-start",
+    marginBottom: 7,
   },
-  exposureSummaryLabel: {
-    fontSize: 8.8,
+  pillarDetailTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  pillarDetailState: {
+    fontSize: 9,
+    color: COLORS.slate,
+  },
+  pillarDetailScore: {
+    fontSize: 13,
     fontWeight: "bold",
     color: COLORS.dark,
+    textAlign: "right",
   },
-  exposureSummaryValue: {
-    fontSize: 8.8,
-    fontWeight: "bold",
+  pillarDetailDelta: {
+    fontSize: 9,
     color: COLORS.slate,
+    textAlign: "right",
+    marginTop: 2,
   },
-  exposureSummaryTrack: {
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: "#e5e7eb",
-    overflow: "hidden",
-  },
-  exposureSummaryFill: {
-    height: 5,
-    borderRadius: 999,
+  pillarDetailReading: {
+    marginTop: 7,
+    fontSize: 9.2,
+    lineHeight: 1.35,
+    color: COLORS.slate,
   },
 
-  bulletRowCompact: {
+  page4TwoCol: {
     flexDirection: "row",
-    marginBottom: 3,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
-  bulletTextCompact: {
-    flex: 1,
-    fontSize: 8.2,
-    lineHeight: 1.12,
-    color: COLORS.slate,
+  page4Col: {
+    width: "48.5%",
+  },
+  closingInfoGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 14,
+  },
+  closingInfoCard: {
+    width: "48.5%",
+    border: `1 solid ${COLORS.line}`,
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#ffffff",
+  },
+  closingInfoLabel: {
+    fontSize: 9,
+    color: COLORS.muted,
+    marginBottom: 5,
+    textTransform: "uppercase",
+  },
+  closingInfoValue: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: COLORS.dark,
+    marginBottom: 4,
   },
 
   pillarCard: {
@@ -892,34 +890,142 @@ function executiveHighlights(data: DeterministicPdfData) {
   ];
 }
 
-function cycleChangeKindLabel(
-  kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED",
-) {
-  switch (kind) {
-    case "WORSENED":
-      return "Empeoró";
-    case "PERSISTING_RISK":
-      return "Sigue débil";
-    case "IMPROVED":
-      return "Mejoró";
-  }
-}
+function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
+  const entries: Array<{
+    key: keyof DeterministicPdfData["pillars"];
+    label: string;
+    value: number;
+    color: string;
+  }> = [
+    {
+      key: "financial",
+      label: "Financiero",
+      value: safeScore(data.financial),
+      color: pillarColor("financial"),
+    },
+    {
+      key: "commercial",
+      label: "Comercial",
+      value: safeScore(data.commercial),
+      color: pillarColor("commercial"),
+    },
+    {
+      key: "operational",
+      label: "Operativo",
+      value: safeScore(data.operational),
+      color: pillarColor("operational"),
+    },
+    {
+      key: "legal",
+      label: "Legal",
+      value: safeScore(data.legal),
+      color: pillarColor("legal"),
+    },
+    {
+      key: "strategic",
+      label: "Estratégico",
+      value: safeScore(data.strategic),
+      color: pillarColor("strategic"),
+    },
+  ];
 
-function fieldLevelLabel(value: number | null | undefined) {
-  switch (value) {
-    case 20:
-      return "Crítico";
-    case 40:
-      return "Débil";
-    case 60:
-      return "Observación";
-    case 75:
-      return "Estable";
-    case 90:
-      return "Muy favorable";
-    default:
-      return "—";
+  const size = 220;
+  const center = size / 2;
+  const radius = 72;
+  const levels = [20, 40, 60, 80, 100];
+
+  function pointFor(index: number, valuePct: number, r = radius) {
+    const angle = (-90 + index * 72) * (Math.PI / 180);
+    const scaled = (r * valuePct) / 100;
+    const x = center + Math.cos(angle) * scaled;
+    const y = center + Math.sin(angle) * scaled;
+    return { x, y };
   }
+
+  function polygonPoints(pct: number) {
+    return entries
+      .map((_, i) => {
+        const p = pointFor(i, pct);
+        return `${p.x},${p.y}`;
+      })
+      .join(" ");
+  }
+
+  const dataPolygon = entries
+    .map((entry, i) => {
+      const p = pointFor(i, entry.value);
+      return `${p.x},${p.y}`;
+    })
+    .join(" ");
+
+  return (
+    <View style={styles.radarHeroWrap} wrap={false}>
+      <Svg width={size} height={size}>
+        {levels.map((level) => (
+          <Polygon
+            key={`level-${level}`}
+            points={polygonPoints(level)}
+            stroke={COLORS.line}
+            strokeWidth={1}
+            fill="none"
+          />
+        ))}
+
+        {entries.map((entry, i) => {
+          const p = pointFor(i, 100);
+          return (
+            <Line
+              key={`axis-${entry.key}`}
+              x1={center}
+              y1={center}
+              x2={p.x}
+              y2={p.y}
+              stroke={entry.color}
+              strokeWidth={1}
+            />
+          );
+        })}
+
+        <Polygon
+          points={dataPolygon}
+          fill="#CBD5E1"
+          stroke={COLORS.dark}
+          strokeWidth={1.4}
+        />
+
+        {entries.map((entry, i) => {
+          const p = pointFor(i, entry.value);
+          return (
+            <Circle
+              key={`dot-${entry.key}`}
+              cx={p.x}
+              cy={p.y}
+              r={3}
+              fill={entry.color}
+            />
+          );
+        })}
+      </Svg>
+
+      <View style={styles.radarHeroLegend}>
+        <View style={styles.radarHeroLegendGrid}>
+          {entries.map((entry) => (
+            <View key={entry.key} style={styles.radarHeroLegendItem}>
+              <View
+                style={[
+                  styles.radarHeroLegendDot,
+                  { backgroundColor: entry.color },
+                ]}
+              />
+              <Text style={styles.radarHeroLegendText}>
+                {entry.label}: {entry.value.toFixed(1)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
 }
 
 function PillarCard({
@@ -984,144 +1090,225 @@ function BulletList({
   );
 }
 
-function PriorityRisksCompact({ items }: { items: string[] }) {
-  if (!items.length) {
-    return (
-      <Text style={styles.bodyText}>
-        No hay riesgos prioritarios identificados para este ciclo.
-      </Text>
-    );
-  }
-
-  return (
-    <View>
-      {items.slice(0, 2).map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.riskCompactRow}>
-          <Text style={styles.riskCompactDot}>•</Text>
-          <Text style={styles.riskCompactText}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function BulletListCompact({
-  items,
-  emptyText,
-}: {
-  items: string[];
-  emptyText: string;
-}) {
-  if (!items.length) {
-    return <Text style={styles.bodyText}>{emptyText}</Text>;
-  }
-
-  return (
-    <View>
-      {items.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.bulletRowCompact}>
-          <Text style={styles.bulletDot}>•</Text>
-          <Text style={styles.bulletTextCompact}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function trimPriorityRisk(text: string, max = 140) {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (normalized.length <= max) return normalized;
-  return `${normalized.slice(0, max - 1).trimEnd()}…`;
-}
-
-function PillarExposureSummary({
-  data,
-}: {
-  data: DeterministicPdfData["pillars"];
-}) {
+function getPillarEntries(data: DeterministicPdfData) {
   const entries: Array<{
     key: keyof DeterministicPdfData["pillars"];
     label: string;
-    value: number;
+    score: number;
+    delta: number | null;
     color: string;
   }> = [
     {
       key: "financial",
       label: "Financiero",
-      value: safeScore(data.financial),
+      score: safeScore(data.pillars.financial),
+      delta: data.deltas.financial,
       color: pillarColor("financial"),
     },
     {
       key: "commercial",
       label: "Comercial",
-      value: safeScore(data.commercial),
+      score: safeScore(data.pillars.commercial),
+      delta: data.deltas.commercial,
       color: pillarColor("commercial"),
     },
     {
       key: "operational",
       label: "Operativo",
-      value: safeScore(data.operational),
+      score: safeScore(data.pillars.operational),
+      delta: data.deltas.operational,
       color: pillarColor("operational"),
     },
     {
       key: "legal",
       label: "Legal",
-      value: safeScore(data.legal),
+      score: safeScore(data.pillars.legal),
+      delta: data.deltas.legal,
       color: pillarColor("legal"),
     },
     {
       key: "strategic",
       label: "Estratégico",
-      value: safeScore(data.strategic),
+      score: safeScore(data.pillars.strategic),
+      delta: data.deltas.strategic,
       color: pillarColor("strategic"),
     },
   ];
 
+  return entries;
+}
+
+function getStrongestPillar(data: DeterministicPdfData) {
+  return [...getPillarEntries(data)].sort((a, b) => b.score - a.score)[0];
+}
+
+function getWeakestPillar(data: DeterministicPdfData) {
+  return [...getPillarEntries(data)].sort((a, b) => a.score - b.score)[0];
+}
+
+function getBestDeltaPillar(data: DeterministicPdfData) {
   return (
-    <View style={styles.exposureSummaryList} wrap={false}>
-      {entries.map((entry) => (
-        <View key={entry.key} style={styles.exposureSummaryRow}>
-          <View style={styles.exposureSummaryTop}>
-            <View style={styles.exposureSummaryLabelWrap}>
-              <View
-                style={[
-                  styles.exposureSummaryDot,
-                  { backgroundColor: entry.color },
-                ]}
-              />
-              <Text style={styles.exposureSummaryLabel}>{entry.label}</Text>
-            </View>
+    [...getPillarEntries(data)]
+      .filter(
+        (entry) =>
+          typeof entry.delta === "number" && Number.isFinite(entry.delta),
+      )
+      .sort((a, b) => (b.delta ?? -999) - (a.delta ?? -999))[0] ?? null
+  );
+}
 
-            <Text style={styles.exposureSummaryValue}>
-              {entry.value.toFixed(1)}
-            </Text>
-          </View>
+function getWorstDeltaPillar(data: DeterministicPdfData) {
+  return (
+    [...getPillarEntries(data)]
+      .filter(
+        (entry) =>
+          typeof entry.delta === "number" && Number.isFinite(entry.delta),
+      )
+      .sort((a, b) => (a.delta ?? 999) - (b.delta ?? 999))[0] ?? null
+  );
+}
 
-          <View style={styles.exposureSummaryTrack}>
-            <View
-              style={[
-                styles.exposureSummaryFill,
-                {
-                  width: `${Math.max(0, Math.min(100, entry.value))}%`,
-                  backgroundColor: entry.color,
-                },
-              ]}
-            />
-          </View>
+function pillarReading(score: number | null, delta: number | null) {
+  const state = scoreState(score);
+  if (state === "Fuerte") {
+    if (typeof delta === "number" && delta > 0) {
+      return "Muestra una posición favorable y además mejora respecto al ciclo anterior, con menor presión relativa sobre este frente.";
+    }
+    if (typeof delta === "number" && delta < 0) {
+      return "Sigue en terreno sólido, aunque registra un deterioro respecto al ciclo previo que conviene seguir de cerca.";
+    }
+    return "Se mantiene en zona sólida, con señales de funcionamiento consistente y sin alertas dominantes en este pilar.";
+  }
+
+  if (state === "Estable") {
+    if (typeof delta === "number" && delta > 0) {
+      return "Presenta un comportamiento estable con mejora reciente, lo que sugiere una trayectoria controlada en este frente.";
+    }
+    if (typeof delta === "number" && delta < 0) {
+      return "Mantiene una base razonable, pero refleja una pérdida de solidez que merece monitoreo preventivo.";
+    }
+    return "Mantiene un comportamiento estable, sin desvíos severos, aunque todavía con margen para fortalecer controles o previsibilidad.";
+  }
+
+  if (state === "Vulnerable") {
+    if (typeof delta === "number" && delta > 0) {
+      return "Sigue siendo un foco sensible, aunque muestra recuperación parcial respecto al ciclo anterior.";
+    }
+    if (typeof delta === "number" && delta < 0) {
+      return "Concentra fragilidad relativa y además empeora frente al ciclo previo, por lo que requiere atención prioritaria.";
+    }
+    return "Se ubica como un foco vulnerable del ciclo y requiere seguimiento reforzado para evitar consolidación del deterioro.";
+  }
+
+  if (typeof delta === "number" && delta > 0) {
+    return "Permanece en nivel crítico, aunque con una mejora parcial que todavía no alcanza para salir de la zona de mayor exposición.";
+  }
+  if (typeof delta === "number" && delta < 0) {
+    return "Se mantiene como el frente más comprometido y profundiza deterioro respecto al ciclo previo, con necesidad de revisión inmediata.";
+  }
+  return "Se mantiene como un frente crítico del ciclo y requiere intervención específica para contener exposición y continuidad.";
+}
+
+function MapReadingCard({ data }: { data: DeterministicPdfData }) {
+  const strongest = getStrongestPillar(data);
+  const weakest = getWeakestPillar(data);
+  const bestDelta = getBestDeltaPillar(data);
+  const worstDelta = getWorstDeltaPillar(data);
+
+  const rows = [
+    {
+      label: "Pilar más sólido",
+      value: strongest
+        ? `${strongest.label} (${strongest.score.toFixed(1)})`
+        : "Sin dato suficiente",
+    },
+    {
+      label: "Pilar más comprometido",
+      value: weakest
+        ? `${weakest.label} (${weakest.score.toFixed(1)})`
+        : "Sin dato suficiente",
+    },
+    {
+      label: "Mayor mejora",
+      value:
+        bestDelta && typeof bestDelta.delta === "number" && bestDelta.delta > 0
+          ? `${bestDelta.label} (${formatDelta(bestDelta.delta)})`
+          : "No se registran mejoras relevantes en este ciclo.",
+    },
+    {
+      label: "Mayor deterioro",
+      value:
+        worstDelta &&
+        typeof worstDelta.delta === "number" &&
+        worstDelta.delta < 0
+          ? `${worstDelta.label} (${formatDelta(worstDelta.delta)})`
+          : "No se registran deterioros relevantes en este ciclo.",
+    },
+  ];
+
+  return (
+    <View style={styles.page2InsightsCard} wrap={false}>
+      <Text style={styles.sectionTitle}>Lectura ejecutiva del mapa</Text>
+      {rows.map((row, index) => (
+        <View
+          key={row.label}
+          style={
+            index === rows.length - 1
+              ? [styles.insightRowCompact, styles.insightRowCompactLast]
+              : styles.insightRowCompact
+          }
+        >
+          <Text style={styles.insightLabel}>{row.label}</Text>
+          <Text style={styles.insightValue}>{row.value}</Text>
         </View>
       ))}
+    </View>
+  );
+}
+
+function PillarDetailCard({
+  pillarKey,
+  title,
+  score,
+  delta,
+}: {
+  pillarKey: keyof DeterministicPdfData["pillars"];
+  title: string;
+  score: number | null;
+  delta: number | null;
+}) {
+  const width = `${Math.max(0, Math.min(100, safeScore(score)))}%`;
+  const accent = pillarColor(pillarKey);
+
+  return (
+    <View style={styles.pillarDetailCard} wrap={false}>
+      <View style={styles.pillarDetailTop}>
+        <View>
+          <Text style={[styles.pillarDetailTitle, { color: accent }]}>
+            {title}
+          </Text>
+          <Text style={styles.pillarDetailState}>{scoreState(score)}</Text>
+        </View>
+
+        <View>
+          <Text style={styles.pillarDetailScore}>{formatScore(score)}</Text>
+          <Text style={styles.pillarDetailDelta}>{formatDelta(delta)}</Text>
+        </View>
+      </View>
+
+      <View style={styles.barTrack}>
+        <View style={[styles.barFill, { width, backgroundColor: accent }]} />
+      </View>
+
+      <Text style={styles.pillarDetailReading}>
+        {pillarReading(score, delta)}
+      </Text>
     </View>
   );
 }
 
 function limitOverviewRisks(items: string[]) {
   return items.slice(0, 2);
-}
-
-function limitCycleChanges(
-  items: DeterministicPdfData["reportData"]["relevantCycleChanges"],
-) {
-  return items.slice(0, 4);
 }
 
 function limitPriorityFindings(
@@ -1207,9 +1394,6 @@ export async function generateReportPdf(
   const overall = safeScore(data.overallScore);
 
   const highlights = executiveHighlights(data).slice(0, 2);
-  const cycleChanges = limitCycleChanges(
-    data.reportData.relevantCycleChanges ?? [],
-  );
   const priorityFindings = limitPriorityFindings(
     data.reportData.priorityFindings ?? [],
   );
@@ -1414,77 +1598,73 @@ export async function generateReportPdf(
           </Text>
         </View>
 
-        <View style={styles.page2Block} wrap={false}>
-          <View style={styles.page2Card}>
-            <Text style={styles.page2CardTitle}>Mapa de exposición</Text>
-            <PillarExposureSummary data={data.pillars} />
-          </View>
+        <View style={styles.page2HeroCard} wrap={false}>
+          <Text style={styles.sectionTitle}>Radar de pilares</Text>
+          <RadarChart data={data.pillars} />
         </View>
 
-        <View style={styles.page2Block} wrap={false}>
-          <View style={styles.risksCompactCard}>
-            <Text style={styles.page2CardTitle}>Riesgos prioritarios</Text>
-            <PriorityRisksCompact
-              items={limitOverviewRisks(data.reportData.priorityRisks ?? [])}
+        <MapReadingCard data={data} />
+      </Page>
+
+      {/* PAGE 3 */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.pageHeader}>
+          <Text style={styles.pageHeaderTitle}>Detalle por pilar</Text>
+          <Text style={styles.pageHeaderSub}>
+            Empresa evaluada: {data.companyName} · Categoría:{" "}
+            {data.executiveCategory}
+          </Text>
+        </View>
+
+        <View style={styles.pillarDetailGrid}>
+          <View style={styles.pillarDetailItem}>
+            <PillarDetailCard
+              pillarKey="financial"
+              title="Financiero"
+              score={data.pillars.financial}
+              delta={data.deltas.financial}
             />
           </View>
-        </View>
 
-        <View style={styles.pillarGridWrap} wrap={false}>
-          <Text style={styles.pillarGridTitle}>Vista por pilar</Text>
+          <View style={styles.pillarDetailItem}>
+            <PillarDetailCard
+              pillarKey="commercial"
+              title="Comercial"
+              score={data.pillars.commercial}
+              delta={data.deltas.commercial}
+            />
+          </View>
 
-          <View style={styles.pillarGrid}>
-            <View style={styles.pillarGridItem}>
-              <PillarCard
-                pillarKey="financial"
-                title="Financiero"
-                score={data.pillars.financial}
-                delta={data.deltas.financial}
-              />
-            </View>
+          <View style={styles.pillarDetailItem}>
+            <PillarDetailCard
+              pillarKey="operational"
+              title="Operativo"
+              score={data.pillars.operational}
+              delta={data.deltas.operational}
+            />
+          </View>
 
-            <View style={styles.pillarGridItem}>
-              <PillarCard
-                pillarKey="commercial"
-                title="Comercial"
-                score={data.pillars.commercial}
-                delta={data.deltas.commercial}
-                odd
-              />
-            </View>
+          <View style={styles.pillarDetailItem}>
+            <PillarDetailCard
+              pillarKey="legal"
+              title="Legal"
+              score={data.pillars.legal}
+              delta={data.deltas.legal}
+            />
+          </View>
 
-            <View style={styles.pillarGridItem}>
-              <PillarCard
-                pillarKey="operational"
-                title="Operativo"
-                score={data.pillars.operational}
-                delta={data.deltas.operational}
-              />
-            </View>
-
-            <View style={styles.pillarGridItem}>
-              <PillarCard
-                pillarKey="legal"
-                title="Legal"
-                score={data.pillars.legal}
-                delta={data.deltas.legal}
-                odd
-              />
-            </View>
-
-            <View style={styles.pillarGridItem}>
-              <PillarCard
-                pillarKey="strategic"
-                title="Estratégico"
-                score={data.pillars.strategic}
-                delta={data.deltas.strategic}
-              />
-            </View>
+          <View style={styles.pillarDetailItemFull}>
+            <PillarDetailCard
+              pillarKey="strategic"
+              title="Estratégico"
+              score={data.pillars.strategic}
+              delta={data.deltas.strategic}
+            />
           </View>
         </View>
       </Page>
 
-      {/* PAGE 3 */}
+      {/* PAGE 4 */}
       <Page size="A4" style={styles.page}>
         <View style={styles.pageHeader}>
           <Text style={styles.pageHeaderTitle}>
@@ -1496,160 +1676,115 @@ export async function generateReportPdf(
           </Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cambios relevantes del ciclo</Text>
+        <View style={styles.page4TwoCol}>
+          <View style={styles.page4Col}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Hallazgos priorizados</Text>
 
-          {cycleChanges.length ? (
-            <View>
-              {cycleChanges.map((change, index) => {
-                const badgePalette =
-                  change.kind === "IMPROVED"
-                    ? { bg: COLORS.greenBg, text: COLORS.greenText }
-                    : change.kind === "PERSISTING_RISK"
-                      ? { bg: COLORS.amberBg, text: COLORS.amberText }
-                      : { bg: COLORS.redBg, text: COLORS.redText };
+              {priorityFindings.length ? (
+                <View>
+                  {priorityFindings.map((finding) => {
+                    const palette = findingSeverityPalette(finding.severity);
+                    const actionText = actionRecommendationLabel(
+                      finding.actionRecommendation,
+                    );
 
-                return (
-                  <View
-                    key={`${change.kind}-${change.fieldKey}-${index}`}
-                    style={styles.cycleChangeCard}
-                  >
-                    <View style={styles.cycleChangeTop}>
-                      <Text style={styles.cycleChangeTitle}>
-                        {change.fieldLabel}
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.cycleChangeBadge,
-                          {
-                            backgroundColor: badgePalette.bg,
-                            color: badgePalette.text,
-                          },
-                        ]}
+                    return (
+                      <View
+                        key={`${finding.pillar}-${finding.fieldKey}`}
+                        style={styles.findingCard}
                       >
-                        {cycleChangeKindLabel(change.kind)}
-                      </Text>
-                    </View>
+                        <View style={styles.findingHeader}>
+                          <Text style={styles.findingTitle}>
+                            {finding.fieldLabel}
+                          </Text>
 
-                    <Text style={styles.cycleChangeMeta}>
-                      {change.pillarLabel}
-                    </Text>
+                          <Text
+                            style={[
+                              styles.findingBadge,
+                              {
+                                backgroundColor: palette.bg,
+                                color: palette.text,
+                              },
+                            ]}
+                          >
+                            {finding.severity}
+                          </Text>
 
-                    <Text style={styles.cycleChangeBody}>
-                      {change.kind === "PERSISTING_RISK"
-                        ? `Se mantiene en nivel ${fieldLevelLabel(change.currentValue)}.`
-                        : `Pasó de ${fieldLevelLabel(change.previousValue)} a ${fieldLevelLabel(
-                            change.currentValue,
-                          )}.`}
-                    </Text>
+                          <Text style={styles.findingPillarBadge}>
+                            {finding.pillarLabel}
+                          </Text>
+                        </View>
 
-                    {change.rationale ? (
-                      <Text style={[styles.cycleChangeBody, { marginTop: 4 }]}>
-                        Contexto: {change.rationale}
-                      </Text>
-                    ) : null}
-                  </View>
-                );
-              })}
+                        {finding.primaryIssue ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Problema:</Text>
+                            <Text style={styles.findingValue}>
+                              {finding.primaryIssue}
+                            </Text>
+                          </View>
+                        ) : finding.rationale ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Situación:</Text>
+                            <Text style={styles.findingValue}>
+                              {finding.rationale}
+                            </Text>
+                          </View>
+                        ) : null}
+
+                        {actionText ? (
+                          <View style={styles.findingRow}>
+                            <Text style={styles.findingLabel}>Acción:</Text>
+                            <Text style={styles.findingValue}>
+                              {actionText}
+                            </Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </View>
+              ) : (
+                <Text style={styles.bodyText}>
+                  No se registraron hallazgos priorizados relevantes en este
+                  ciclo.
+                </Text>
+              )}
             </View>
-          ) : (
-            <Text style={styles.bodyText}>
-              No se registraron cambios relevantes del ciclo para esta
-              evaluación.
-            </Text>
-          )}
-        </View>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Hallazgos priorizados del ciclo
-          </Text>
+          </View>
 
-          {priorityFindings.length ? (
-            <View>
-              {priorityFindings.map((finding) => {
-                const palette = findingSeverityPalette(finding.severity);
-                const actionText = actionRecommendationLabel(
-                  finding.actionRecommendation,
-                );
-
-                return (
-                  <View
-                    key={`${finding.pillar}-${finding.fieldKey}`}
-                    style={styles.findingCard}
-                  >
-                    <View style={styles.findingHeader}>
-                      <Text style={styles.findingTitle}>
-                        {finding.fieldLabel}
-                      </Text>
-
-                      <Text
-                        style={[
-                          styles.findingBadge,
-                          {
-                            backgroundColor: palette.bg,
-                            color: palette.text,
-                          },
-                        ]}
-                      >
-                        {finding.severity}
-                      </Text>
-
-                      <Text style={styles.findingPillarBadge}>
-                        {finding.pillarLabel}
-                      </Text>
-                    </View>
-
-                    {finding.rationale ? (
-                      <View style={styles.findingRow}>
-                        <Text style={styles.findingLabel}>Situación:</Text>
-                        <Text style={styles.findingValue}>
-                          {finding.rationale}
-                        </Text>
-                      </View>
-                    ) : null}
-
-                    {finding.evidenceNote ? (
-                      <View style={styles.findingRow}>
-                        <Text style={styles.findingLabel}>Evidencia:</Text>
-                        <Text style={styles.findingValue}>
-                          {finding.evidenceNote}
-                        </Text>
-                      </View>
-                    ) : null}
-
-                    {finding.primaryIssue ? (
-                      <View style={styles.findingRow}>
-                        <Text style={styles.findingLabel}>Problema:</Text>
-                        <Text style={styles.findingValue}>
-                          {finding.primaryIssue}
-                        </Text>
-                      </View>
-                    ) : null}
-
-                    {actionText ? (
-                      <View style={styles.findingRow}>
-                        <Text style={styles.findingLabel}>Acción:</Text>
-                        <Text style={styles.findingValue}>{actionText}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                );
-              })}
+          <View style={styles.page4Col}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Recomendaciones</Text>
+              <BulletList
+                items={recommendations.slice(0, 4)}
+                emptyText="No se definieron recomendaciones específicas para este ciclo."
+              />
             </View>
-          ) : (
-            <Text style={styles.bodyText}>
-              No se registraron hallazgos priorizados relevantes en este ciclo.
-            </Text>
-          )}
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recomendaciones</Text>
-          <BulletList
-            items={recommendations}
-            emptyText="No se definieron recomendaciones específicas para este ciclo."
-          />
+        <View style={styles.closingInfoGrid} wrap={false}>
+          <View style={styles.closingInfoCard}>
+            <Text style={styles.closingInfoLabel}>Enfoque sugerido</Text>
+            <Text style={styles.closingInfoValue}>
+              {softenActionTitle(actionCard.title)}
+            </Text>
+            <Text style={styles.smallText}>
+              {softenActionDescription(actionCard.description)}
+            </Text>
+          </View>
+
+          <View style={styles.closingInfoCard}>
+            <Text style={styles.closingInfoLabel}>
+              Próxima revisión sugerida
+            </Text>
+            <Text style={styles.closingInfoValue}>
+              {nextReviewInfo.suggestedDateLabel}
+            </Text>
+            <Text style={styles.smallText}>{nextReviewInfo.statusLabel}</Text>
+            <Text style={styles.smallText}>{nextReviewInfo.helperText}</Text>
+          </View>
         </View>
 
         <View style={styles.footer}>
