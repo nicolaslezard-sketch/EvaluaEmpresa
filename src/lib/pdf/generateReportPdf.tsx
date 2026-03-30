@@ -1209,6 +1209,39 @@ function pillarStatusLabel(score: number) {
   return "Crítico";
 }
 
+function normalizeFindingSeverityLabel(value?: string | null) {
+  if (!value) return "Estable";
+
+  const normalized = value.trim().toLowerCase();
+
+  if (
+    normalized === "critico" ||
+    normalized === "crítico" ||
+    normalized === "critical"
+  ) {
+    return "Crítico";
+  }
+
+  if (
+    normalized === "debil" ||
+    normalized === "débil" ||
+    normalized === "weak" ||
+    normalized === "vulnerable"
+  ) {
+    return "Vulnerable";
+  }
+
+  if (normalized === "fuerte" || normalized === "strong") {
+    return "Fuerte";
+  }
+
+  if (normalized === "estable" || normalized === "stable") {
+    return "Estable";
+  }
+
+  return value;
+}
+
 function getWorstDeltaPillar(data: DeterministicPdfData) {
   return (
     [...getPillarEntries(data)]
@@ -1353,24 +1386,52 @@ function softenActionDescription(description: string) {
     .replace("antes de la próxima revisión.", "en este ciclo.");
 }
 
-function findingSeverityPalette(severity: "OBSERVACION" | "DEBIL" | "CRITICO") {
-  switch (severity) {
-    case "CRITICO":
-      return {
-        bg: COLORS.redBg,
-        text: COLORS.redText,
-      };
-    case "DEBIL":
-      return {
-        bg: COLORS.amberBg,
-        text: COLORS.amberText,
-      };
-    default:
-      return {
-        bg: COLORS.blueBg,
-        text: COLORS.blueText,
-      };
-  }
+function FindingCard({
+  title,
+  severity,
+  impact,
+  issue,
+  action,
+}: {
+  title: string;
+  severity?: string | null;
+  impact?: string | null;
+  issue?: string | null;
+  action?: string | null;
+}) {
+  const normalizedSeverity = normalizeFindingSeverityLabel(severity);
+
+  return (
+    <View style={styles.findingCard} wrap={false}>
+      <Text style={styles.findingTitle}>{title}</Text>
+
+      {!!severity && (
+        <Text style={styles.findingMeta}>
+          Severidad:{" "}
+          <Text style={styles.findingMetaStrong}>{normalizedSeverity}</Text>
+        </Text>
+      )}
+
+      {!!impact && (
+        <Text style={styles.findingMeta}>
+          Impacto: <Text style={styles.findingMetaStrong}>{impact}</Text>
+        </Text>
+      )}
+
+      {!!issue && (
+        <Text style={styles.findingMeta}>
+          Señal detectada: <Text style={styles.findingMetaStrong}>{issue}</Text>
+        </Text>
+      )}
+
+      {!!action && (
+        <Text style={styles.findingMeta}>
+          Acción sugerida:{" "}
+          <Text style={styles.findingMetaStrong}>{action}</Text>
+        </Text>
+      )}
+    </View>
+  );
 }
 
 function actionRecommendationLabel(
@@ -1698,63 +1759,21 @@ export async function generateReportPdf(
               {priorityFindings.length ? (
                 <View>
                   {priorityFindings.map((finding) => {
-                    const palette = findingSeverityPalette(finding.severity);
                     const actionText = actionRecommendationLabel(
                       finding.actionRecommendation,
                     );
 
                     return (
-                      <View
+                      <FindingCard
                         key={`${finding.pillar}-${finding.fieldKey}`}
-                        style={styles.findingCard}
-                      >
-                        <View style={styles.findingHeader}>
-                          <Text style={styles.findingTitle}>
-                            {finding.fieldLabel}
-                          </Text>
-
-                          <Text
-                            style={[
-                              styles.findingBadge,
-                              {
-                                backgroundColor: palette.bg,
-                                color: palette.text,
-                              },
-                            ]}
-                          >
-                            {finding.severity}
-                          </Text>
-
-                          <Text style={styles.findingPillarBadge}>
-                            {finding.pillarLabel}
-                          </Text>
-                        </View>
-
-                        {finding.primaryIssue ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Problema:</Text>
-                            <Text style={styles.findingValue}>
-                              {finding.primaryIssue}
-                            </Text>
-                          </View>
-                        ) : finding.rationale ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Situación:</Text>
-                            <Text style={styles.findingValue}>
-                              {finding.rationale}
-                            </Text>
-                          </View>
-                        ) : null}
-
-                        {actionText ? (
-                          <View style={styles.findingRow}>
-                            <Text style={styles.findingLabel}>Acción:</Text>
-                            <Text style={styles.findingValue}>
-                              {actionText}
-                            </Text>
-                          </View>
-                        ) : null}
-                      </View>
+                        title={finding.fieldLabel}
+                        severity={finding.severity}
+                        impact={finding.pillarLabel}
+                        issue={
+                          finding.primaryIssue ?? finding.rationale ?? null
+                        }
+                        action={actionText}
+                      />
                     );
                   })}
                 </View>
