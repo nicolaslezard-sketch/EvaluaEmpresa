@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     padding: 14,
   },
   pillarGridWrap: {
-    marginTop: 14,
+    marginTop: 22,
   },
   pillarGridTitle: {
     fontSize: 12,
@@ -502,9 +502,10 @@ const styles = StyleSheet.create({
   twoCol: {
     flexDirection: "row",
     marginTop: 4,
-    marginBottom: 14,
+    marginBottom: 18,
     alignItems: "flex-start",
   },
+
   colLeft: {
     width: "56%",
     paddingRight: 8,
@@ -515,26 +516,18 @@ const styles = StyleSheet.create({
   },
 
   exposureCardPage2: {
-    height: 186,
-    paddingBottom: 8,
+    minHeight: 252,
+    paddingBottom: 10,
   },
   risksCardPage2: {
-    height: 186,
-    paddingBottom: 8,
+    minHeight: 252,
+    paddingBottom: 10,
   },
 
   exposureSummaryList: {
-    marginTop: 2,
+    marginTop: 4,
   },
-  exposureSummaryRow: {
-    marginBottom: 8,
-  },
-  exposureSummaryTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
+
   exposureSummaryLabelWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -546,34 +539,44 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     marginRight: 6,
   },
+  exposureSummaryRow: {
+    marginBottom: 7,
+  },
+  exposureSummaryTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 3,
+  },
   exposureSummaryLabel: {
-    fontSize: 9.3,
+    fontSize: 8.8,
     fontWeight: "bold",
     color: COLORS.dark,
   },
   exposureSummaryValue: {
-    fontSize: 9.3,
+    fontSize: 8.8,
     fontWeight: "bold",
     color: COLORS.slate,
   },
   exposureSummaryTrack: {
-    height: 6,
+    height: 5,
     borderRadius: 999,
     backgroundColor: "#e5e7eb",
     overflow: "hidden",
   },
   exposureSummaryFill: {
-    height: 6,
+    height: 5,
     borderRadius: 999,
   },
+
   bulletRowCompact: {
     flexDirection: "row",
-    marginBottom: 4,
+    marginBottom: 3,
   },
   bulletTextCompact: {
     flex: 1,
-    fontSize: 8.6,
-    lineHeight: 1.18,
+    fontSize: 8.2,
+    lineHeight: 1.12,
     color: COLORS.slate,
   },
 
