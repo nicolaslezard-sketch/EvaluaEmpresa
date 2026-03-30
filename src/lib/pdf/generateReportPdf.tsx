@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
 
   twoCol: {
     flexDirection: "row",
-    marginTop: 6,
+    marginTop: 4,
     marginBottom: 14,
     alignItems: "flex-start",
   },
@@ -515,11 +515,11 @@ const styles = StyleSheet.create({
   },
 
   exposureCardPage2: {
-    height: 194,
+    height: 186,
     paddingBottom: 8,
   },
   risksCardPage2: {
-    height: 194,
+    height: 186,
     paddingBottom: 8,
   },
 
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   exposureSummaryRow: {
-    marginBottom: 9,
+    marginBottom: 8,
   },
   exposureSummaryTop: {
     flexDirection: "row",
@@ -566,30 +566,46 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 999,
   },
-
-  page2SectionTitle: {
-    fontSize: 12.5,
-    fontWeight: "bold",
-    marginBottom: 8,
-    color: COLORS.dark,
-  },
-  risksListPage2: {
-    marginTop: 1,
-  },
-  riskItemPage2: {
+  bulletRowCompact: {
     flexDirection: "row",
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  riskBulletPage2: {
-    width: 10,
-    fontSize: 10,
-    color: COLORS.dark,
-    marginTop: 1,
-  },
-  riskTextPage2: {
+  bulletTextCompact: {
     flex: 1,
-    fontSize: 8.8,
-    lineHeight: 1.24,
+    fontSize: 8.6,
+    lineHeight: 1.18,
+    color: COLORS.slate,
+  },
+
+  radarWrap: {
+    height: 176,
+    width: "100%",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  radarSvgBox: {
+    height: 122,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  radarLegendCompact: {
+    width: "100%",
+    marginTop: 0,
+  },
+  radarLegendCompactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 3,
+  },
+  radarLegendDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    marginRight: 5,
+  },
+  radarLegendCompactText: {
+    fontSize: 8.3,
     color: COLORS.slate,
   },
 
@@ -898,6 +914,58 @@ function PillarCard({
   );
 }
 
+function BulletList({
+  items,
+  emptyText,
+}: {
+  items: string[];
+  emptyText: string;
+}) {
+  if (!items.length) {
+    return <Text style={styles.bodyText}>{emptyText}</Text>;
+  }
+
+  return (
+    <View>
+      {items.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.bulletRow}>
+          <Text style={styles.bulletDot}>•</Text>
+          <Text style={styles.bulletText}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function BulletListCompact({
+  items,
+  emptyText,
+}: {
+  items: string[];
+  emptyText: string;
+}) {
+  if (!items.length) {
+    return <Text style={styles.bodyText}>{emptyText}</Text>;
+  }
+
+  return (
+    <View>
+      {items.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.bulletRowCompact}>
+          <Text style={styles.bulletDot}>•</Text>
+          <Text style={styles.bulletTextCompact}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function trimPriorityRisk(text: string, max = 140) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (normalized.length <= max) return normalized;
+  return `${normalized.slice(0, max - 1).trimEnd()}…`;
+}
+
 function PillarExposureSummary({
   data,
 }: {
@@ -978,46 +1046,25 @@ function PillarExposureSummary({
   );
 }
 
-function PriorityRisksCompact({
-  items,
-  emptyText,
-}: {
-  items: string[];
-  emptyText: string;
-}) {
-  if (!items.length) {
-    return <Text style={styles.bodyText}>{emptyText}</Text>;
-  }
+function PriorityRisksCompact({ items }: { items: string[] }) {
+  const normalized = items
+    .map((item) => trimPriorityRisk(item, 138))
+    .slice(0, 2);
 
-  return (
-    <View style={styles.risksListPage2}>
-      {items.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.riskItemPage2}>
-          <Text style={styles.riskBulletPage2}>•</Text>
-          <Text style={styles.riskTextPage2}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function BulletList({
-  items,
-  emptyText,
-}: {
-  items: string[];
-  emptyText: string;
-}) {
-  if (!items.length) {
-    return <Text style={styles.bodyText}>{emptyText}</Text>;
+  if (!normalized.length) {
+    return (
+      <Text style={styles.bodyText}>
+        No hay riesgos prioritarios identificados para este ciclo.
+      </Text>
+    );
   }
 
   return (
     <View>
-      {items.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.bulletRow}>
+      {normalized.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.bulletRowCompact}>
           <Text style={styles.bulletDot}>•</Text>
-          <Text style={styles.bulletText}>{item}</Text>
+          <Text style={styles.bulletTextCompact}>{item}</Text>
         </View>
       ))}
     </View>
@@ -1334,7 +1381,7 @@ export async function generateReportPdf(
               ]}
               wrap={false}
             >
-              <Text style={styles.page2SectionTitle}>Mapa de exposición</Text>
+              <Text style={styles.sectionTitle}>Mapa de exposición</Text>
               <PillarExposureSummary data={data.pillars} />
             </View>
           </View>
@@ -1348,12 +1395,9 @@ export async function generateReportPdf(
               ]}
               wrap={false}
             >
-              <Text style={styles.page2SectionTitle}>Riesgos prioritarios</Text>
+              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
               <PriorityRisksCompact
-                items={limitOverviewRisks(
-                  data.reportData.priorityRisks ?? [],
-                ).slice(0, 2)}
-                emptyText="No hay riesgos prioritarios identificados para este ciclo."
+                items={limitOverviewRisks(data.reportData.priorityRisks ?? [])}
               />
             </View>
           </View>
