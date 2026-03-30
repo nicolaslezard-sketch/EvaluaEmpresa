@@ -131,6 +131,52 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
+  pillarDetailCard: {
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    padding: 12,
+    marginBottom: 10,
+  },
+  pillarDetailHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  pillarDetailTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  pillarDetailStatus: {
+    fontSize: 9,
+    color: COLORS.slate,
+    fontWeight: "bold",
+  },
+  pillarDetailScoreRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  pillarDetailScore: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.dark,
+  },
+  pillarDetailDelta: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: COLORS.slate,
+  },
+  pillarDetailNarrative: {
+    marginTop: 9,
+    fontSize: 9,
+    lineHeight: 1.3,
+    color: COLORS.slate,
+  },
+
   infoGrid: {
     flexDirection: "row",
     gap: 12,
@@ -581,39 +627,7 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 10,
   },
-  pillarDetailCard: {
-    border: `1 solid ${COLORS.line}`,
-    borderRadius: 12,
-    backgroundColor: "#ffffff",
-    padding: 12,
-  },
-  pillarDetailTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 7,
-  },
-  pillarDetailTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    marginBottom: 2,
-  },
-  pillarDetailState: {
-    fontSize: 9,
-    color: COLORS.slate,
-  },
-  pillarDetailScore: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: COLORS.dark,
-    textAlign: "right",
-  },
-  pillarDetailDelta: {
-    fontSize: 9,
-    color: COLORS.slate,
-    textAlign: "right",
-    marginTop: 2,
-  },
+
   pillarDetailReading: {
     marginTop: 7,
     fontSize: 9.2,
@@ -764,12 +778,12 @@ function safeScore(value: number | null) {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
-function formatDelta(value: number | null) {
-  if (typeof value !== "number" || !Number.isFinite(value))
-    return "Sin variación";
-  if (value > 0) return `+${value.toFixed(1)}`;
-  if (value < 0) return value.toFixed(1);
-  return "0.0";
+function formatDelta(delta?: number | null) {
+  if (typeof delta !== "number" || !Number.isFinite(delta)) {
+    return "0.0";
+  }
+
+  return `${delta > 0 ? "+" : ""}${delta.toFixed(1)}`;
 }
 
 function pillarLabel(key: keyof DeterministicPdfData["pillars"]) {
@@ -822,6 +836,63 @@ function monitoringStatusShort(score: number) {
   if (score >= 65) return "Preventivo";
   if (score >= 50) return "Reforzado";
   return "Inmediato";
+}
+
+function getPillarNarrative(
+  pillarKey: "financial" | "commercial" | "operational" | "legal" | "strategic",
+  score: number,
+  delta?: number | null,
+) {
+  const safeDelta =
+    typeof delta === "number" && Number.isFinite(delta) ? delta : 0;
+
+  const baseByPillar = {
+    financial:
+      "Refleja la solidez económico-financiera, la previsibilidad de fondos y la capacidad de sostener compromisos sin tensión relevante.",
+    commercial:
+      "Refleja la estabilidad comercial, la generación de ingresos y la consistencia de la relación con clientes, contratos o demanda.",
+    operational:
+      "Refleja la capacidad de ejecución, continuidad operativa y respuesta ante desvíos o exigencias del ciclo.",
+    legal:
+      "Refleja el nivel de orden contractual, cumplimiento y exposición a fricciones regulatorias o documentales.",
+    strategic:
+      "Refleja el grado de dirección, formalización, adaptabilidad y resiliencia del negocio ante cambios relevantes.",
+  } as const;
+
+  let performanceText = "";
+  if (score >= 80) {
+    performanceText =
+      "Actualmente se ubica en una posición fuerte dentro del ciclo, con señales favorables y baja presión relativa.";
+  } else if (score >= 70) {
+    performanceText =
+      "Actualmente muestra un desempeño estable, con fundamentos razonables y sin señales de deterioro severo.";
+  } else if (score >= 60) {
+    performanceText =
+      "Actualmente se mantiene en una zona sensible, todavía gestionable, pero con necesidad de seguimiento más atento.";
+  } else {
+    performanceText =
+      "Actualmente se ubica en una zona comprometida del ciclo y requiere atención prioritaria para evitar mayor fragilidad.";
+  }
+
+  let deltaText = "";
+  if (safeDelta >= 4) {
+    deltaText =
+      "Además, registra una mejora clara respecto al ciclo anterior, lo que refuerza la evolución positiva de este frente.";
+  } else if (safeDelta > 0) {
+    deltaText =
+      "También muestra una mejora moderada frente al ciclo anterior, aunque todavía conviene sostener seguimiento.";
+  } else if (safeDelta <= -4) {
+    deltaText =
+      "A su vez, evidencia un deterioro relevante frente al ciclo anterior, por lo que conviene revisar causas y señales tempranas.";
+  } else if (safeDelta < 0) {
+    deltaText =
+      "Presenta un leve retroceso frente al ciclo anterior, sin quiebre mayor, pero con margen para corrección preventiva.";
+  } else {
+    deltaText =
+      "No muestra cambios relevantes frente al ciclo anterior y conserva una dinámica similar a la evaluación previa.";
+  }
+
+  return `${baseByPillar[pillarKey]} ${performanceText} ${deltaText}`;
 }
 
 function pickStrongestPillars(data: DeterministicPdfData) {
@@ -1028,45 +1099,6 @@ function RadarChart({ data }: { data: DeterministicPdfData["pillars"] }) {
   );
 }
 
-function PillarCard({
-  pillarKey,
-  title,
-  score,
-  delta,
-  odd,
-}: {
-  pillarKey: keyof DeterministicPdfData["pillars"];
-  title: string;
-  score: number | null;
-  delta: number | null;
-  odd?: boolean;
-}) {
-  const width = `${Math.max(0, Math.min(100, safeScore(score)))}%`;
-  const accent = pillarColor(pillarKey);
-
-  return (
-    <View
-      wrap={false}
-      style={
-        odd ? [styles.pillarCard, styles.pillarCardOdd] : styles.pillarCard
-      }
-    >
-      <Text style={[styles.pillarTitleAccent, { color: accent }]}>{title}</Text>
-
-      <View style={styles.pillarScoreRow}>
-        <Text style={styles.pillarScore}>{formatScore(score)}</Text>
-        <Text style={styles.pillarDelta}>{formatDelta(delta)}</Text>
-      </View>
-
-      <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width, backgroundColor: accent }]} />
-      </View>
-
-      <Text style={styles.pillarState}>{scoreState(score)}</Text>
-    </View>
-  );
-}
-
 function BulletList({
   items,
   emptyText,
@@ -1168,47 +1200,6 @@ function getWorstDeltaPillar(data: DeterministicPdfData) {
   );
 }
 
-function pillarReading(score: number | null, delta: number | null) {
-  const state = scoreState(score);
-  if (state === "Fuerte") {
-    if (typeof delta === "number" && delta > 0) {
-      return "Muestra una posición favorable y además mejora respecto al ciclo anterior, con menor presión relativa sobre este frente.";
-    }
-    if (typeof delta === "number" && delta < 0) {
-      return "Sigue en terreno sólido, aunque registra un deterioro respecto al ciclo previo que conviene seguir de cerca.";
-    }
-    return "Se mantiene en zona sólida, con señales de funcionamiento consistente y sin alertas dominantes en este pilar.";
-  }
-
-  if (state === "Estable") {
-    if (typeof delta === "number" && delta > 0) {
-      return "Presenta un comportamiento estable con mejora reciente, lo que sugiere una trayectoria controlada en este frente.";
-    }
-    if (typeof delta === "number" && delta < 0) {
-      return "Mantiene una base razonable, pero refleja una pérdida de solidez que merece monitoreo preventivo.";
-    }
-    return "Mantiene un comportamiento estable, sin desvíos severos, aunque todavía con margen para fortalecer controles o previsibilidad.";
-  }
-
-  if (state === "Vulnerable") {
-    if (typeof delta === "number" && delta > 0) {
-      return "Sigue siendo un foco sensible, aunque muestra recuperación parcial respecto al ciclo anterior.";
-    }
-    if (typeof delta === "number" && delta < 0) {
-      return "Concentra fragilidad relativa y además empeora frente al ciclo previo, por lo que requiere atención prioritaria.";
-    }
-    return "Se ubica como un foco vulnerable del ciclo y requiere seguimiento reforzado para evitar consolidación del deterioro.";
-  }
-
-  if (typeof delta === "number" && delta > 0) {
-    return "Permanece en nivel crítico, aunque con una mejora parcial que todavía no alcanza para salir de la zona de mayor exposición.";
-  }
-  if (typeof delta === "number" && delta < 0) {
-    return "Se mantiene como el frente más comprometido y profundiza deterioro respecto al ciclo previo, con necesidad de revisión inmediata.";
-  }
-  return "Se mantiene como un frente crítico del ciclo y requiere intervención específica para contener exposición y continuidad.";
-}
-
 function MapReadingCard({ data }: { data: DeterministicPdfData }) {
   const strongest = getStrongestPillar(data);
   const weakest = getWeakestPillar(data);
@@ -1272,43 +1263,46 @@ function PillarDetailCard({
   score,
   delta,
 }: {
-  pillarKey: keyof DeterministicPdfData["pillars"];
+  pillarKey: "financial" | "commercial" | "operational" | "legal" | "strategic";
   title: string;
-  score: number | null;
-  delta: number | null;
+  score: number;
+  delta?: number | null;
 }) {
-  const width = `${Math.max(0, Math.min(100, safeScore(score)))}%`;
-  const accent = pillarColor(pillarKey);
+  const status = monitoringStatusShort(score);
+  const deltaLabel = formatDelta(delta);
+  const narrative = getPillarNarrative(pillarKey, score, delta);
 
   return (
     <View style={styles.pillarDetailCard} wrap={false}>
-      <View style={styles.pillarDetailTop}>
-        <View>
-          <Text style={[styles.pillarDetailTitle, { color: accent }]}>
-            {title}
-          </Text>
-          <Text style={styles.pillarDetailState}>{scoreState(score)}</Text>
-        </View>
-
-        <View>
-          <Text style={styles.pillarDetailScore}>{formatScore(score)}</Text>
-          <Text style={styles.pillarDetailDelta}>{formatDelta(delta)}</Text>
-        </View>
+      <View style={styles.pillarDetailHeader}>
+        <Text
+          style={[styles.pillarDetailTitle, { color: pillarColor(pillarKey) }]}
+        >
+          {title}
+        </Text>
+        <Text style={styles.pillarDetailStatus}>{status}</Text>
       </View>
 
-      <View style={styles.barTrack}>
-        <View style={[styles.barFill, { width, backgroundColor: accent }]} />
+      <View style={styles.pillarDetailScoreRow}>
+        <Text style={styles.pillarDetailScore}>{score.toFixed(1)}</Text>
+        <Text style={styles.pillarDetailDelta}>{deltaLabel}</Text>
       </View>
 
-      <Text style={styles.pillarDetailReading}>
-        {pillarReading(score, delta)}
-      </Text>
+      <View style={styles.progressTrack}>
+        <View
+          style={[
+            styles.progressFill,
+            {
+              width: `${Math.max(0, Math.min(100, score))}%`,
+              backgroundColor: pillarColor(pillarKey),
+            },
+          ]}
+        />
+      </View>
+
+      <Text style={styles.pillarDetailNarrative}>{narrative}</Text>
     </View>
   );
-}
-
-function limitOverviewRisks(items: string[]) {
-  return items.slice(0, 2);
 }
 
 function limitPriorityFindings(
@@ -1621,7 +1615,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="financial"
               title="Financiero"
-              score={data.pillars.financial}
+              score={safeScore(data.pillars.financial)}
               delta={data.deltas.financial}
             />
           </View>
@@ -1630,7 +1624,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="commercial"
               title="Comercial"
-              score={data.pillars.commercial}
+              score={safeScore(data.pillars.financial)}
               delta={data.deltas.commercial}
             />
           </View>
@@ -1639,7 +1633,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="operational"
               title="Operativo"
-              score={data.pillars.operational}
+              score={safeScore(data.pillars.financial)}
               delta={data.deltas.operational}
             />
           </View>
@@ -1648,7 +1642,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="legal"
               title="Legal"
-              score={data.pillars.legal}
+              score={safeScore(data.pillars.financial)}
               delta={data.deltas.legal}
             />
           </View>
@@ -1657,7 +1651,7 @@ export async function generateReportPdf(
             <PillarDetailCard
               pillarKey="strategic"
               title="Estratégico"
-              score={data.pillars.strategic}
+              score={safeScore(data.pillars.financial)}
               delta={data.deltas.strategic}
             />
           </View>
