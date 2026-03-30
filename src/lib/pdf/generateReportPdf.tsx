@@ -501,8 +501,8 @@ const styles = StyleSheet.create({
 
   twoCol: {
     flexDirection: "row",
-    marginTop: 4,
-    marginBottom: 12,
+    marginTop: 6,
+    marginBottom: 14,
     alignItems: "flex-start",
   },
   colLeft: {
@@ -514,97 +514,82 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
 
-  radarCardPage2: {
-    height: 184,
+  exposureCardPage2: {
+    height: 194,
     paddingBottom: 8,
   },
   risksCardPage2: {
-    height: 184,
+    height: 194,
     paddingBottom: 8,
   },
 
-  radarSummaryList: {
+  exposureSummaryList: {
     marginTop: 2,
   },
-  radarSummaryRow: {
-    marginBottom: 8,
+  exposureSummaryRow: {
+    marginBottom: 9,
   },
-  radarSummaryTop: {
+  exposureSummaryTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 4,
   },
-  radarSummaryLabelWrap: {
+  exposureSummaryLabelWrap: {
     flexDirection: "row",
     alignItems: "center",
+    maxWidth: "72%",
   },
-  radarSummaryDot: {
+  exposureSummaryDot: {
     width: 7,
     height: 7,
     borderRadius: 999,
     marginRight: 6,
   },
-  radarSummaryLabel: {
-    fontSize: 9.5,
+  exposureSummaryLabel: {
+    fontSize: 9.3,
     fontWeight: "bold",
     color: COLORS.dark,
   },
-  radarSummaryValue: {
-    fontSize: 9.5,
+  exposureSummaryValue: {
+    fontSize: 9.3,
     fontWeight: "bold",
     color: COLORS.slate,
   },
-  radarMiniTrack: {
+  exposureSummaryTrack: {
     height: 6,
     borderRadius: 999,
     backgroundColor: "#e5e7eb",
     overflow: "hidden",
   },
-  radarMiniFill: {
+  exposureSummaryFill: {
     height: 6,
     borderRadius: 999,
-  },
-  bulletRowCompact: {
-    flexDirection: "row",
-    marginBottom: 5,
-  },
-  bulletTextCompact: {
-    flex: 1,
-    fontSize: 9.2,
-    lineHeight: 1.28,
-    color: COLORS.slate,
   },
 
-  radarWrap: {
-    height: 176,
-    width: "100%",
-    justifyContent: "space-between",
-    alignItems: "center",
+  page2SectionTitle: {
+    fontSize: 12.5,
+    fontWeight: "bold",
+    marginBottom: 8,
+    color: COLORS.dark,
   },
-  radarSvgBox: {
-    height: 122,
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center",
+  risksListPage2: {
+    marginTop: 1,
   },
-  radarLegendCompact: {
-    width: "100%",
-    marginTop: 0,
-  },
-  radarLegendCompactRow: {
+  riskItemPage2: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 3,
+    marginBottom: 6,
   },
-  radarLegendDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 999,
-    marginRight: 5,
+  riskBulletPage2: {
+    width: 10,
+    fontSize: 10,
+    color: COLORS.dark,
+    marginTop: 1,
   },
-  radarLegendCompactText: {
-    fontSize: 8.3,
+  riskTextPage2: {
+    flex: 1,
+    fontSize: 8.8,
+    lineHeight: 1.24,
     color: COLORS.slate,
   },
 
@@ -913,6 +898,109 @@ function PillarCard({
   );
 }
 
+function PillarExposureSummary({
+  data,
+}: {
+  data: DeterministicPdfData["pillars"];
+}) {
+  const entries: Array<{
+    key: keyof DeterministicPdfData["pillars"];
+    label: string;
+    value: number;
+    color: string;
+  }> = [
+    {
+      key: "financial",
+      label: "Financiero",
+      value: safeScore(data.financial),
+      color: pillarColor("financial"),
+    },
+    {
+      key: "commercial",
+      label: "Comercial",
+      value: safeScore(data.commercial),
+      color: pillarColor("commercial"),
+    },
+    {
+      key: "operational",
+      label: "Operativo",
+      value: safeScore(data.operational),
+      color: pillarColor("operational"),
+    },
+    {
+      key: "legal",
+      label: "Legal",
+      value: safeScore(data.legal),
+      color: pillarColor("legal"),
+    },
+    {
+      key: "strategic",
+      label: "Estratégico",
+      value: safeScore(data.strategic),
+      color: pillarColor("strategic"),
+    },
+  ];
+
+  return (
+    <View style={styles.exposureSummaryList} wrap={false}>
+      {entries.map((entry) => (
+        <View key={entry.key} style={styles.exposureSummaryRow}>
+          <View style={styles.exposureSummaryTop}>
+            <View style={styles.exposureSummaryLabelWrap}>
+              <View
+                style={[
+                  styles.exposureSummaryDot,
+                  { backgroundColor: entry.color },
+                ]}
+              />
+              <Text style={styles.exposureSummaryLabel}>{entry.label}</Text>
+            </View>
+
+            <Text style={styles.exposureSummaryValue}>
+              {entry.value.toFixed(1)}
+            </Text>
+          </View>
+
+          <View style={styles.exposureSummaryTrack}>
+            <View
+              style={[
+                styles.exposureSummaryFill,
+                {
+                  width: `${Math.max(0, Math.min(100, entry.value))}%`,
+                  backgroundColor: entry.color,
+                },
+              ]}
+            />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function PriorityRisksCompact({
+  items,
+  emptyText,
+}: {
+  items: string[];
+  emptyText: string;
+}) {
+  if (!items.length) {
+    return <Text style={styles.bodyText}>{emptyText}</Text>;
+  }
+
+  return (
+    <View style={styles.risksListPage2}>
+      {items.map((item, index) => (
+        <View key={`${item}-${index}`} style={styles.riskItemPage2}>
+          <Text style={styles.riskBulletPage2}>•</Text>
+          <Text style={styles.riskTextPage2}>{item}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function BulletList({
   items,
   emptyText,
@@ -930,29 +1018,6 @@ function BulletList({
         <View key={`${item}-${index}`} style={styles.bulletRow}>
           <Text style={styles.bulletDot}>•</Text>
           <Text style={styles.bulletText}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function BulletListCompact({
-  items,
-  emptyText,
-}: {
-  items: string[];
-  emptyText: string;
-}) {
-  if (!items.length) {
-    return <Text style={styles.bodyText}>{emptyText}</Text>;
-  }
-
-  return (
-    <View>
-      {items.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.bulletRowCompact}>
-          <Text style={styles.bulletDot}>•</Text>
-          <Text style={styles.bulletTextCompact}>{item}</Text>
         </View>
       ))}
     </View>
@@ -1260,7 +1325,19 @@ export async function generateReportPdf(
         </View>
 
         <View style={styles.twoCol} wrap={false}>
-          <View style={styles.colLeft}></View>
+          <View style={styles.colLeft}>
+            <View
+              style={[
+                styles.infoCard,
+                styles.compactInfoCard,
+                styles.exposureCardPage2,
+              ]}
+              wrap={false}
+            >
+              <Text style={styles.page2SectionTitle}>Mapa de exposición</Text>
+              <PillarExposureSummary data={data.pillars} />
+            </View>
+          </View>
 
           <View style={styles.colRight}>
             <View
@@ -1271,8 +1348,8 @@ export async function generateReportPdf(
               ]}
               wrap={false}
             >
-              <Text style={styles.sectionTitle}>Riesgos prioritarios</Text>
-              <BulletListCompact
+              <Text style={styles.page2SectionTitle}>Riesgos prioritarios</Text>
+              <PriorityRisksCompact
                 items={limitOverviewRisks(
                   data.reportData.priorityRisks ?? [],
                 ).slice(0, 2)}
