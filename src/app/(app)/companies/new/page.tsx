@@ -68,24 +68,27 @@ export default async function NewCompanyPage() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">
-            Nueva empresa
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-xs font-medium uppercase tracking-[0.22em] text-sky-800">
+            Primer paso
+          </p>
+
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900">
+            Cargá tu primera empresa
           </h1>
-          <p className="mt-2 text-sm text-zinc-600">
-            Registrá una empresa para comenzar a evaluarla bajo la metodología
-            E-Score™.
+
+          <p className="mt-4 text-base leading-7 text-zinc-600">
+            Registrá un proveedor, cliente o contraparte para crear tu primera
+            evaluación y empezar a seguir su evolución entre ciclos.
           </p>
         </div>
 
-        <div className="rounded-2xl border bg-white px-5 py-4 shadow-sm">
+        <div className="rounded-2xl border border-sky-100 bg-white px-5 py-4 shadow-sm">
           <div className="text-sm text-zinc-600">Uso del plan</div>
-          <div className="mt-1 text-2xl font-semibold text-zinc-900">
-            {usage.used}/{usage.limit}
-          </div>
+          <div className="mt-1 text-2xl font-semibold text-zinc-900">0/1</div>
           <div className="mt-1 text-sm text-zinc-500">
-            Empresas activas · {planLabel(usage.plan)}
+            Empresas activas · FREE
           </div>
         </div>
       </div>
@@ -100,6 +103,16 @@ export default async function NewCompanyPage() {
           </a>
         </div>
       ) : null}
+
+      <div className="rounded-3xl border border-sky-100 bg-sky-50/50 p-5">
+        <p className="text-sm font-medium text-zinc-900">
+          Completá los datos básicos de la empresa
+        </p>
+        <p className="mt-2 text-sm leading-6 text-zinc-600">
+          Después vas a poder cargar la evaluación, obtener el score general,
+          ver la categoría ejecutiva y seguir cambios entre ciclos.
+        </p>
+      </div>
 
       <form
         action={createCompanyAction}

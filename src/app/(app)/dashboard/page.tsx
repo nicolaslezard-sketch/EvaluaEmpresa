@@ -286,6 +286,136 @@ export default async function DashboardPage() {
     };
   });
 
+  if (companySummaries.length === 0) {
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-xs font-medium uppercase tracking-[0.22em] text-sky-800">
+              Primer paso
+            </p>
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900">
+              Empezá cargando tu primera empresa
+            </h1>
+            <p className="mt-4 text-base leading-7 text-zinc-600">
+              Registrá un proveedor, cliente o contraparte para crear tu primera
+              evaluación y empezar a seguir su evolución entre ciclos.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-sky-100 bg-white px-5 py-4 shadow-sm">
+            <div className="text-sm text-zinc-600">Uso del plan</div>
+            <div className="mt-1 text-2xl font-semibold text-zinc-900">
+              {activeCompanyCount}/{ent.maxCompanies}
+            </div>
+            <div className="mt-1 text-sm text-zinc-500">
+              Empresas activas · {planLabel(ent.plan)}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
+            <div className="text-sm font-medium text-sky-800">Paso 1</div>
+            <div className="mt-3 text-lg font-semibold text-zinc-900">
+              Cargá la empresa
+            </div>
+            <p className="mt-3 text-sm leading-6 text-zinc-600">
+              Registrá el tercero que querés evaluar y centralizá su seguimiento
+              en un solo lugar.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
+            <div className="text-sm font-medium text-sky-800">Paso 2</div>
+            <div className="mt-3 text-lg font-semibold text-zinc-900">
+              Completá la evaluación
+            </div>
+            <p className="mt-3 text-sm leading-6 text-zinc-600">
+              Cargá la revisión estructurada por pilares para reflejar la
+              situación actual de forma consistente.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
+            <div className="text-sm font-medium text-sky-800">Paso 3</div>
+            <div className="mt-3 text-lg font-semibold text-zinc-900">
+              Obtené el resultado
+            </div>
+            <p className="mt-3 text-sm leading-6 text-zinc-600">
+              Recibí score general, categoría ejecutiva, hallazgos, comparativa
+              entre ciclos y salida ejecutiva clara.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="rounded-3xl border border-sky-100 bg-linear-to-b from-white to-sky-50/50 p-8 shadow-sm">
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Todavía no cargaste ninguna empresa
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">
+              Cuando cargues la primera, vas a poder crear evaluaciones,
+              comparar ciclos y ordenar el seguimiento de terceros con más
+              claridad.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link href="/companies/new" className="btn btn-primary">
+                Nueva empresa
+              </Link>
+
+              <Link href="/informe-modelo" className="btn btn-secondary">
+                Ver informe modelo
+              </Link>
+            </div>
+
+            <p className="mt-4 text-sm text-zinc-500">
+              Empezá con los datos básicos. Después vas a poder completar la
+              evaluación y ver el resultado ejecutivo.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border bg-white p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-zinc-900">
+              Qué vas a obtener
+            </h3>
+
+            <div className="mt-5 space-y-3">
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="text-sm font-medium text-zinc-900">
+                  Score general y categoría ejecutiva
+                </div>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                  Una lectura rápida del estado general del tercero.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="text-sm font-medium text-zinc-900">
+                  Radar por 5 pilares y hallazgos
+                </div>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                  Visibilidad por dimensión para detectar dónde se concentra la
+                  exposición.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="text-sm font-medium text-zinc-900">
+                  Comparativa entre ciclos y PDF ejecutivo
+                </div>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">
+                  Una salida clara para seguir cambios y respaldar decisiones.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
