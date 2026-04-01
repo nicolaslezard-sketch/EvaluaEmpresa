@@ -50,7 +50,7 @@ export default async function BillingPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
           <div className="text-sm font-medium text-zinc-900">
             Free para explorar
           </div>
@@ -60,8 +60,8 @@ export default async function BillingPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-5 shadow-sm">
-          <div className="text-sm font-medium text-zinc-900">
+        <div className="rounded-2xl border border-sky-200 bg-sky-50/50 p-5 shadow-[0_12px_32px_rgba(2,132,199,0.10)]">
+          <div className="text-sm font-semibold text-sky-900">
             Pro para usarlo de verdad
           </div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
@@ -70,8 +70,8 @@ export default async function BillingPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-sky-100 bg-sky-50/50 p-5 shadow-sm">
-          <div className="text-sm font-medium text-zinc-900">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
+          <div className="text-sm font-semibold text-emerald-800">
             Business para monitoreo continuo
           </div>
           <p className="mt-2 text-sm leading-6 text-zinc-600">
@@ -85,7 +85,6 @@ export default async function BillingPage() {
         <PlanCard
           title="FREE"
           price="$0"
-          headline="Para probar el flujo y hacer una primera evaluación"
           current={currentPlan === "FREE"}
           usage={currentPlan === "FREE" ? `${activeCompanyCount}/1` : undefined}
           features={["1 empresa activa", "1 evaluación total", "Score general"]}
@@ -94,7 +93,6 @@ export default async function BillingPage() {
         <PlanCard
           title="PRO"
           price="ARS 95.000 / mes"
-          headline="Para trabajar evaluaciones completas con seguimiento recurrente"
           current={currentPlan === "PRO"}
           usage={currentPlan === "PRO" ? `${activeCompanyCount}/3` : undefined}
           features={[
@@ -104,13 +102,11 @@ export default async function BillingPage() {
             "PDF en todas las evaluaciones",
           ]}
           upgrade
-          highlighted
         />
 
         <PlanCard
           title="BUSINESS"
           price="ARS 210.000 / mes"
-          headline="Para equipos con mayor volumen y monitoreo continuo"
           current={currentPlan === "BUSINESS"}
           usage={
             currentPlan === "BUSINESS" ? `${activeCompanyCount}/15` : undefined
@@ -167,36 +163,53 @@ export default async function BillingPage() {
 function PlanCard({
   title,
   price,
-  headline,
   features,
   current,
   upgrade,
   usage,
-  highlighted,
 }: {
   title: "FREE" | "PRO" | "BUSINESS";
   price: string;
-  headline: string;
   features: string[];
   current?: boolean;
   upgrade?: boolean;
   usage?: string;
-  highlighted?: boolean;
 }) {
+  const isFree = title === "FREE";
+  const isPro = title === "PRO";
+  const isBusiness = title === "BUSINESS";
+
+  const wrapperClass = isFree
+    ? "rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+    : isPro
+      ? "rounded-3xl border border-sky-200 bg-white p-8 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
+      : "rounded-3xl border border-emerald-200 bg-white p-8 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
+
+  const titleClass = isFree
+    ? "text-lg font-semibold text-zinc-900"
+    : isPro
+      ? "text-lg font-semibold text-sky-900"
+      : "text-lg font-semibold text-emerald-800";
+
   return (
-    <div
-      className={[
-        "rounded-3xl border bg-white p-8 shadow-sm",
-        current ? "border-zinc-900" : "border-zinc-200",
-        highlighted
-          ? "border-sky-900 shadow-[0_10px_30px_rgba(2,132,199,0.08)]"
-          : "",
-      ].join(" ")}
-    >
+    <div className={wrapperClass}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900">{title}</h2>
-          <p className="mt-3 text-base leading-7 text-zinc-600">{headline}</p>
+          <h2 className={titleClass}>{title}</h2>
+          <p className="mt-4 text-xl font-semibold leading-8 text-zinc-900">
+            {isFree
+              ? "Para explorar el producto"
+              : isPro
+                ? "Para usarlo de verdad"
+                : "Para monitoreo continuo"}
+          </p>
+          <p className="mt-3 text-base leading-7 text-zinc-600">
+            {isFree
+              ? "Conocé el flujo y completá una primera evaluación."
+              : isPro
+                ? "Más empresas, más evaluaciones y comparativa entre ciclos."
+                : "Más capacidad, tendencia extendida y alertas para operación más activa."}
+          </p>
         </div>
 
         {current && usage ? (
@@ -206,19 +219,50 @@ function PlanCard({
         ) : null}
       </div>
 
-      <div className="mt-6 text-3xl font-semibold tracking-tight text-zinc-900">
+      <div className="mt-8 text-3xl font-semibold tracking-tight text-zinc-900">
         {price}
       </div>
 
       <ul className="mt-6 space-y-3 text-sm text-zinc-600">
-        {features.map((f) => (
-          <li key={f}>• {f}</li>
-        ))}
+        {features.map((f) => {
+          const highlight =
+            (isFree &&
+              (f.includes("1 empresa") || f.includes("1 evaluación"))) ||
+            (isPro &&
+              (f.includes("Evaluaciones ilimitadas") ||
+                f.includes("Histórico completo") ||
+                f.includes("PDF"))) ||
+            (isBusiness &&
+              (f.includes("Hasta 15 empresas") ||
+                f.includes("Tendencia extendida") ||
+                f.includes("Alertas automáticas")));
+
+          return (
+            <li key={f}>
+              •{" "}
+              <span
+                className={
+                  highlight ? "font-semibold text-zinc-900" : "text-zinc-600"
+                }
+              >
+                {f}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
       <div className="mt-8">
         {current ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <div
+            className={
+              isBusiness
+                ? "rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
+                : isPro
+                  ? "rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700"
+                  : "rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm font-medium text-zinc-700"
+            }
+          >
             Plan actual
           </div>
         ) : upgrade && title !== "FREE" ? (

@@ -48,17 +48,6 @@ async function createCompanyAction(formData: FormData) {
    PAGE
 ========================= */
 
-function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
-  switch (plan) {
-    case "PRO":
-      return "PRO";
-    case "BUSINESS":
-      return "BUSINESS";
-    default:
-      return "FREE";
-  }
-}
-
 export default async function NewCompanyPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");

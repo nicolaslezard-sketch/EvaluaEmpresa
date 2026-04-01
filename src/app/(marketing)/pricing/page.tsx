@@ -93,7 +93,7 @@ export default function PricingPage() {
   return (
     <div>
       {/* HERO */}
-      <section className="border-b border-zinc-200 bg-gradient-to-b from-white via-sky-50/60 to-white">
+      <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
         {" "}
         <div className="container-page py-20">
           <div className="max-w-3xl">
@@ -153,55 +153,120 @@ export default function PricingPage() {
       <section className="border-y border-zinc-200 bg-zinc-50 py-20">
         <div className="container-page">
           <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-4">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={[
-                  "card flex h-full flex-col p-8",
-                  plan.highlighted ? "border-2 border-zinc-900 bg-white" : "",
-                ].join(" ")}
-              >
-                <div>
-                  <p className="text-sm font-medium text-zinc-900">
-                    {plan.name}
-                  </p>
+            {plans.map((plan) => {
+              const isFree = plan.name === "Free";
+              const isSingle = plan.name === "Evaluación única";
+              const isPro = plan.name === "Pro";
+              const isBusiness = plan.name === "Business";
 
-                  <p className="mt-4 text-xl font-semibold leading-8 text-zinc-900">
-                    {plan.headline}
-                  </p>
+              const cardClass = isFree
+                ? "rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+                : isSingle
+                  ? "rounded-3xl border border-amber-200 bg-white p-8 shadow-[0_12px_32px_rgba(245,158,11,0.08)]"
+                  : isPro
+                    ? "rounded-3xl border border-sky-200 bg-white p-8 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
+                    : "rounded-3xl border border-emerald-200 bg-white p-8 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
 
-                  <p className="mt-4 text-sm leading-6 text-zinc-600">
-                    {plan.description}
-                  </p>
+              const nameClass = isFree
+                ? "text-sm font-medium text-zinc-900"
+                : isSingle
+                  ? "text-sm font-semibold text-amber-700"
+                  : isPro
+                    ? "text-sm font-semibold text-sky-900"
+                    : "text-sm font-semibold text-emerald-800";
 
-                  <ul className="mt-6 space-y-2 text-sm text-zinc-600">
-                    {plan.features.map((feature) => (
-                      <li key={feature}>• {feature}</li>
-                    ))}
-                  </ul>
+              return (
+                <div
+                  key={plan.name}
+                  className={`${cardClass} flex h-full flex-col`}
+                >
+                  <div>
+                    <p className={nameClass}>{plan.name}</p>
+
+                    <p className="mt-4 text-2xl font-semibold leading-[1.35] tracking-tight text-zinc-900">
+                      {isFree
+                        ? "Para explorar el producto"
+                        : isSingle
+                          ? "Para resolver una necesidad puntual"
+                          : isPro
+                            ? "Para usarlo de verdad"
+                            : "Para monitoreo continuo"}
+                    </p>
+
+                    <p className="mt-4 text-base leading-7 text-zinc-600">
+                      {isFree
+                        ? "Conocé el flujo y completá una primera evaluación."
+                        : isSingle
+                          ? "Resultado completo sin compromiso mensual."
+                          : isPro
+                            ? "Más empresas, más evaluaciones y comparativa entre ciclos."
+                            : "Más capacidad, tendencia extendida y alertas para operación más activa."}
+                    </p>
+
+                    <ul className="mt-6 space-y-3 text-sm text-zinc-600">
+                      {plan.features.map((feature) => {
+                        const highlight =
+                          (isFree &&
+                            (feature.includes("Carga de empresa") ||
+                              feature.includes("Vista parcial"))) ||
+                          (isSingle &&
+                            (feature.includes("Resultado completo") ||
+                              feature.includes("PDF ejecutivo"))) ||
+                          (isPro &&
+                            (feature.includes("Acceso completo") ||
+                              feature.includes("Comparativa") ||
+                              feature.includes("Histórico"))) ||
+                          (isBusiness &&
+                            (feature.includes("Mayor capacidad") ||
+                              feature.includes("Más empresas") ||
+                              feature.includes("Seguimiento")));
+
+                        return (
+                          <li key={feature}>
+                            •{" "}
+                            <span
+                              className={
+                                highlight
+                                  ? "font-semibold text-zinc-900"
+                                  : "text-zinc-600"
+                              }
+                            >
+                              {feature}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  <div className="mt-8">
+                    <Link
+                      href={plan.ctaHref}
+                      className={
+                        isPro || isSingle
+                          ? "btn btn-primary w-full"
+                          : "btn btn-secondary w-full"
+                      }
+                    >
+                      {plan.ctaLabel}
+                    </Link>
+                  </div>
                 </div>
-
-                <div className="mt-8">
-                  <Link
-                    href={plan.ctaHref}
-                    className={
-                      plan.highlighted
-                        ? "btn btn-primary w-full"
-                        : "btn btn-secondary w-full"
-                    }
-                  >
-                    {plan.ctaLabel}
-                  </Link>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <p className="mt-8 max-w-3xl text-sm leading-6 text-zinc-500">
-            Free sirve para explorar el flujo. Evaluación única resuelve una
-            necesidad puntual sin suscripción. Pro y Business están pensados
-            para seguimiento continuo, comparativa entre ciclos y operación más
-            recurrente.
+          <p className="mt-8 max-w-4xl text-base leading-8 text-zinc-600">
+            <span className="font-semibold text-zinc-900">Free</span> sirve para
+            explorar el flujo.{" "}
+            <span className="font-semibold text-amber-700">
+              Evaluación única
+            </span>{" "}
+            resuelve una necesidad puntual sin suscripción.{" "}
+            <span className="font-semibold text-sky-900">Pro</span> y{" "}
+            <span className="font-semibold text-emerald-800">Business</span>{" "}
+            están pensados para seguimiento continuo, comparativa entre ciclos y
+            operación más recurrente.
           </p>
         </div>
       </section>
@@ -220,7 +285,7 @@ export default function PricingPage() {
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div className="card p-6">
-              <p className="text-base font-medium text-zinc-900">Free</p>
+              <p className="text-base font-medium text-zinc-900">Free</p>{" "}
               <p className="mt-3 text-sm leading-6 text-zinc-600">
                 Para explorar el producto y entender cómo se estructura una
                 evaluación.
@@ -228,7 +293,7 @@ export default function PricingPage() {
             </div>
 
             <div className="card p-6">
-              <p className="text-base font-medium text-zinc-900">
+              <p className="text-base font-semibold text-amber-700">
                 Evaluación única
               </p>
               <p className="mt-3 text-sm leading-6 text-zinc-600">
@@ -238,7 +303,7 @@ export default function PricingPage() {
             </div>
 
             <div className="card p-6">
-              <p className="text-base font-medium text-zinc-900">Pro</p>
+              <p className="text-base font-semibold text-sky-900">Pro</p>{" "}
               <p className="mt-3 text-sm leading-6 text-zinc-600">
                 Para trabajar evaluaciones completas con histórico y comparativa
                 entre ciclos.
@@ -246,7 +311,9 @@ export default function PricingPage() {
             </div>
 
             <div className="card p-6">
-              <p className="text-base font-medium text-zinc-900">Business</p>
+              <p className="text-base font-semibold text-emerald-800">
+                Business
+              </p>{" "}
               <p className="mt-3 text-sm leading-6 text-zinc-600">
                 Para equipos con más volumen, más seguimiento y mayor necesidad
                 de escala operativa.

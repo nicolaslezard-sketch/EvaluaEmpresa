@@ -442,69 +442,123 @@ export default function HomePage() {
 
       {/* PRICING RESUMIDO */}
       <section className="border-y border-zinc-200 bg-slate-50 py-20">
-        {" "}
         <div className="container-page">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               Planes
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Elegí cómo querés usar EvaluaEmpresa
             </h2>
-            <p className="mt-4 text-base leading-7 text-zinc-600">
-              Desde una prueba inicial hasta un uso recurrente para seguimiento
-              de terceros.
+            <p className="mt-4 text-base leading-8 text-zinc-600">
+              <span className="font-semibold text-zinc-900">Free</span> sirve
+              para explorar el flujo.{" "}
+              <span className="font-semibold text-sky-900">Pro</span> destraba
+              más empresas, evaluaciones recurrentes y comparativa entre ciclos.{" "}
+              <span className="font-semibold text-emerald-800">Business</span>{" "}
+              está pensado para más volumen, tendencia extendida y monitoreo más
+              continuo.
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <div className="card p-6">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-7 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
               <p className="text-sm font-medium text-zinc-900">Free</p>
-              <p className="mt-3 text-lg font-semibold text-zinc-900">
-                Para conocer el flujo y probar una primera evaluación
+              <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
+                Para explorar el producto
+              </p>
+              <p className="mt-3 text-base leading-7 text-zinc-600">
+                Conocé el flujo y completá una primera evaluación.
               </p>
 
-              <ul className="mt-4 space-y-2 text-sm text-zinc-600">
-                <li>• Carga de empresa y evaluación</li>
-                <li>• Acceso inicial al producto</li>
+              <ul className="mt-6 space-y-3 text-sm text-zinc-600">
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    1 empresa activa
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    1 evaluación total
+                  </span>
+                </li>
                 <li>• Vista limitada del resultado</li>
               </ul>
 
-              <Link href="/pricing" className="btn btn-secondary mt-6 w-full">
-                Probar ahora
+              <Link href="/pricing" className="btn btn-secondary mt-8 w-full">
+                Ver planes
               </Link>
             </div>
 
-            <div className="rounded-3xl border-2 border-sky-900 bg-white p-6 shadow-[0_10px_30px_rgba(2,132,199,0.08)]">
-              {" "}
-              <p className="text-sm font-medium text-zinc-900">Pro</p>
-              <p className="mt-3 text-lg font-semibold text-zinc-900">
-                Para trabajar con evaluaciones completas y salida ejecutiva
+            <div className="rounded-3xl border border-sky-200 bg-white p-7 shadow-[0_12px_32px_rgba(2,132,199,0.10)]">
+              <p className="text-sm font-semibold text-sky-900">Pro</p>
+              <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
+                Para usarlo de verdad
               </p>
-              <ul className="mt-4 space-y-2 text-sm text-zinc-600">
-                <li>• Resultado completo</li>
-                <li>• Hallazgos y recomendaciones</li>
-                <li>• Comparativa entre ciclos</li>
-                <li>• PDF ejecutivo</li>
+              <p className="mt-3 text-base leading-7 text-zinc-600">
+                Más empresas, más evaluaciones y comparativa entre ciclos.
+              </p>
+
+              <ul className="mt-6 space-y-3 text-sm text-zinc-600">
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Evaluaciones ilimitadas
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Histórico completo
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    PDF ejecutivo
+                  </span>
+                </li>
               </ul>
-              <Link href="/pricing" className="btn btn-primary mt-6 w-full">
-                Ver plan Pro
+
+              <Link href="/pricing" className="btn btn-primary mt-8 w-full">
+                Ver planes
               </Link>
             </div>
 
-            <div className="card p-6">
-              <p className="text-sm font-medium text-zinc-900">Business</p>
-              <p className="mt-3 text-lg font-semibold text-zinc-900">
-                Para equipos con mayor volumen y seguimiento continuo
+            <div className="rounded-3xl border border-emerald-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
+              <p className="text-sm font-semibold text-emerald-800">Business</p>
+              <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
+                Para monitoreo continuo
+              </p>
+              <p className="mt-3 text-base leading-7 text-zinc-600">
+                Más capacidad, tendencia extendida y alertas para operación más
+                activa.
               </p>
 
-              <ul className="mt-4 space-y-2 text-sm text-zinc-600">
-                <li>• Mayor capacidad operativa</li>
-                <li>• Más empresas y evaluaciones</li>
-                <li>• Seguimiento más escalable</li>
+              <ul className="mt-6 space-y-3 text-sm text-zinc-600">
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Hasta 15 empresas
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Tendencia extendida
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Alertas automáticas
+                  </span>
+                </li>
               </ul>
 
-              <Link href="/pricing" className="btn btn-secondary mt-6 w-full">
+              <Link href="/pricing" className="btn btn-secondary mt-8 w-full">
                 Ver planes
               </Link>
             </div>
@@ -513,7 +567,8 @@ export default function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="bg-white py-20">
+      <section id="cta-final" className="bg-white py-20">
+        {" "}
         <div className="container-page">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
@@ -544,7 +599,8 @@ export default function HomePage() {
       </section>
 
       {/* CTA FINAL */}
-      <section id="faq" className="bg-white py-20">
+      <section id="cta-final" className="bg-white py-20">
+        {" "}
         <div className="container-page text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
             Ordená cómo evaluás terceros y seguí su evolución con más claridad.
