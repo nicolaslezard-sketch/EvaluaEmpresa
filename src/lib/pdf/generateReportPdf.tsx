@@ -13,6 +13,10 @@ import {
 import { getNextReviewInfo } from "@/lib/reviews/getNextReviewInfo";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
 import { getCompanyActionCard } from "@/lib/companies/getCompanyActionCard";
+import {
+  RELATIONSHIP_IMPORTANCE_LABEL,
+  relationshipImportanceLabel,
+} from "@/lib/ui/relationshipImportance";
 
 export type DeterministicPdfData = {
   companyName: string;
@@ -1577,7 +1581,8 @@ export async function generateReportPdf(
               { backgroundColor: "#f3f4f6", color: COLORS.dark },
             ]}
           >
-            Criticidad de la relación: {data.companyCriticality}
+            {RELATIONSHIP_IMPORTANCE_LABEL}:{" "}
+            {relationshipImportanceLabel(data.companyCriticality)}{" "}
           </Text>
 
           <Text

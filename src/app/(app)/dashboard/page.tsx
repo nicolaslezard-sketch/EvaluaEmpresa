@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
+import { relationshipImportanceLabel } from "@/lib/ui/relationshipImportance";
 
 type ReportCycleChange = {
   kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED";
@@ -568,7 +569,9 @@ export default async function DashboardPage() {
                         ) : null}
 
                         <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                          {company.criticality}
+                          {relationshipImportanceLabel(
+                            company.criticality,
+                          )}{" "}
                         </span>
                       </div>
 
@@ -707,7 +710,9 @@ export default async function DashboardPage() {
                         </span>
 
                         <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                          {company.criticality}
+                          {relationshipImportanceLabel(
+                            company.criticality,
+                          )}{" "}
                         </span>
                       </div>
 

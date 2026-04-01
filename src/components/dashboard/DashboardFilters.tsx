@@ -2,6 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import {
+  RELATIONSHIP_IMPORTANCE_LABEL,
+  relationshipImportanceLabel,
+} from "@/lib/ui/relationshipImportance";
 
 type ReviewTone = "ok" | "warning" | "overdue" | "none";
 
@@ -207,7 +211,8 @@ export function DashboardFilters({
                       {company.name}
                     </h2>
                     <div className="mt-2 text-sm text-zinc-500">
-                      Criticidad: {company.criticality}
+                      {RELATIONSHIP_IMPORTANCE_LABEL}:{" "}
+                      {relationshipImportanceLabel(company.criticality)}
                     </div>
                   </div>
 

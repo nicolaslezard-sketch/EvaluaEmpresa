@@ -8,6 +8,11 @@ import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
+import {
+  RELATIONSHIP_IMPORTANCE_HINT,
+  RELATIONSHIP_IMPORTANCE_LABEL,
+  relationshipImportanceLabel,
+} from "@/lib/ui/relationshipImportance";
 
 /* =========================
    TYPES
@@ -443,7 +448,10 @@ export default async function CompanyPage({
           <h1 className="text-2xl font-semibold text-zinc-900">{data.name}</h1>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-600">
-            <span>Criticidad de la relación: {data.criticality}</span>
+            <span>
+              {RELATIONSHIP_IMPORTANCE_LABEL}:{" "}
+              {relationshipImportanceLabel(data.criticality)}
+            </span>{" "}
             <span>•</span>
             <span>
               Última evaluación válida:{" "}
@@ -624,10 +632,13 @@ export default async function CompanyPage({
 
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
               <div className="text-sm text-zinc-700">
-                Criticidad de la relación
+                {RELATIONSHIP_IMPORTANCE_LABEL}
               </div>
               <div className="mt-2 text-base font-medium text-zinc-900">
-                {data.criticality}
+                {relationshipImportanceLabel(data.criticality)}
+              </div>
+              <div className="mt-2 text-xs leading-5 text-zinc-500">
+                {RELATIONSHIP_IMPORTANCE_HINT}
               </div>
             </div>
 

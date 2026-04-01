@@ -15,6 +15,12 @@ import {
   PILLAR_OBJECTIVES,
   PILLAR_ORDER,
 } from "@/lib/evaluationV2/fieldMetadata";
+
+import {
+  RELATIONSHIP_IMPORTANCE_HINT,
+  RELATIONSHIP_IMPORTANCE_LABEL,
+  relationshipImportanceLabel,
+} from "@/lib/ui/relationshipImportance";
 /* ===============================
    Helpers
 =================================*/
@@ -481,10 +487,13 @@ export default function EvaluationEditor(props: {
               Evaluación — {props.companyName}
             </h1>
             <div className="mt-1 text-sm text-zinc-600">
-              Criticidad de la relación:{" "}
+              {RELATIONSHIP_IMPORTANCE_LABEL}:{" "}
               <span className="font-medium text-zinc-800">
-                {props.companyCriticality}
+                {relationshipImportanceLabel(props.companyCriticality)}
               </span>
+            </div>
+            <div className="mt-1 text-xs leading-5 text-zinc-500">
+              {RELATIONSHIP_IMPORTANCE_HINT}
             </div>
           </div>
 
@@ -827,9 +836,9 @@ export default function EvaluationEditor(props: {
           </h1>
 
           <div className="mt-1 text-sm text-zinc-600">
-            Criticidad de la relación:{" "}
+            {RELATIONSHIP_IMPORTANCE_LABEL}:{" "}
             <span className="font-medium text-zinc-800">
-              {props.companyCriticality}
+              {relationshipImportanceLabel(props.companyCriticality)}{" "}
             </span>
           </div>
 
@@ -1028,12 +1037,12 @@ function Card({
   status: "empty" | "partial" | "complete";
   children: React.ReactNode;
 }) {
-  const color =
+  const badgeStyles =
     status === "complete"
-      ? "text-emerald-600"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
       : status === "partial"
-        ? "text-amber-600"
-        : "text-zinc-600";
+        ? "border-amber-200 bg-amber-50 text-amber-800"
+        : "border-zinc-200 bg-zinc-100 text-zinc-700";
 
   const label =
     status === "complete"
@@ -1043,18 +1052,25 @@ function Card({
         : "Incompleto";
 
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div>
-          <div className="text-lg font-medium text-zinc-900">{title}</div>
+    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div className="max-w-3xl">
+          <div className="text-xl font-semibold tracking-tight text-sky-900">
+            {title}
+          </div>
+
           {description ? (
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-600">
+            <p className="mt-2 text-base leading-7 text-zinc-600">
               {description}
             </p>
           ) : null}
         </div>
 
-        <div className={`shrink-0 text-sm font-medium ${color}`}>{label}</div>
+        <div
+          className={`shrink-0 rounded-full border px-3 py-1 text-sm font-medium ${badgeStyles}`}
+        >
+          {label}
+        </div>
       </div>
 
       <div className="space-y-4">{children}</div>
@@ -1096,7 +1112,7 @@ function PillarFields({
   onChange: (patch: Record<string, FieldAssessment>) => void;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-5 md:grid-cols-2">
       {fields.map((key) => {
         const meta = FIELD_METADATA[key];
         const current = value[key];
@@ -1135,20 +1151,22 @@ function PillarFields({
         return (
           <div
             key={key}
-            className="rounded-xl border border-zinc-200 bg-zinc-50 p-4"
+            className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-sky-100"
           >
-            <div className="text-sm font-semibold text-zinc-900">
+            <div className="text-lg font-semibold tracking-tight text-zinc-900">
               {meta.label}
             </div>
 
-            <p className="mt-1 text-sm text-zinc-700">{meta.summary}</p>
+            <p className="mt-2 text-base leading-7 text-zinc-700">
+              {meta.summary}
+            </p>
 
-            <p className="mt-2 text-xs leading-5 text-zinc-500">
+            <p className="mt-3 text-sm leading-6 text-zinc-500">
               {meta.helpText}
             </p>
 
             <select
-              className="mt-3 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+              className="mt-4 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
               value={selectedValue ?? ""}
               onChange={(e) => {
                 const v = Number(e.target.value);
@@ -1191,8 +1209,8 @@ function PillarFields({
             </select>
 
             {selectedOption ? (
-              <div className="mt-3 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs leading-5 text-zinc-600">
-                <span className="font-medium text-zinc-800">
+              <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-zinc-600">
+                <span className="font-semibold text-zinc-900">
                   Criterio seleccionado:
                 </span>{" "}
                 {selectedOption.criterion}
@@ -1200,9 +1218,9 @@ function PillarFields({
             ) : null}
 
             {showRationale ? (
-              <div className="mt-4 space-y-3 rounded-xl border border-zinc-200 bg-white p-3">
+              <div className="mt-5 space-y-4 rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-zinc-700">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-sky-900">
                     ¿Qué situación explica esta evaluación?
                     {rationaleRequired ? " *" : ""}
                   </label>
@@ -1216,7 +1234,7 @@ function PillarFields({
                     }
                     rows={3}
                     maxLength={280}
-                    className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                     placeholder={
                       selectedValue === 60
                         ? "Describí la observación principal."
@@ -1231,7 +1249,7 @@ function PillarFields({
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-zinc-700">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
                     Dato o evidencia breve
                   </label>
 
@@ -1244,8 +1262,8 @@ function PillarFields({
                       })
                     }
                     maxLength={140}
-                    className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-                    placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas, incidente operativo."
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                    placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas o incidente operativo."
                   />
                   <div className="mt-1 text-right text-xs text-zinc-500">
                     {(current?.evidenceNote ?? "").length}/140
@@ -1254,7 +1272,7 @@ function PillarFields({
 
                 {showConditional ? (
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-zinc-700">
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
                       Tipo principal de problema
                     </label>
 
@@ -1268,7 +1286,7 @@ function PillarFields({
                           },
                         })
                       }
-                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                     >
                       <option value="">Seleccionar…</option>
                       {meta.conditionalIssueOptions.map((issue) => (
@@ -1282,7 +1300,7 @@ function PillarFields({
 
                 {showAction ? (
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-zinc-700">
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
                       Acción recomendada
                       {actionRequired ? " *" : ""}
                     </label>
@@ -1296,7 +1314,7 @@ function PillarFields({
                             undefined,
                         })
                       }
-                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                     >
                       <option value="">Seleccionar…</option>
                       {meta.suggestedActions.map((action) => (

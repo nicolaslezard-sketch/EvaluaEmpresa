@@ -30,9 +30,13 @@ export function UpgradeButton({ plan }: { plan: "PRO" | "BUSINESS" }) {
           setLoading(false);
         }
       }}
-      className="w-full rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+      className="btn btn-primary w-full"
     >
-      {loading ? "Redirigiendo..." : "Actualizar"}
+      {loading
+        ? "Redirigiendo..."
+        : plan === "PRO"
+          ? "Actualizar a Pro"
+          : "Actualizar a Business"}
     </button>
   );
 }
