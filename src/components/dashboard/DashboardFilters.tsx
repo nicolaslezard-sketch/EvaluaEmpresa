@@ -1,87 +1,240 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  RELATIONSHIP_IMPORTANCE_LABEL,
-  relationshipImportanceLabel,
-} from "@/lib/ui/relationshipImportance";
+import { useMemo, useState } from "react";
 
-type ReviewTone = "ok" | "warning" | "overdue" | "none";
+type FilterKey = "all" | "worsened" | "overdue" | "alerts";
+type ReviewTone = "ok" | "soon" | "overdue" | string;
+type ExecutiveCategory =
+  | "SOLIDO"
+  | "ESTABLE"
+  | "VULNERABLE"
+  | "CRITICO"
+  | string
+  | null;
 
-type DashboardCompanyCard = {
-  id: string;
-  name: string;
-  criticality: string;
-  href: string;
-  evaluationHref: string | null;
-  newEvaluationHref: string;
-  reviewLabel: string;
-  reviewClassName: string;
-  reviewTone: ReviewTone;
-  executiveCategory: string | null;
-  overallScore: number | null;
-  deltaOverall: number | null;
-  updatedAtLabel: string | null;
-  relevantCycleChangesCount: number;
-  worsenedChangesCount: number;
-  activeAlertsCount: number;
-  nextReviewDateLabel: string;
-  nextReviewStatusLabel: string;
-  nextReviewToneClassName: string;
+type CriticalityLevel =
+  | "LOW"
+  | "MEDIUM"
+  | "HIGH"
+  | "CRITICAL"
+  | "BAJA"
+  | "MEDIA"
+  | "ALTA"
+  | "CRITICA"
+  | string
+  | null;
+
+type WorsenedChange = {
+  fieldKey?: string;
+  fieldLabel?: string;
+  kind?: string;
+  pillarLabel?: string;
 };
 
-function categoryStyles(category: string | null) {
+export type DashboardCompanyCard = {
+  id: string;
+  name: string;
+
+  // Links posibles según cómo armes dashboardCards
+  href: string;
+  evaluationHref?: string | null;
+  newEvaluationHref?: string | null;
+
+  // Estado general
+  reviewLabel: string;
+  reviewTone: ReviewTone;
+  overallScore?: number | null;
+  scoreDelta?: number | null;
+  executiveCategory?: ExecutiveCategory;
+
+  // Contexto
+  criticality?: CriticalityLevel;
+  relationshipImportanceLabel?: string | null;
+
+  // Señales
+  activeAlertsCount?: number;
+  worsenedChangesCount?: number;
+  worsenedChanges?: WorsenedChange[];
+};
+
+type Props = {
+  companies: DashboardCompanyCard[];
+  canSeeAlerts?: boolean;
+};
+
+const FILTERS: Array<{ key: FilterKey; label: string }> = [
+  { key: "all", label: "Todas" },
+  { key: "worsened", label: "Empeoraron" },
+  { key: "overdue", label: "Vencidas" },
+  { key: "alerts", label: "Con alertas" },
+];
+
+const emptyMessages: Record<FilterKey, { title: string; description: string }> =
+  {
+    all: {
+      title: "No hay empresas cargadas",
+      description:
+        "Todavía no se encontraron empresas para mostrar en esta vista.",
+    },
+    worsened: {
+      title: "No hay empresas que hayan empeorado",
+      description:
+        "No se detectaron deterioros en el último ciclo dentro de tu cartera actual.",
+    },
+    overdue: {
+      title: "No hay empresas vencidas",
+      description:
+        "No hay empresas fuera de la frecuencia esperada en este momento.",
+    },
+    alerts: {
+      title: "No hay empresas con alertas activas",
+      description: "No se encontraron alertas activas en la selección actual.",
+    },
+  };
+
+function categoryStyles(category: ExecutiveCategory) {
   switch (category) {
     case "SOLIDO":
-      return "bg-emerald-100 text-emerald-700";
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "ESTABLE":
-      return "bg-blue-100 text-blue-700";
+      return "border-sky-200 bg-sky-50 text-sky-700";
     case "VULNERABLE":
-      return "bg-amber-100 text-amber-700";
+      return "border-amber-200 bg-amber-50 text-amber-700";
     case "CRITICO":
-      return "bg-red-100 text-red-700";
+      return "border-red-200 bg-red-50 text-red-700";
     default:
-      return "bg-zinc-100 text-zinc-700";
+      return "border-zinc-200 bg-zinc-50 text-zinc-700";
   }
 }
 
-function deltaStyles(delta: number | null) {
-  if (delta === null || delta === 0) return "text-zinc-500";
-  return delta > 0 ? "text-emerald-600" : "text-red-600";
+function reviewStyles(tone: ReviewTone) {
+  if (tone === "ok") {
+    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  }
+
+  if (tone === "soon") {
+    return "border-amber-200 bg-amber-50 text-amber-700";
+  }
+
+  if (tone === "overdue") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+
+  return "border-zinc-200 bg-zinc-50 text-zinc-700";
 }
 
-type FilterKey = "all" | "worsened" | "overdue" | "alerts";
+function criticalityStyles(level: CriticalityLevel) {
+  switch (level) {
+    case "LOW":
+    case "BAJA":
+      return "border-zinc-200 bg-zinc-50 text-zinc-700";
+    case "MEDIUM":
+    case "MEDIA":
+      return "border-sky-200 bg-sky-50 text-sky-700";
+    case "HIGH":
+    case "ALTA":
+      return "border-amber-200 bg-amber-50 text-amber-700";
+    case "CRITICAL":
+    case "CRITICA":
+      return "border-red-200 bg-red-50 text-red-700";
+    default:
+      return "border-zinc-200 bg-zinc-50 text-zinc-700";
+  }
+}
+
+function criticalityLabel(level: CriticalityLevel) {
+  if (!level) return null;
+
+  switch (level) {
+    case "LOW":
+      return "Baja";
+    case "MEDIUM":
+      return "Media";
+    case "HIGH":
+      return "Alta";
+    case "CRITICAL":
+      return "Crítica";
+    default:
+      return String(level);
+  }
+}
+
+function deltaStyles(delta?: number | null) {
+  if (delta === null || delta === undefined || delta === 0) {
+    return "text-zinc-500";
+  }
+
+  if (delta > 0) {
+    return "text-emerald-700";
+  }
+
+  return "text-red-700";
+}
+
+function formatDelta(delta?: number | null) {
+  if (delta === null || delta === undefined) return "Sin comparación";
+  if (delta === 0) return "0";
+  return `${delta > 0 ? "+" : ""}${delta.toFixed(1)}`;
+}
+
+function getAttentionReason(company: DashboardCompanyCard) {
+  const worsenedCount = company.worsenedChangesCount ?? 0;
+  const alertsCount = company.activeAlertsCount ?? 0;
+  const score = company.overallScore ?? null;
+
+  if (score === null) {
+    return "Todavía no tiene una evaluación base.";
+  }
+
+  if (company.reviewTone === "overdue") {
+    return "La revisión quedó fuera de la frecuencia esperada.";
+  }
+
+  if (worsenedCount > 0) {
+    return "Mostró deterioro en el último ciclo.";
+  }
+
+  if (alertsCount > 0) {
+    return "Tiene alertas activas que conviene revisar.";
+  }
+
+  return "Sin señales activas relevantes en este momento.";
+}
 
 function getPrimaryAction(
   company: DashboardCompanyCard,
   activeFilter: FilterKey,
-): { href: string; label: string } {
-  if (company.overallScore === null) {
+) {
+  const worsenedCount = company.worsenedChangesCount ?? 0;
+  const alertsCount = company.activeAlertsCount ?? 0;
+  const score = company.overallScore ?? null;
+
+  if (score === null) {
     return {
-      href: company.newEvaluationHref,
+      href: company.newEvaluationHref ?? company.href,
       label: "Primera evaluación",
     };
   }
 
-  if (activeFilter === "overdue" || company.reviewTone === "overdue") {
+  if (company.reviewTone === "overdue") {
     return {
-      href: company.newEvaluationHref,
+      href: company.newEvaluationHref ?? company.href,
       label: "Nueva revisión",
     };
   }
 
-  if (activeFilter === "worsened" || company.worsenedChangesCount > 0) {
+  if (activeFilter === "worsened" || worsenedCount > 0) {
     return {
       href: company.evaluationHref ?? company.href,
       label: "Ver evaluación",
     };
   }
 
-  if (activeFilter === "alerts" || company.activeAlertsCount > 0) {
+  if (activeFilter === "alerts" || alertsCount > 0) {
     return {
       href: company.href,
-      label: "Abrir empresa",
+      label: "Ver empresa",
     };
   }
 
@@ -93,41 +246,219 @@ function getPrimaryAction(
 
 function getSecondaryAction(
   company: DashboardCompanyCard,
-  activeFilter: FilterKey,
-): { href: string; label: string } | null {
-  const primary = getPrimaryAction(company, activeFilter);
+  primaryLabel: string,
+) {
+  const score = company.overallScore ?? null;
 
-  const candidates = [
-    company.href ? { href: company.href, label: "Ver empresa" } : null,
-    company.evaluationHref
-      ? { href: company.evaluationHref, label: "Última evaluación" }
-      : null,
-    { href: company.newEvaluationHref, label: "Nueva revisión" },
-  ].filter(Boolean) as Array<{ href: string; label: string }>;
+  if (score === null) {
+    return null;
+  }
 
+  if (primaryLabel === "Ver empresa") {
+    return company.evaluationHref
+      ? {
+          href: company.evaluationHref,
+          label: "Ver evaluación",
+        }
+      : null;
+  }
+
+  return {
+    href: company.href,
+    label: "Ver empresa",
+  };
+}
+
+function CompanyCard({
+  company,
+  activeFilter,
+  canSeeAlerts,
+}: {
+  company: DashboardCompanyCard;
+  activeFilter: FilterKey;
+  canSeeAlerts: boolean;
+}) {
+  const primaryAction = getPrimaryAction(company, activeFilter);
+  const secondaryAction = getSecondaryAction(company, primaryAction.label);
+
+  const worsenedCount = company.worsenedChangesCount ?? 0;
+  const alertsCount = company.activeAlertsCount ?? 0;
+  const score = company.overallScore ?? null;
+  const criticalityText = company.criticality
+    ? criticalityLabel(company.criticality)
+    : null;
   return (
-    candidates.find(
-      (candidate) =>
-        candidate.href !== primary.href || candidate.label !== primary.label,
-    ) ?? null
+    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-lg font-semibold tracking-tight text-zinc-900">
+              {company.name}
+            </h3>
+
+            {criticalityText ? (
+              <span
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${criticalityStyles(
+                  company.criticality ?? null,
+                )}`}
+              >
+                Criticidad: {criticalityText}
+              </span>
+            ) : null}
+
+            {company.relationshipImportanceLabel ? (
+              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
+                Relación estratégica: {company.relationshipImportanceLabel}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${reviewStyles(
+                company.reviewTone,
+              )}`}
+            >
+              {company.reviewLabel}
+            </span>
+
+            {company.executiveCategory ? (
+              <span
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${categoryStyles(
+                  company.executiveCategory,
+                )}`}
+              >
+                {company.executiveCategory}
+              </span>
+            ) : null}
+          </div>
+
+          <p className="mt-4 text-sm leading-6 text-zinc-600">
+            {getAttentionReason(company)}
+          </p>
+        </div>
+
+        <div className="grid min-w-45 gap-3 sm:grid-cols-2 md:grid-cols-1">
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <div className="text-xs uppercase tracking-wide text-zinc-500">
+              Score actual
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-zinc-900">
+              {score !== null ? score.toFixed(1) : "—"}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <div className="text-xs uppercase tracking-wide text-zinc-500">
+              Variación
+            </div>
+            <div
+              className={`mt-2 text-2xl font-semibold ${deltaStyles(
+                company.scoreDelta,
+              )}`}
+            >
+              {formatDelta(company.scoreDelta)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {worsenedCount > 0 ? (
+        <div className="mt-5">
+          <div className="mb-2 text-xs uppercase tracking-wide text-zinc-500">
+            Cambios negativos
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {(company.worsenedChanges ?? [])
+              .slice(0, 3)
+              .map((change, index) => (
+                <span
+                  key={`${company.id}-${change.fieldKey ?? "field"}-${change.kind ?? index}`}
+                  className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700"
+                >
+                  {change.fieldLabel ?? "Cambio detectado"}
+                </span>
+              ))}
+
+            {worsenedCount > 3 ? (
+              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600">
+                +{worsenedCount - 3} más
+              </span>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      <div
+        className={`mt-5 grid gap-4 ${
+          canSeeAlerts ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"
+        }`}
+      >
+        {canSeeAlerts ? (
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <div className="text-xs uppercase tracking-wide text-zinc-500">
+              Alertas activas
+            </div>
+            <div className="mt-2 text-xl font-semibold text-zinc-900">
+              {alertsCount}
+            </div>
+            <div className="mt-1 text-xs text-zinc-500">
+              señales persistidas del ciclo actual
+            </div>
+          </div>
+        ) : null}
+
+        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="text-xs uppercase tracking-wide text-zinc-500">
+            Cambios empeorados
+          </div>
+          <div className="mt-2 text-xl font-semibold text-zinc-900">
+            {worsenedCount}
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">
+            campos que empeoraron
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="text-xs uppercase tracking-wide text-zinc-500">
+            Estado de revisión
+          </div>
+          <div className="mt-2 text-sm font-semibold text-zinc-900">
+            {company.reviewLabel}
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">
+            frecuencia esperada del monitoreo
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Link href={primaryAction.href} className="btn btn-primary">
+          {primaryAction.label}
+        </Link>
+
+        {secondaryAction ? (
+          <Link href={secondaryAction.href} className="btn btn-secondary">
+            {secondaryAction.label}
+          </Link>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
-export function DashboardFilters({
-  companies,
-  canSeeAlerts,
-}: {
-  companies: DashboardCompanyCard[];
-  canSeeAlerts: boolean;
-}) {
+export function DashboardFilters({ companies, canSeeAlerts = true }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   const counts = useMemo(
     () => ({
       all: companies.length,
-      worsened: companies.filter((c) => c.worsenedChangesCount > 0).length,
+      worsened: companies.filter((c) => (c.worsenedChangesCount ?? 0) > 0)
+        .length,
       overdue: companies.filter((c) => c.reviewTone === "overdue").length,
-      alerts: companies.filter((c) => c.activeAlertsCount > 0).length,
+      alerts: companies.filter((c) => (c.activeAlertsCount ?? 0) > 0).length,
     }),
     [companies],
   );
@@ -135,50 +466,43 @@ export function DashboardFilters({
   const filteredCompanies = useMemo(() => {
     switch (activeFilter) {
       case "worsened":
-        return companies.filter((c) => c.worsenedChangesCount > 0);
+        return companies.filter((c) => (c.worsenedChangesCount ?? 0) > 0);
       case "overdue":
         return companies.filter((c) => c.reviewTone === "overdue");
       case "alerts":
-        return companies.filter((c) => c.activeAlertsCount > 0);
+        return companies.filter((c) => (c.activeAlertsCount ?? 0) > 0);
       case "all":
       default:
         return companies;
     }
   }, [activeFilter, companies]);
 
-  const filters: Array<{ key: FilterKey; label: string; count: number }> = [
-    { key: "all", label: "Todas", count: counts.all },
-    { key: "worsened", label: "Empeoraron", count: counts.worsened },
-    { key: "overdue", label: "Vencidas", count: counts.overdue },
-    { key: "alerts", label: "Con alertas", count: counts.alerts },
-  ];
+  const emptyState = emptyMessages[activeFilter];
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap gap-2">
-        {filters.map((filter) => {
-          const active = activeFilter === filter.key;
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-3">
+        {FILTERS.filter((filter) => {
+          if (filter.key === "alerts" && !canSeeAlerts) return false;
+          return true;
+        }).map((filter) => {
+          const isActive = activeFilter === filter.key;
+          const count = counts[filter.key];
 
           return (
             <button
               key={filter.key}
               type="button"
               onClick={() => setActiveFilter(filter.key)}
-              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition ${
-                active
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"
-              }`}
+              className={
+                isActive
+                  ? "rounded-full border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-medium text-white"
+                  : "rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 hover:text-zinc-900"
+              }
             >
-              <span>{filter.label}</span>
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs ${
-                  active
-                    ? "bg-white/15 text-white"
-                    : "bg-zinc-100 text-zinc-700"
-                }`}
-              >
-                {filter.count}
+              {filter.label}{" "}
+              <span className={isActive ? "text-zinc-300" : "text-zinc-500"}>
+                ({count})
               </span>
             </button>
           );
@@ -186,165 +510,28 @@ export function DashboardFilters({
       </div>
 
       {filteredCompanies.length === 0 ? (
-        <div className="rounded-2xl border bg-white p-8 shadow-sm">
-          <div className="text-lg font-medium text-zinc-900">
-            No hay empresas para este filtro
-          </div>
-          <div className="mt-2 text-sm text-zinc-600">
-            No se encontraron empresas que coincidan con la selección actual.
-          </div>
+        <div className="rounded-3xl border border-dashed border-zinc-300 bg-white p-10 text-center">
+          <h3 className="text-lg font-semibold tracking-tight text-zinc-900">
+            {emptyState.title}
+          </h3>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-zinc-600">
+            {emptyState.description}
+          </p>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {filteredCompanies.map((company) => {
-            const primaryAction = getPrimaryAction(company, activeFilter);
-            const secondaryAction = getSecondaryAction(company, activeFilter);
-
-            return (
-              <div
-                key={company.id}
-                className="rounded-3xl border bg-white p-10 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl font-semibold text-zinc-900">
-                      {company.name}
-                    </h2>
-                    <div className="mt-2 text-sm text-zinc-500">
-                      {RELATIONSHIP_IMPORTANCE_LABEL}:{" "}
-                      {relationshipImportanceLabel(company.criticality)}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-3">
-                    <span
-                      className={`rounded-full px-6 py-2 text-sm font-medium ${company.reviewClassName}`}
-                    >
-                      {company.reviewLabel}
-                    </span>
-
-                    {company.executiveCategory ? (
-                      <span
-                        className={`rounded-full px-6 py-2 text-sm font-medium ${categoryStyles(
-                          company.executiveCategory,
-                        )}`}
-                      >
-                        {company.executiveCategory}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-
-                {company.overallScore !== null ? (
-                  <>
-                    <div className="mt-10 flex items-end gap-4">
-                      <div className="text-6xl font-semibold leading-none text-zinc-900">
-                        {company.overallScore.toFixed(1)}
-                      </div>
-
-                      {company.deltaOverall !== null ? (
-                        <div
-                          className={`pb-1 text-2xl font-medium ${deltaStyles(
-                            company.deltaOverall,
-                          )}`}
-                        >
-                          Δ {company.deltaOverall > 0 ? "+" : ""}
-                          {company.deltaOverall.toFixed(1)}
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-8 h-4 w-full rounded-full bg-zinc-100">
-                      <div
-                        className="h-4 rounded-full bg-zinc-900 transition-all"
-                        style={{
-                          width: `${Math.min(Math.max(company.overallScore, 0), 100)}%`,
-                        }}
-                      />
-                    </div>
-
-                    <div className="mt-6 flex flex-wrap gap-2 text-sm">
-                      <span className="rounded-full bg-zinc-100 px-3 py-1 font-medium text-zinc-700">
-                        {company.relevantCycleChangesCount} cambios relevantes
-                      </span>
-
-                      <span className="rounded-full bg-red-100 px-3 py-1 font-medium text-red-700">
-                        {company.worsenedChangesCount} empeoraron
-                      </span>
-
-                      {canSeeAlerts ? (
-                        <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">
-                          {company.activeAlertsCount} alerta
-                          {company.activeAlertsCount === 1 ? "" : "s"}
-                        </span>
-                      ) : null}
-                    </div>
-
-                    <div
-                      className={`mt-6 rounded-xl border px-4 py-3 ${company.nextReviewToneClassName}`}
-                    >
-                      <div className="text-xs uppercase tracking-wide text-zinc-600">
-                        Próxima revisión sugerida
-                      </div>
-                      <div className="mt-1 text-base font-semibold text-zinc-900">
-                        {company.nextReviewDateLabel}
-                      </div>
-                      <div className="mt-1 text-sm text-zinc-700">
-                        {company.nextReviewStatusLabel}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 text-sm text-zinc-500">
-                      Última evaluación: {company.updatedAtLabel ?? "—"}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="mt-10 text-lg font-medium text-zinc-900">
-                      Sin evaluaciones finalizadas
-                    </div>
-                    <div className="mt-2 text-sm text-zinc-500">
-                      Esta empresa todavía no tiene un score oficial generado.
-                    </div>
-
-                    <div
-                      className={`mt-6 rounded-xl border px-4 py-3 ${company.nextReviewToneClassName}`}
-                    >
-                      <div className="text-xs uppercase tracking-wide text-zinc-600">
-                        Próxima revisión sugerida
-                      </div>
-                      <div className="mt-1 text-base font-semibold text-zinc-900">
-                        {company.nextReviewDateLabel}
-                      </div>
-                      <div className="mt-1 text-sm text-zinc-700">
-                        {company.nextReviewStatusLabel}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                <div className="mt-10 flex flex-wrap gap-3">
-                  <Link
-                    href={primaryAction.href}
-                    className="inline-flex rounded-2xl bg-zinc-900 px-8 py-4 text-xl font-medium text-white hover:bg-zinc-800"
-                  >
-                    {primaryAction.label}
-                  </Link>
-
-                  {secondaryAction ? (
-                    <Link
-                      href={secondaryAction.href}
-                      className="inline-flex rounded-2xl border border-zinc-300 px-8 py-4 text-xl font-medium text-zinc-900 hover:bg-zinc-50"
-                    >
-                      {secondaryAction.label}
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
+        <div className="grid gap-5">
+          {filteredCompanies.map((company) => (
+            <CompanyCard
+              key={company.id}
+              company={company}
+              activeFilter={activeFilter}
+              canSeeAlerts={canSeeAlerts}
+            />
+          ))}
         </div>
       )}
     </div>
   );
 }
+
+export default DashboardFilters;

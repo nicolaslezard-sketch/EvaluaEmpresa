@@ -1,274 +1,441 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { UpgradeButton } from "@/components/billing/UpgradeButton";
-import { getUserEntitlements } from "@/lib/access/getEntitlements";
-import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
-export default async function BillingPage() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login");
+const recurringPlans = [
+  {
+    name: "Free",
+    tone: "zinc",
+    title: "Para explorar el flujo",
+    description:
+      "Ideal para conocer cómo funciona la plataforma y completar una primera evaluación antes de pagar.",
+    highlights: [
+      "1 empresa activa",
+      "1 evaluación total",
+      "Vista parcial del resultado",
+    ],
+    ctaLabel: "Plan actual",
+    ctaHref: "#",
+    disabled: true,
+  },
+  {
+    name: "Pro",
+    tone: "sky",
+    title: "Para usar EvaluaEmpresa de forma recurrente",
+    description:
+      "Pensado para quienes necesitan trabajar evaluaciones completas, comparar ciclos y sostener seguimiento real sobre terceros.",
+    highlights: [
+      "Más empresas activas",
+      "Evaluaciones ilimitadas",
+      "Comparativa entre ciclos",
+      "Histórico completo",
+      "PDF ejecutivo",
+    ],
+    ctaLabel: "Pasar a Pro",
+    ctaHref: "/pricing",
+    disabled: false,
+  },
+  {
+    name: "Business",
+    tone: "emerald",
+    title: "Para mayor volumen y monitoreo más activo",
+    description:
+      "La opción para quienes necesitan más capacidad, más histórico y una operación más continua sobre proveedores, clientes o contrapartes.",
+    highlights: [
+      "Mayor capacidad operativa",
+      "Más empresas y evaluaciones",
+      "Tendencia histórica extendida",
+      "Alertas y seguimiento más activo",
+      "Más profundidad temporal",
+    ],
+    ctaLabel: "Pasar a Business",
+    ctaHref: "/pricing",
+    disabled: false,
+  },
+];
 
-  const ent = await getUserEntitlements(session.user.id);
-  const currentPlan = ent.plan;
+const oneTimeAccess = {
+  name: "Evaluación única",
+  title: "Para resolver un caso puntual sin suscripción",
+  description:
+    "Desbloqueá una evaluación completa cuando necesites resultado final, hallazgos, recomendaciones y PDF ejecutivo, sin pasar a un plan mensual.",
+  highlights: [
+    "Resultado completo",
+    "Hallazgos y recomendaciones",
+    "Cambios del ciclo evaluado",
+    "PDF ejecutivo",
+    "Pago único",
+  ],
+  ctaLabel: "Desbloquear evaluación",
+  ctaHref: "/dashboard",
+};
 
-  const activeCompanyCount = await prisma.company.count({
-    where: {
-      ownerId: session.user.id,
-      status: "ACTIVE",
-    },
-  });
+const upgradeSignals = [
+  {
+    title: "Te quedaste corto con una sola empresa",
+    description:
+      "Si ya necesitás seguir más de un tercero, Free deja de ser suficiente muy rápido.",
+  },
+  {
+    title: "Querés comparar un ciclo contra otro",
+    description:
+      "El valor fuerte de EE aparece cuando podés ver deterioros, mejoras y persistencias entre evaluaciones.",
+  },
+  {
+    title: "Necesitás una salida más defendible",
+    description:
+      "Si el resultado ya se comparte o se usa para respaldar decisiones, conviene tener acceso completo y PDF ejecutivo.",
+  },
+  {
+    title: "Querés pasar de análisis aislados a seguimiento",
+    description:
+      "Cuando el uso deja de ser puntual, tiene más sentido un plan recurrente que pagar caso por caso.",
+  },
+];
 
-  return (
-    <div className="space-y-10">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-        <div className="max-w-3xl">
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-sky-800">
-            Plan y facturación
-          </p>
+const faqs = [
+  {
+    question: "¿Cuándo conviene una evaluación única?",
+    answer:
+      "Cuando necesitás resolver un caso puntual sin asumir una suscripción mensual. Es la mejor opción si querés el resultado completo, con PDF, para una sola evaluación.",
+  },
+  {
+    question: "¿Cuándo conviene pasar a Pro?",
+    answer:
+      "Cuando necesitás seguir más de una empresa, comparar evaluaciones entre ciclos y trabajar de forma recurrente con acceso completo.",
+  },
+  {
+    question: "¿Cuándo conviene Business?",
+    answer:
+      "Cuando el volumen crece y necesitás más capacidad, más histórico y monitoreo más activo. Hoy Business no está planteado como un plan multiusuario avanzado.",
+  },
+  {
+    question: "¿Puedo empezar gratis y después subir?",
+    answer:
+      "Sí. El flujo está pensado para que puedas conocer la herramienta primero y después decidir si te conviene una evaluación puntual o un plan recurrente.",
+  },
+];
 
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900">
-            Elegí cómo querés seguir usando EvaluaEmpresa
-          </h1>
+function getCardClass(tone: "zinc" | "sky" | "emerald" | "amber") {
+  if (tone === "sky") {
+    return "rounded-3xl border border-sky-200 bg-white p-8 shadow-[0_12px_32px_rgba(2,132,199,0.10)]";
+  }
 
-          <p className="mt-4 text-base leading-7 text-zinc-600">
-            Free sirve para explorar el flujo inicial. Pro y Business destraban
-            más capacidad, más evaluaciones y mejor seguimiento para trabajar
-            terceros de forma recurrente.
-          </p>
-        </div>
+  if (tone === "emerald") {
+    return "rounded-3xl border border-emerald-200 bg-white p-8 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
+  }
 
-        <div className="rounded-2xl border border-sky-100 bg-white px-5 py-4 shadow-sm">
-          <div className="text-sm text-zinc-600">Uso actual</div>
-          <div className="mt-1 text-2xl font-semibold text-zinc-900">
-            {activeCompanyCount}/{ent.maxCompanies}
-          </div>
-          <div className="mt-1 text-sm text-zinc-500">
-            Empresas activas · {currentPlan}
-          </div>
-        </div>
-      </div>
+  if (tone === "amber") {
+    return "rounded-3xl border border-amber-200 bg-white p-8 shadow-[0_12px_32px_rgba(245,158,11,0.08)]";
+  }
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
-          <div className="text-sm font-medium text-zinc-900">
-            Free para explorar
-          </div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Ideal para conocer el flujo, cargar una empresa y completar una
-            primera evaluación.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-sky-200 bg-sky-50/50 p-5 shadow-[0_12px_32px_rgba(2,132,199,0.10)]">
-          <div className="text-sm font-semibold text-sky-900">
-            Pro para usarlo de verdad
-          </div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Desbloquea más empresas, evaluaciones recurrentes, histórico y PDF
-            completo.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
-          <div className="text-sm font-semibold text-emerald-800">
-            Business para monitoreo continuo
-          </div>
-          <p className="mt-2 text-sm leading-6 text-zinc-600">
-            Pensado para más volumen, tendencia extendida y alertas para
-            seguimiento más operativo.
-          </p>
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-3">
-        <PlanCard
-          title="FREE"
-          price="$0"
-          current={currentPlan === "FREE"}
-          usage={currentPlan === "FREE" ? `${activeCompanyCount}/1` : undefined}
-          features={["1 empresa activa", "1 evaluación total", "Score general"]}
-        />
-
-        <PlanCard
-          title="PRO"
-          price="ARS 95.000 / mes"
-          current={currentPlan === "PRO"}
-          usage={currentPlan === "PRO" ? `${activeCompanyCount}/3` : undefined}
-          features={[
-            "Hasta 3 empresas",
-            "Evaluaciones ilimitadas",
-            "Histórico completo",
-            "PDF en todas las evaluaciones",
-          ]}
-          upgrade
-        />
-
-        <PlanCard
-          title="BUSINESS"
-          price="ARS 210.000 / mes"
-          current={currentPlan === "BUSINESS"}
-          usage={
-            currentPlan === "BUSINESS" ? `${activeCompanyCount}/15` : undefined
-          }
-          features={[
-            "Hasta 15 empresas",
-            "Tendencia extendida (6 ciclos)",
-            "Alertas automáticas",
-            "Todo lo de PRO",
-          ]}
-          upgrade
-        />
-      </div>
-
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">
-          ¿Cuándo conviene actualizar?
-        </h2>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <div className="text-sm font-medium text-zinc-900">Pasá a Pro</div>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
-              Cuando una sola evaluación ya no te alcanza y necesitás comparar
-              ciclos, trabajar más empresas o descargar PDFs completos.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <div className="text-sm font-medium text-zinc-900">
-              Pasá a Business
-            </div>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
-              Cuando el seguimiento deja de ser puntual y pasa a ser una
-              práctica más continua con más volumen y más alertas.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <div className="text-sm font-medium text-zinc-900">
-              Mantené Free
-            </div>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
-              Si solo querés conocer el flujo y validar cómo se estructura una
-              evaluación dentro del producto.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return "rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_8px_24px_rgba(15,23,42,0.05)]";
 }
 
-function PlanCard({
-  title,
-  price,
-  features,
-  current,
-  upgrade,
-  usage,
-}: {
-  title: "FREE" | "PRO" | "BUSINESS";
-  price: string;
-  features: string[];
-  current?: boolean;
-  upgrade?: boolean;
-  usage?: string;
-}) {
-  const isFree = title === "FREE";
-  const isPro = title === "PRO";
-  const isBusiness = title === "BUSINESS";
+function getNameClass(tone: "zinc" | "sky" | "emerald" | "amber") {
+  if (tone === "sky") return "text-sm font-semibold text-sky-900";
+  if (tone === "emerald") return "text-sm font-semibold text-emerald-800";
+  if (tone === "amber") return "text-sm font-semibold text-amber-700";
+  return "text-sm font-medium text-zinc-900";
+}
 
-  const wrapperClass = isFree
-    ? "rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
-    : isPro
-      ? "rounded-3xl border border-sky-200 bg-white p-8 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
-      : "rounded-3xl border border-emerald-200 bg-white p-8 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
-
-  const titleClass = isFree
-    ? "text-lg font-semibold text-zinc-900"
-    : isPro
-      ? "text-lg font-semibold text-sky-900"
-      : "text-lg font-semibold text-emerald-800";
-
+export default function BillingPage() {
   return (
-    <div className={wrapperClass}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className={titleClass}>{title}</h2>
-          <p className="mt-4 text-xl font-semibold leading-8 text-zinc-900">
-            {isFree
-              ? "Para explorar el producto"
-              : isPro
-                ? "Para usarlo de verdad"
-                : "Para monitoreo continuo"}
-          </p>
-          <p className="mt-3 text-base leading-7 text-zinc-600">
-            {isFree
-              ? "Conocé el flujo y completá una primera evaluación."
-              : isPro
-                ? "Más empresas, más evaluaciones y comparativa entre ciclos."
-                : "Más capacidad, tendencia extendida y alertas para operación más activa."}
+    <div className="space-y-0">
+      {/* HERO */}
+      <section className="border-b border-zinc-200 bg-linear-to-b from-white via-zinc-50 to-white">
+        <div className="container-page py-16">
+          <div className="max-w-3xl">
+            <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+              Planes y acceso
+            </p>
+
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900">
+              Elegí el nivel de profundidad que necesitás hoy
+            </h1>
+
+            <p className="mt-6 text-lg leading-8 text-zinc-600">
+              Podés empezar gratis, desbloquear una evaluación puntual o pasar a
+              un plan recurrente si necesitás trabajar con más empresas, más
+              histórico y mejor comparativa entre ciclos.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* CUÁNDO SUBIR */}
+      <section className="bg-white py-16">
+        <div className="container-page">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Cuándo tiene sentido subir
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+              El upgrade conviene cuando el seguimiento deja de ser algo aislado
+            </h2>
+            <p className="mt-4 text-base leading-7 text-zinc-600">
+              Si solo querés resolver un caso puntual, la evaluación única
+              alcanza. Si necesitás comparar, monitorear y sostener criterio en
+              el tiempo, conviene pasar a un plan recurrente.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {upgradeSignals.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-base font-medium text-zinc-900">
+                  {item.title}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* EVALUACIÓN ÚNICA */}
+      <section className="border-y border-zinc-200 bg-amber-50/40 py-16">
+        <div className="container-page">
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+            <div className="max-w-2xl">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-amber-700">
+                Acceso puntual
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+                {oneTimeAccess.title}
+              </h2>
+              <p className="mt-4 text-base leading-7 text-zinc-600">
+                {oneTimeAccess.description}
+              </p>
+            </div>
+
+            <div className={getCardClass("amber")}>
+              <p className={getNameClass("amber")}>{oneTimeAccess.name}</p>
+              <p className="mt-4 text-2xl font-semibold tracking-tight text-zinc-900">
+                Resultado completo sin pasar a un plan mensual
+              </p>
+
+              <ul className="mt-6 space-y-3 text-sm text-zinc-600">
+                {oneTimeAccess.highlights.map((feature) => (
+                  <li key={feature}>
+                    •{" "}
+                    <span className="font-semibold text-zinc-900">
+                      {feature}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href={oneTimeAccess.ctaHref}
+                className="btn btn-primary mt-8 w-full"
+              >
+                {oneTimeAccess.ctaLabel}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PLANES RECURRENTES */}
+      <section className="bg-zinc-50 py-20">
+        <div className="container-page">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Planes recurrentes
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+              Para pasar de una evaluación puntual a una práctica sostenida
+            </h2>
+            <p className="mt-4 text-base leading-7 text-zinc-600">
+              Free sirve para explorar. Pro y Business te permiten trabajar con
+              más profundidad operativa, más comparativa entre ciclos y una
+              lectura más útil para seguimiento real.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-8 lg:grid-cols-3">
+            {recurringPlans.map((plan) => {
+              const tone =
+                plan.name === "Pro"
+                  ? "sky"
+                  : plan.name === "Business"
+                    ? "emerald"
+                    : "zinc";
+
+              return (
+                <div
+                  key={plan.name}
+                  className={`${getCardClass(tone)} flex h-full flex-col`}
+                >
+                  <div>
+                    <p className={getNameClass(tone)}>{plan.name}</p>
+                    <p className="mt-4 text-2xl font-semibold leading-[1.35] tracking-tight text-zinc-900">
+                      {plan.title}
+                    </p>
+                    <p className="mt-4 text-base leading-7 text-zinc-600">
+                      {plan.description}
+                    </p>
+
+                    <ul className="mt-6 space-y-3 text-sm text-zinc-600">
+                      {plan.highlights.map((feature) => (
+                        <li key={feature}>
+                          •{" "}
+                          <span className="font-semibold text-zinc-900">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mt-8">
+                    {plan.disabled ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="btn btn-secondary w-full opacity-70 cursor-not-allowed"
+                      >
+                        {plan.ctaLabel}
+                      </button>
+                    ) : (
+                      <Link
+                        href={plan.ctaHref}
+                        className={
+                          plan.name === "Pro"
+                            ? "btn btn-primary w-full"
+                            : "btn btn-secondary w-full"
+                        }
+                      >
+                        {plan.ctaLabel}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="mt-8 max-w-4xl text-base leading-8 text-zinc-600">
+            <span className="font-semibold text-zinc-900">Free</span> sirve para
+            explorar el flujo.{" "}
+            <span className="font-semibold text-sky-900">Pro</span> permite
+            trabajar evaluaciones completas con comparativa entre ciclos e
+            histórico.{" "}
+            <span className="font-semibold text-emerald-800">Business</span>{" "}
+            suma más capacidad, más histórico y monitoreo más activo.
           </p>
         </div>
+      </section>
 
-        {current && usage ? (
-          <span className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-            {usage}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mt-8 text-3xl font-semibold tracking-tight text-zinc-900">
-        {price}
-      </div>
-
-      <ul className="mt-6 space-y-3 text-sm text-zinc-600">
-        {features.map((f) => {
-          const highlight =
-            (isFree &&
-              (f.includes("1 empresa") || f.includes("1 evaluación"))) ||
-            (isPro &&
-              (f.includes("Evaluaciones ilimitadas") ||
-                f.includes("Histórico completo") ||
-                f.includes("PDF"))) ||
-            (isBusiness &&
-              (f.includes("Hasta 15 empresas") ||
-                f.includes("Tendencia extendida") ||
-                f.includes("Alertas automáticas")));
-
-          return (
-            <li key={f}>
-              •{" "}
-              <span
-                className={
-                  highlight ? "font-semibold text-zinc-900" : "text-zinc-600"
-                }
-              >
-                {f}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-8">
-        {current ? (
-          <div
-            className={
-              isBusiness
-                ? "rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"
-                : isPro
-                  ? "rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-medium text-sky-700"
-                  : "rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm font-medium text-zinc-700"
-            }
-          >
-            Plan actual
+      {/* ESCENARIOS */}
+      <section className="bg-white py-20">
+        <div className="container-page">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Cómo elegir mejor
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+              Qué conviene según tu forma de uso
+            </h2>
           </div>
-        ) : upgrade && title !== "FREE" ? (
-          <UpgradeButton plan={title} />
-        ) : null}
-      </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+              <p className="text-base font-medium text-zinc-900">Free</p>
+              <p className="mt-3 text-sm leading-6 text-zinc-600">
+                Para probar el flujo y entender cómo se estructura una
+                evaluación.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-amber-200 bg-white p-6 shadow-sm">
+              <p className="text-base font-semibold text-amber-700">
+                Evaluación única
+              </p>
+              <p className="mt-3 text-sm leading-6 text-zinc-600">
+                Para resolver un caso puntual con resultado completo y PDF, sin
+                suscripción.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-sky-200 bg-white p-6 shadow-sm">
+              <p className="text-base font-semibold text-sky-900">Pro</p>
+              <p className="mt-3 text-sm leading-6 text-zinc-600">
+                Para seguimiento recurrente con comparativa entre ciclos e
+                histórico completo.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm">
+              <p className="text-base font-semibold text-emerald-800">
+                Business
+              </p>
+              <p className="mt-3 text-sm leading-6 text-zinc-600">
+                Para mayor volumen, más profundidad temporal y monitoreo más
+                activo.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-y border-zinc-200 bg-zinc-50 py-20">
+        <div className="container-page">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Preguntas frecuentes
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+              Lo importante antes de cambiar de plan
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-2">
+            {faqs.map((faq) => (
+              <div
+                key={faq.question}
+                className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-base font-medium text-zinc-900">
+                  {faq.question}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-zinc-600">
+                  {faq.answer}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA FINAL */}
+      <section className="bg-white py-20">
+        <div className="container-page text-center">
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+            Empezá gratis, resolvé un caso puntual o pasá a seguimiento
+            recurrente
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-zinc-600">
+            Elegí la modalidad que mejor encaje con tu forma actual de evaluar
+            terceros, sin sobredimensionar el uso ni pagar de más.
+          </p>
+
+          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+            <Link href="/dashboard" className="btn btn-primary">
+              Ir al dashboard
+            </Link>
+            <Link href="/pricing" className="btn btn-secondary">
+              Ver pricing público
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

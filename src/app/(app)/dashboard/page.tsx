@@ -8,7 +8,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
-import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
+import DashboardFilters from "@/components/dashboard/DashboardFilters";
 import { relationshipImportanceLabel } from "@/lib/ui/relationshipImportance";
 
 type ReportCycleChange = {
@@ -421,9 +421,16 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
-            Dashboard
+          <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+            Monitoreo actual
+          </p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-900">
+            Qué requiere atención, qué empeoró y qué quedó fuera de revisión
           </h1>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-600">
+            Priorizá rápido las empresas que necesitan revisión, muestran
+            deterioro reciente o acumulan señales activas.
+          </p>
         </div>
 
         <div className="rounded-2xl border bg-white px-5 py-4 shadow-sm">
@@ -471,15 +478,16 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-lg font-medium text-zinc-900">
-              Resumen ejecutivo
+              Dónde poner foco ahora
             </h2>
             <p className="mt-1 text-sm text-zinc-600">
-              Vista rápida de prioridades operativas del monitoreo actual.
+              Prioridades operativas para no perder de vista deterioros,
+              vencimientos y señales activas.
             </p>
           </div>
 
           <div className="text-sm text-zinc-500">
-            Enfoque: acción antes que visualización
+            Lectura rápida del ciclo actual
           </div>
         </div>
 
@@ -609,7 +617,7 @@ export default async function DashboardPage() {
 
                         <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
                           <div className="text-xs uppercase tracking-wide text-zinc-500">
-                            Señales críticas
+                            Cambios negativos
                           </div>
                           <div className="mt-1 text-lg font-semibold text-zinc-900">
                             {worsenedChanges.length}
@@ -673,8 +681,9 @@ export default async function DashboardPage() {
                 Vencidas o sin revisión vigente
               </h2>
               <p className="mt-1 text-sm text-zinc-600">
-                Estas empresas quedaron fuera de la frecuencia mensual esperada
-                y conviene revisarlas primero.
+                Estas empresas quedaron fuera de la frecuencia esperada o
+                todavía no tienen una revisión vigente. Conviene priorizarlas
+                antes de seguir ampliando cartera.
               </p>
             </div>
 
@@ -742,7 +751,7 @@ export default async function DashboardPage() {
 
                         <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
                           <div className="text-xs uppercase tracking-wide text-zinc-500">
-                            Señales del ciclo
+                            Cambios relevantes
                           </div>
                           <div className="mt-1 text-lg font-semibold text-zinc-900">
                             {latest ? relevantCycleChanges.length : 0}

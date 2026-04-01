@@ -69,7 +69,7 @@ export default function InformeModeloPage() {
   return (
     <div className="bg-white">
       {/* HERO */}
-      <section className="border-b border-zinc-200 bg-gradient-to-b from-white via-sky-50/60 to-white">
+      <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
         <div className="container-page py-20">
           <div className="max-w-3xl">
             <p className="text-xs font-medium uppercase tracking-[0.22em] text-sky-800">
@@ -343,7 +343,7 @@ export default function InformeModeloPage() {
       </section>
 
       {/* CTA FINAL */}
-      <section className="bg-gradient-to-b from-white to-sky-50/40 py-20">
+      <section className="bg-linear-to-b from-white to-sky-50/40 py-20">
         <div className="container-page text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
             Empezá con una evaluación y mirá el resultado dentro de tu propio

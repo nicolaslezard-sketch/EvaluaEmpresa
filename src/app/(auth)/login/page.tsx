@@ -8,7 +8,7 @@ export default async function LoginPage() {
   if (session?.user?.id) redirect("/dashboard");
 
   return (
-    <div className="bg-gradient-to-b from-white via-sky-50/50 to-white">
+    <div className="bg-linear-to-b from-white via-sky-50/50 to-white">
       <div className="container-page py-16 md:py-24">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-medium uppercase tracking-[0.22em] text-sky-800">

@@ -6,15 +6,18 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div className="max-w-md">
-            <p className="text-sm font-semibold tracking-tight">
+            <p className="text-sm font-semibold tracking-tight text-zinc-900">
               EvaluaEmpresa
             </p>
-            <p className="mt-2 text-sm text-zinc-600">
-              Informe ejecutivo estructurado para decisiones comerciales, basado
-              en metodología E-Score™.
+
+            <p className="mt-2 text-sm leading-6 text-zinc-600">
+              Evaluación y monitoreo estructurado de terceros para detectar
+              deterioros, comparar ciclos y respaldar decisiones con una salida
+              más clara.
             </p>
-            <p className="mt-4 text-xs text-zinc-500">
-              Alcance: orientativo y basado en información declarada por el
+
+            <p className="mt-4 text-xs leading-5 text-zinc-500">
+              Alcance orientativo y basado en información declarada por el
               solicitante. No constituye asesoramiento legal, contable ni
               financiero.
             </p>
@@ -23,44 +26,49 @@ export function SiteFooter() {
           <div className="grid grid-cols-2 gap-8 text-sm">
             <div className="grid gap-3">
               <p className="font-medium text-zinc-900">Producto</p>
+
               <Link
-                href="/como-funciona"
-                className="text-zinc-600 hover:text-zinc-900"
+                href="/metodologia"
+                className="text-zinc-600 transition hover:text-zinc-900"
               >
                 Cómo funciona
               </Link>
-              <Link
-                href="/metodologia"
-                className="text-zinc-600 hover:text-zinc-900"
-              >
-                Metodología
-              </Link>
+
               <Link
                 href="/informe-modelo"
-                className="text-zinc-600 hover:text-zinc-900"
+                className="text-zinc-600 transition hover:text-zinc-900"
               >
                 Informe modelo
               </Link>
+
               <Link
                 href="/pricing"
-                className="text-zinc-600 hover:text-zinc-900"
+                className="text-zinc-600 transition hover:text-zinc-900"
               >
                 Pricing
+              </Link>
+
+              <Link
+                href="/faq"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                FAQ
               </Link>
             </div>
 
             <div className="grid gap-3">
-              <p className="font-medium text-zinc-900">Legal</p>
-              <Link href="/faq" className="text-zinc-600 hover:text-zinc-900">
-                FAQ
-              </Link>
+              <p className="font-medium text-zinc-900">Contacto</p>
+
               <a
                 href="mailto:contacto@evaluaempresa.com"
-                className="text-zinc-600 hover:text-zinc-900"
+                className="text-zinc-600 transition hover:text-zinc-900"
               >
-                Contacto
+                contacto@evaluaempresa.com
               </a>
-              <p className="text-zinc-500">Términos y Privacidad (próximo)</p>
+
+              <p className="text-zinc-500">
+                Términos y privacidad próximamente
+              </p>
             </div>
           </div>
         </div>
@@ -70,7 +78,7 @@ export function SiteFooter() {
             © {new Date().getFullYear()} EvaluaEmpresa. Todos los derechos
             reservados.
           </p>
-          <p>Hecho para decisiones comerciales informadas.</p>
+          <p>Hecho para seguimiento y decisiones mejor respaldadas.</p>
         </div>
       </div>
     </footer>

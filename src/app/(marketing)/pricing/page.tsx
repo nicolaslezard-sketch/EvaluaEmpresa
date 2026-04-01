@@ -14,7 +14,6 @@ const plans = [
     ],
     ctaLabel: "Comenzar gratis",
     ctaHref: "/login",
-    highlighted: false,
   },
   {
     name: "Evaluación única",
@@ -24,13 +23,12 @@ const plans = [
     features: [
       "Resultado completo",
       "Hallazgos y recomendaciones",
-      "Comparativa del ciclo evaluado",
+      "Cambios del ciclo evaluado",
       "PDF ejecutivo",
       "Pago único",
     ],
     ctaLabel: "Empezar evaluación",
     ctaHref: "/login",
-    highlighted: true,
   },
   {
     name: "Pro",
@@ -46,23 +44,21 @@ const plans = [
     ],
     ctaLabel: "Ver plan Pro",
     ctaHref: "/billing",
-    highlighted: false,
   },
   {
     name: "Business",
-    headline: "Para equipos con mayor volumen y necesidad de escala",
+    headline: "Para mayor volumen y monitoreo más activo",
     description:
-      "La opción para organizaciones que necesitan más capacidad operativa y seguimiento continuo de terceros.",
+      "La opción para quienes necesitan más capacidad, más histórico y una operación más continua sobre terceros.",
     features: [
       "Mayor capacidad operativa",
       "Más empresas y evaluaciones",
-      "Seguimiento más escalable",
-      "Pensado para uso de equipo",
+      "Tendencia histórica extendida",
+      "Alertas y seguimiento más activo",
       "Operación continua",
     ],
     ctaLabel: "Ver plan Business",
     ctaHref: "/billing",
-    highlighted: false,
   },
 ];
 
@@ -80,12 +76,17 @@ const faqs = [
   {
     question: "¿Cuándo conviene pasar a Pro o Business?",
     answer:
-      "Cuando la evaluación de terceros deja de ser algo aislado y pasa a formar parte de un seguimiento más frecuente, con comparativa entre ciclos e histórico.",
+      "Cuando la evaluación de terceros deja de ser algo aislado y pasa a formar parte de un seguimiento más frecuente, con comparativa entre ciclos, histórico y mayor capacidad operativa.",
   },
   {
     question: "¿EvaluaEmpresa sirve solo para proveedores?",
     answer:
       "No. Puede usarse para proveedores, clientes, contrapartes u otros terceros que necesiten una evaluación estructurada y comparable en el tiempo.",
+  },
+  {
+    question: "¿Business es un plan para múltiples usuarios?",
+    answer:
+      "Hoy Business está orientado a quienes necesitan más capacidad, más histórico y monitoreo más activo. No está planteado todavía como un plan colaborativo con roles o multiusuario avanzado.",
   },
 ];
 
@@ -94,7 +95,6 @@ export default function PricingPage() {
     <div>
       {/* HERO */}
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
-        {" "}
         <div className="container-page py-20">
           <div className="max-w-3xl">
             <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
@@ -108,7 +108,8 @@ export default function PricingPage() {
             <p className="mt-6 text-lg leading-8 text-zinc-600">
               Desde una prueba inicial hasta un uso recurrente para seguimiento
               de terceros. Podés empezar gratis, desbloquear una evaluación
-              puntual o trabajar con planes pensados para operación continua.
+              puntual o trabajar con planes pensados para una práctica más
+              continua y comparable.
             </p>
           </div>
         </div>
@@ -123,7 +124,7 @@ export default function PricingPage() {
             </p>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
               Empezá con una empresa, conocé la metodología y entendé cómo se
-              organiza la evaluación.
+              organiza una evaluación antes de pagar.
             </p>
           </div>
 
@@ -133,17 +134,18 @@ export default function PricingPage() {
             </p>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
               La evaluación única sirve cuando querés un resultado completo sin
-              pasar a una suscripción.
+              pasar a una suscripción mensual.
             </p>
           </div>
 
           <div className="card p-6">
             <p className="text-base font-medium text-zinc-900">
-              Escalá a seguimiento continuo
+              Escalá a seguimiento recurrente
             </p>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Pro y Business están pensados para equipos que necesitan comparar
-              ciclos y sostener una práctica recurrente.
+              Pro y Business están pensados para sostener una práctica más
+              continua, con comparativa entre ciclos, histórico y mayor
+              capacidad.
             </p>
           </div>
         </div>
@@ -190,7 +192,7 @@ export default function PricingPage() {
                           ? "Para resolver una necesidad puntual"
                           : isPro
                             ? "Para usarlo de verdad"
-                            : "Para monitoreo continuo"}
+                            : "Para mayor volumen y monitoreo activo"}
                     </p>
 
                     <p className="mt-4 text-base leading-7 text-zinc-600">
@@ -200,7 +202,7 @@ export default function PricingPage() {
                           ? "Resultado completo sin compromiso mensual."
                           : isPro
                             ? "Más empresas, más evaluaciones y comparativa entre ciclos."
-                            : "Más capacidad, tendencia extendida y alertas para operación más activa."}
+                            : "Más capacidad, tendencia extendida y alertas para una operación más activa."}
                     </p>
 
                     <ul className="mt-6 space-y-3 text-sm text-zinc-600">
@@ -219,7 +221,8 @@ export default function PricingPage() {
                           (isBusiness &&
                             (feature.includes("Mayor capacidad") ||
                               feature.includes("Más empresas") ||
-                              feature.includes("Seguimiento")));
+                              feature.includes("Alertas") ||
+                              feature.includes("Tendencia")));
 
                         return (
                           <li key={feature}>
@@ -266,7 +269,7 @@ export default function PricingPage() {
             <span className="font-semibold text-sky-900">Pro</span> y{" "}
             <span className="font-semibold text-emerald-800">Business</span>{" "}
             están pensados para seguimiento continuo, comparativa entre ciclos y
-            operación más recurrente.
+            una operación más recurrente sobre terceros.
           </p>
         </div>
       </section>
@@ -285,7 +288,7 @@ export default function PricingPage() {
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div className="card p-6">
-              <p className="text-base font-medium text-zinc-900">Free</p>{" "}
+              <p className="text-base font-medium text-zinc-900">Free</p>
               <p className="mt-3 text-sm leading-6 text-zinc-600">
                 Para explorar el producto y entender cómo se estructura una
                 evaluación.
@@ -303,7 +306,7 @@ export default function PricingPage() {
             </div>
 
             <div className="card p-6">
-              <p className="text-base font-semibold text-sky-900">Pro</p>{" "}
+              <p className="text-base font-semibold text-sky-900">Pro</p>
               <p className="mt-3 text-sm leading-6 text-zinc-600">
                 Para trabajar evaluaciones completas con histórico y comparativa
                 entre ciclos.
@@ -313,10 +316,10 @@ export default function PricingPage() {
             <div className="card p-6">
               <p className="text-base font-semibold text-emerald-800">
                 Business
-              </p>{" "}
+              </p>
               <p className="mt-3 text-sm leading-6 text-zinc-600">
-                Para equipos con más volumen, más seguimiento y mayor necesidad
-                de escala operativa.
+                Para quienes necesitan más capacidad, más histórico y monitoreo
+                más activo sin cambiar el modelo de trabajo del producto.
               </p>
             </div>
           </div>
