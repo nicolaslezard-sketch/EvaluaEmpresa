@@ -28,8 +28,18 @@ export function UserMenu({ email, name, image }: Props) {
       if (!ref.current) return;
       if (!ref.current.contains(e.target as Node)) setOpen(false);
     }
+
+    function onEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+
     document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEscape);
+    };
   }, []);
 
   return (
@@ -37,60 +47,99 @@ export function UserMenu({ email, name, image }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm hover:bg-zinc-50"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex items-center gap-3 rounded-2xl border border-sky-600 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-sky-700 hover:bg-sky-50/40"
       >
         {image ? (
           <Image
             alt={name ?? email ?? "Usuario"}
             src={image}
-            width={28}
-            height={28}
-            className="h-7 w-7 rounded-full"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
-          <div className="grid h-7 w-7 place-items-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
+          <div className="grid h-8 w-8 place-items-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
             {initials(name ?? email)}
           </div>
         )}
 
-        <span className="hidden text-zinc-700 md:inline">
-          {name ?? email ?? "Cuenta"}
-        </span>
+        <div className="hidden min-w-0 text-left md:block">
+          <div className="max-w-[140px] truncate font-medium text-zinc-900">
+            {name ?? "Cuenta"}
+          </div>
+        </div>
+
+        <svg
+          className={`h-4 w-4 text-zinc-500 transition ${open ? "rotate-180" : ""}`}
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.51a.75.75 0 01-1.08 0l-4.25-4.51a.75.75 0 01.02-1.06z"
+            clipRule="evenodd"
+          />
+        </svg>
       </button>
 
       {open ? (
-        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg">
-          <div className="border-b border-zinc-100 px-4 py-3">
-            <p className="text-xs font-medium text-zinc-900">
-              {name ?? "Usuario"}
-            </p>
-            <p className="mt-1 text-xs text-zinc-500">{email ?? ""}</p>
+        <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.14)]">
+          <div className="border-b border-zinc-100 px-5 py-4">
+            <div className="flex items-center gap-3">
+              {image ? (
+                <Image
+                  alt={name ?? email ?? "Usuario"}
+                  src={image}
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 rounded-full object-cover"
+                />
+              ) : (
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-zinc-900 text-sm font-semibold text-white">
+                  {initials(name ?? email)}
+                </div>
+              )}
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-zinc-900">
+                  {name ?? "Usuario"}
+                </p>
+                <p className="mt-0.5 truncate text-sm text-zinc-500">
+                  {email ?? ""}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="p-2">
             <Link
               href="/dashboard"
-              className="block rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+              className="block rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
               onClick={() => setOpen(false)}
             >
-              Dashboard
+              Monitoreo
             </Link>
 
             <Link
               href="/companies/new"
-              className="block rounded-xl px-3 py-2 text-sm text-zinc-700 hover:bg-zinc-50"
+              className="mt-1 block rounded-2xl px-4 py-3 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-zinc-900"
               onClick={() => setOpen(false)}
             >
-              Nueva evaluación
+              Nueva empresa
             </Link>
 
-            <button
-              type="button"
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="mt-1 w-full rounded-xl px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-            >
-              Cerrar sesión
-            </button>
+            <div className="mt-2 border-t border-zinc-100 pt-2">
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+              >
+                Cerrar sesión
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

@@ -39,10 +39,11 @@ export async function SiteHeader() {
           {session?.user?.id ? (
             <>
               <Link href="/dashboard" className="btn btn-secondary">
-                Dashboard
+                Monitoreo
               </Link>
+
               <Link href="/companies/new" className="btn btn-primary">
-                Nueva evaluación
+                Nueva empresa
               </Link>
             </>
           ) : (
