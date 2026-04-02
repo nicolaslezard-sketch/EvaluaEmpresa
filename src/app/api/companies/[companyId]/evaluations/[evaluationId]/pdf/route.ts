@@ -73,9 +73,7 @@ export async function GET(
 
     const pdfData: DeterministicPdfData = {
       companyName: evaluation.company.name,
-      generatedAt: new Date(
-        evaluation.updatedAt ?? evaluation.createdAt,
-      ).toLocaleDateString("es-AR"),
+      generatedAt: (evaluation.updatedAt ?? evaluation.createdAt).toISOString(),
       evaluationCreatedAtISO: evaluation.createdAt.toISOString(),
       companyCriticality: evaluation.company.criticality,
       overallScore: evaluation.overallScore ?? 0,
