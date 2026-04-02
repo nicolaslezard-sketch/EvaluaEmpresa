@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { createCompany, getActiveCompanyUsage } from "@/lib/services/companies";
+import { getUserEntitlements } from "@/lib/access/getEntitlements";
 
 /* =========================
    SERVER ACTION
@@ -44,6 +45,17 @@ async function createCompanyAction(formData: FormData) {
   }
 }
 
+function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
+  switch (plan) {
+    case "PRO":
+      return "PRO";
+    case "BUSINESS":
+      return "BUSINESS";
+    default:
+      return "FREE";
+  }
+}
+
 /* =========================
    PAGE
 ========================= */
@@ -52,6 +64,7 @@ export default async function NewCompanyPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) redirect("/login");
 
+  const ent = await getUserEntitlements(session.user.id);
   const usage = await getActiveCompanyUsage(session.user.id);
   const limitReached = usage.used >= usage.limit;
 
@@ -75,9 +88,11 @@ export default async function NewCompanyPage() {
 
         <div className="rounded-2xl border border-sky-100 bg-white px-5 py-4 shadow-sm">
           <div className="text-sm text-zinc-600">Uso del plan</div>
-          <div className="mt-1 text-2xl font-semibold text-zinc-900">0/1</div>
+          <div className="mt-1 text-2xl font-semibold text-zinc-900">
+            {usage.used}/{ent.maxCompanies}
+          </div>
           <div className="mt-1 text-sm text-zinc-500">
-            Empresas activas · FREE
+            Empresas activas · {planLabel(ent.plan)}
           </div>
         </div>
       </div>
@@ -145,23 +160,23 @@ export default async function NewCompanyPage() {
           <input
             name="sector"
             className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
-            placeholder="Ej: Construcción"
+            placeholder="Ej: Construcción, logística, software..."
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-zinc-700">
-            Tamaño de la empresa
+            Tamaño
           </label>
           <select
             name="size"
             className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
           >
             <option value="">Seleccionar</option>
-            <option value="micro">Micro</option>
-            <option value="pyme">PyME</option>
-            <option value="mediana">Mediana</option>
-            <option value="grande">Grande</option>
+            <option value="MICRO">Micro</option>
+            <option value="PEQUENA">Pequeña</option>
+            <option value="MEDIANA">Mediana</option>
+            <option value="GRANDE">Grande</option>
           </select>
         </div>
 
@@ -173,22 +188,17 @@ export default async function NewCompanyPage() {
             name="description"
             rows={4}
             className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
-            placeholder="Descripción general de la empresa..."
+            placeholder="Contexto breve para identificar mejor a la empresa."
           />
         </div>
 
-        <div className="pt-4">
-          <button
-            type="submit"
-            disabled={limitReached}
-            className={`inline-flex rounded-lg px-5 py-2 text-sm font-medium ${
-              limitReached
-                ? "cursor-not-allowed bg-zinc-100 text-zinc-500"
-                : "bg-zinc-900 text-white hover:bg-zinc-800"
-            }`}
-          >
+        <div className="flex flex-wrap gap-3 pt-2">
+          <button type="submit" className="btn btn-primary">
             Crear empresa
           </button>
+          <a href="/dashboard" className="btn btn-secondary">
+            Volver
+          </a>
         </div>
       </form>
     </div>
