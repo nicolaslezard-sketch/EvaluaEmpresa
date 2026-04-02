@@ -17,6 +17,7 @@ import {
   RELATIONSHIP_IMPORTANCE_LABEL,
   relationshipImportanceLabel,
 } from "@/lib/ui/relationshipImportance";
+import { formatDateAR } from "@/lib/ui/formatDate";
 
 export type DeterministicPdfData = {
   companyName: string;
@@ -1557,6 +1558,7 @@ export async function generateReportPdf(
     worsenedChangesCount,
   });
 
+  const generatedAtLabel = formatDateAR(data.generatedAt);
   const doc = (
     <Document>
       {/* PAGE 1 */}
@@ -1571,7 +1573,7 @@ export async function generateReportPdf(
         <Text style={styles.docTitle}>{data.companyName}</Text>
         <Text style={styles.docMeta}>
           Informe ejecutivo de monitoreo · Fecha de generación:{" "}
-          {data.generatedAt}
+          {generatedAtLabel}
         </Text>
 
         <View style={styles.badgeRow}>

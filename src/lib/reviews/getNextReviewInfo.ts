@@ -8,14 +8,29 @@ export type NextReviewInfo = {
 
 function addDays(date: Date, days: number) {
   const next = new Date(date);
-  next.setDate(next.getDate() + days);
+  next.setUTCDate(next.getUTCDate() + days);
   return next;
+}
+
+function startOfUtcDay(date: Date) {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  );
 }
 
 function daysBetween(from: Date, to: Date) {
   const msPerDay = 1000 * 60 * 60 * 24;
-  const diff = to.getTime() - from.getTime();
+  const diff = startOfUtcDay(to).getTime() - startOfUtcDay(from).getTime();
   return Math.floor(diff / msPerDay);
+}
+
+function formatDateAR(date: Date) {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(date);
 }
 
 export function getNextReviewInfo(
@@ -34,7 +49,7 @@ export function getNextReviewInfo(
 
   const today = new Date();
   const suggestedDate = addDays(new Date(latestCreatedAt), 30);
-  const suggestedDateLabel = suggestedDate.toLocaleDateString();
+  const suggestedDateLabel = formatDateAR(suggestedDate);
   const diffDays = daysBetween(today, suggestedDate);
 
   if (diffDays < 0) {
