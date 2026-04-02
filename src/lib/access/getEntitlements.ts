@@ -5,14 +5,21 @@ import type { Entitlements } from "./entitlements";
 export async function getUserEntitlements(
   userId: string,
 ): Promise<Entitlements> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      subscription: true,
+  const activeSubscription = await prisma.subscription.findFirst({
+    where: {
+      userId,
+      status: "ACTIVE",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      plan: true,
     },
   });
 
-  const plan = user?.subscription?.plan ?? "FREE";
+  const rawPlan = activeSubscription?.plan ?? "FREE";
+  const plan = String(rawPlan).toUpperCase() as "FREE" | "PRO" | "BUSINESS";
 
   return resolveEntitlements(plan);
 }

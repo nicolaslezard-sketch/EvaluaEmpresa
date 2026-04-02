@@ -8,7 +8,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
-import DashboardFilters from "@/components/dashboard/DashboardFilters";
+import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
 import { relationshipImportanceLabel } from "@/lib/ui/relationshipImportance";
 
 type ReportCycleChange = {
@@ -751,7 +751,7 @@ export default async function DashboardPage() {
 
                         <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
                           <div className="text-xs uppercase tracking-wide text-zinc-500">
-                            Cambios relevantes
+                           Cambios relevantes
                           </div>
                           <div className="mt-1 text-lg font-semibold text-zinc-900">
                             {latest ? relevantCycleChanges.length : 0}

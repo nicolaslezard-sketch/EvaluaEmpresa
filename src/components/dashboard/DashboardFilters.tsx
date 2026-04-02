@@ -124,7 +124,7 @@ function reviewStyles(tone: ReviewTone) {
   return "border-zinc-200 bg-zinc-50 text-zinc-700";
 }
 
-function criticalityStyles(level: CriticalityLevel) {
+function criticalityStyles(level?: CriticalityLevel) {
   switch (level) {
     case "LOW":
     case "BAJA":
@@ -143,7 +143,7 @@ function criticalityStyles(level: CriticalityLevel) {
   }
 }
 
-function criticalityLabel(level: CriticalityLevel) {
+function criticalityLabel(level?: CriticalityLevel) {
   if (!level) return null;
 
   switch (level) {
