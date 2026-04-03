@@ -20,10 +20,16 @@ export type FieldMetadata = {
   isCore: boolean;
   requiresRationaleAtOrBelow: EvaluationFieldValue;
   requiresConditionalAtOrBelow: EvaluationFieldValue;
+  requiresEvidenceAtOrBelow: EvaluationFieldValue;
   requiresActionAtOrBelow: EvaluationFieldValue;
   suggestedActions: ActionRecommendation[];
   options: FieldOption[];
   conditionalIssueOptions: string[];
+};
+
+export type FieldGuidance = {
+  whatToLookFor: string[];
+  whatNotToUse: string[];
 };
 
 export const DEFAULT_FIELD_OPTIONS: FieldOption[] = [
@@ -98,6 +104,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: true,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -156,6 +163,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "ESCALATE", "REASSESS_EARLY"],
     options: [
@@ -207,6 +215,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: true,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -263,6 +272,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -317,6 +327,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: true,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -373,6 +384,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -423,6 +435,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -472,6 +485,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -521,6 +535,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -577,6 +592,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "ESCALATE"],
     options: [
@@ -627,6 +643,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: true,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -684,6 +701,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -734,6 +752,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: true,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "REQUEST_INFO",
@@ -789,6 +808,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "ESCALATE", "REASSESS_EARLY"],
     options: [
@@ -839,6 +859,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["REQUEST_INFO", "ESCALATE", "LIMIT_EXPOSURE"],
     options: [
@@ -888,6 +909,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -938,6 +960,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -989,6 +1012,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REQUEST_INFO", "REASSESS_EARLY"],
     options: [
@@ -1040,6 +1064,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: false,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: ["MONITOR", "REASSESS_EARLY"],
     options: [
@@ -1090,6 +1115,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     isCore: true,
     requiresRationaleAtOrBelow: 60,
     requiresConditionalAtOrBelow: 40,
+    requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
     suggestedActions: [
       "MONITOR",
@@ -1131,6 +1157,282 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
       "Alta dependencia externa",
       "Historial de recuperación débil",
       "Otro",
+    ],
+  },
+};
+
+export const FIELD_GUIDANCE: Record<FieldKey, FieldGuidance> = {
+  liquidity: {
+    whatToLookFor: [
+      "Atrasos recientes en pagos",
+      "Tensión de caja visible",
+      "Necesidad de adelantos o refinanciación",
+      "Cumplimiento de obligaciones corrientes",
+      "Capacidad de sostener operación inmediata",
+    ],
+    whatNotToUse: [
+      "Tamaño aparente de la empresa",
+      "Buena reputación general como único criterio",
+      "Optimismo sin evidencia concreta",
+    ],
+  },
+  debtLevel: {
+    whatToLookFor: [
+      "Peso de la deuda sobre la operación",
+      "Vencimientos exigentes",
+      "Costo financiero",
+      "Necesidad de refinanciación",
+      "Flexibilidad financiera remanente",
+    ],
+    whatNotToUse: [
+      "Asumir que tener deuda siempre es malo",
+      "Mirar solo el monto nominal sin contexto",
+      "Comparar con empresas no equivalentes",
+    ],
+  },
+  revenueStability: {
+    whatToLookFor: [
+      "Volatilidad reciente",
+      "Caída de ingresos",
+      "Previsibilidad",
+      "Dependencia de meses o eventos puntuales",
+      "Concentración temporal de facturación",
+    ],
+    whatNotToUse: [
+      "Promesas comerciales futuras",
+      "Una buena racha aislada",
+      "Suponer estabilidad solo porque sigue operando",
+    ],
+  },
+  externalDependency: {
+    whatToLookFor: [
+      "Necesidad de apoyo financiero externo",
+      "Soporte del grupo económico",
+      "Cliente ancla que sostiene caja",
+      "Crédito operativo imprescindible",
+      "Aportes extraordinarios recurrentes",
+    ],
+    whatNotToUse: [
+      "Considerar malo cualquier vínculo financiero externo",
+      "Asumir respaldo sin evidencia",
+      "Confundir crédito normal con dependencia crítica",
+    ],
+  },
+
+  clientConcentration: {
+    whatToLookFor: [
+      "Peso de 1 a 3 clientes principales",
+      "Riesgo de pérdida de una cuenta clave",
+      "Diversificación real",
+      "Dependencia de renovaciones específicas",
+    ],
+    whatNotToUse: [
+      "Cantidad de clientes sola",
+      "Prestigio del cliente dominante como argumento suficiente",
+      "“Siempre fue así” como justificación",
+    ],
+  },
+  competitivePosition: {
+    whatToLookFor: [
+      "Diferenciación",
+      "Presión por precio",
+      "Pérdida de mercado",
+      "Calidad percibida",
+      "Solidez de la propuesta",
+    ],
+    whatNotToUse: [
+      "Marca conocida como prueba automática de solidez",
+      "Opiniones personales sobre el producto",
+      "Intuición sin señal comercial concreta",
+    ],
+  },
+  sectorDependency: {
+    whatToLookFor: [
+      "Exposición a una sola industria",
+      "Sensibilidad del sector",
+      "Concentración por nicho",
+      "Falta de diversificación",
+    ],
+    whatNotToUse: [
+      "Creer que un sector difícil es automáticamente crítico",
+      "Analizar macro general sin conexión con el tercero",
+    ],
+  },
+  contractGeneration: {
+    whatToLookFor: [
+      "Pipeline visible",
+      "Capacidad de originación",
+      "Dependencia de renovaciones",
+      "Tracción comercial reciente",
+      "Continuidad del flujo de negocio",
+    ],
+    whatNotToUse: [
+      "Promesas futuras sin evidencia",
+      "Actividad comercial intensa sin resultados",
+      "Reputación histórica sola",
+    ],
+  },
+
+  keyPersonDependency: {
+    whatToLookFor: [
+      "Concentración de conocimiento",
+      "Ausencia de reemplazos",
+      "Personas críticas en ventas, operación o técnica",
+      "Continuidad ante ausencia puntual",
+    ],
+    whatNotToUse: [
+      "Asumir que fundador involucrado es riesgo por sí solo",
+      "Asumir backup sin evidencia real",
+    ],
+  },
+  structureFormalization: {
+    whatToLookFor: [
+      "Roles definidos",
+      "Responsables claros",
+      "Escalamiento",
+      "Orden mínimo de operación",
+      "Procesos básicos consistentes",
+    ],
+    whatNotToUse: [
+      "Exigir estructura corporativa grande",
+      "Castigar automáticamente empresas chicas",
+      "Confundir informalidad liviana con caos",
+    ],
+  },
+  operationalRisk: {
+    whatToLookFor: [
+      "Fallas de proceso",
+      "Incidentes operativos",
+      "Dependencia tecnológica",
+      "Riesgo logístico",
+      "Continuidad real",
+    ],
+    whatNotToUse: [
+      "Percepción general vaga",
+      "Riesgos hipotéticos sin prioridad",
+      "“Me da mala espina”",
+    ],
+  },
+  adaptability: {
+    whatToLookFor: [
+      "Reacción ante cambios",
+      "Velocidad de ajuste",
+      "Flexibilidad operativa",
+      "Respuesta a requerimientos nuevos",
+      "Aprendizaje frente a errores",
+    ],
+    whatNotToUse: [
+      "Discurso de innovación",
+      "Voluntad declarada sin ejecución",
+      "Una mejora aislada como evidencia total",
+    ],
+  },
+
+  compliance: {
+    whatToLookFor: [
+      "Documentación mínima exigible",
+      "Licencias o habilitaciones",
+      "Vigencia documental",
+      "Cumplimiento básico aplicable",
+    ],
+    whatNotToUse: [
+      "Exigir sobrecumplimiento enterprise",
+      "Castigar documentación no relevante",
+      "Asumir cumplimiento por confianza histórica",
+    ],
+  },
+  litigation: {
+    whatToLookFor: [
+      "Litigios relevantes",
+      "Reclamos recurrentes",
+      "Sanciones",
+      "Contingencias con impacto",
+      "Recurrencia y gravedad",
+    ],
+    whatNotToUse: [
+      "Tomar cualquier reclamo menor como crítico",
+      "Rumores",
+      "Un antecedente viejo resuelto sin impacto actual",
+    ],
+  },
+  contractFormalization: {
+    whatToLookFor: [
+      "Contrato existente",
+      "Vigencia",
+      "Anexos",
+      "Cláusulas clave",
+      "Claridad del vínculo",
+    ],
+    whatNotToUse: [
+      "“Nos conocemos hace años” como reemplazo contractual",
+      "Relación histórica sin formalización",
+      "Mails sueltos como contrato suficiente",
+    ],
+  },
+  regulatoryRisk: {
+    whatToLookFor: [
+      "Cambios regulatorios previsibles",
+      "Dependencia de licencias",
+      "Preparación visible",
+      "Exposición a exigencias crecientes",
+    ],
+    whatNotToUse: [
+      "Especulación abstracta",
+      "Miedo general al contexto",
+      "Noticias del sector sin impacto probable",
+    ],
+  },
+
+  strategicClarity: {
+    whatToLookFor: [
+      "Foco",
+      "Prioridades",
+      "Coherencia del rumbo",
+      "Consistencia entre discurso y ejecución",
+      "Cambios de dirección",
+    ],
+    whatNotToUse: [
+      "Pedir plan estratégico formal enterprise",
+      "Premiar discurso prolijo sin evidencia",
+      "Confundir ambición con claridad",
+    ],
+  },
+  macroDependency: {
+    whatToLookFor: [
+      "Sensibilidad a inflación, tasas, tipo de cambio o consumo",
+      "Capacidad de absorción",
+      "Exposición real al entorno",
+    ],
+    whatNotToUse: [
+      "“Argentina está difícil” como excusa genérica",
+      "Contexto macro general sin vínculo directo",
+    ],
+  },
+  innovationLevel: {
+    whatToLookFor: [
+      "Mejora continua",
+      "Actualización de procesos",
+      "Adaptación evolutiva",
+      "Inversión en capacidades",
+      "Prevención del estancamiento",
+    ],
+    whatNotToUse: [
+      "Exigir I+D formal",
+      "Pensar que una herramienta nueva es innovación real",
+      "Valorar discurso innovador sin evidencia",
+    ],
+  },
+  resilience: {
+    whatToLookFor: [
+      "Capacidad de sostenerse ante eventos adversos",
+      "Velocidad de recuperación",
+      "Tolerancia a desvíos",
+      "Fortaleza general de fondo",
+    ],
+    whatNotToUse: [
+      "Optimismo del evaluador",
+      "Mezclar reputación con resiliencia",
+      "Extrapolar un solo evento aislado",
     ],
   },
 };

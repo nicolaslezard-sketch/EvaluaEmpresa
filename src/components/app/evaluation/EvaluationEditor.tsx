@@ -9,6 +9,7 @@ import type {
   FieldKey,
 } from "@/lib/types/evaluationForm";
 import {
+  FIELD_GUIDANCE,
   FIELD_METADATA,
   FIELDS_BY_PILLAR,
   PILLAR_LABELS,
@@ -158,11 +159,31 @@ function getConditionalValidationErrors(fd: EvaluationFormData) {
       const field = pillarData?.[fieldKey];
       if (!field?.value) continue;
 
-      if (field.value <= 40 && !field.rationale?.trim()) {
+      if (
+        field.value <= meta.requiresRationaleAtOrBelow &&
+        !field.rationale?.trim()
+      ) {
         errors.push(`${meta.label}: falta explicar la situación detectada.`);
       }
 
-      if (field.value <= 20 && !field.actionRecommendation) {
+      if (
+        field.value <= meta.requiresConditionalAtOrBelow &&
+        !field.conditionalAnswers?.primaryIssue?.trim()
+      ) {
+        errors.push(`${meta.label}: falta indicar el problema principal.`);
+      }
+
+      if (
+        field.value <= meta.requiresEvidenceAtOrBelow &&
+        !field.evidenceNote?.trim()
+      ) {
+        errors.push(`${meta.label}: falta indicar un dato o evidencia breve.`);
+      }
+
+      if (
+        field.value <= meta.requiresActionAtOrBelow &&
+        !field.actionRecommendation
+      ) {
         errors.push(`${meta.label}: falta definir una acción recomendada.`);
       }
     }
@@ -244,6 +265,7 @@ export default function EvaluationEditor(props: {
   companyCriticality: string;
   status: "DRAFT" | "FINALIZED" | "EXPIRED";
   formData: EvaluationFormData;
+  previousFormData?: EvaluationFormData | null;
   overallScore: number | null;
   executiveCategory: string | null;
   deltas: {
@@ -908,8 +930,9 @@ export default function EvaluationEditor(props: {
 
       <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
         Esta revisión fue precargada con la información del último ciclo
-        finalizado. Revisá solo los cambios relevantes y generá la nueva
-        evaluación mensual.
+        finalizado. Confirmá si cada campo se mantiene igual o cambió, y
+        justificá toda observación, debilidad o criticidad con una señal
+        concreta.
       </div>
 
       <div className="grid gap-4">
@@ -937,6 +960,12 @@ export default function EvaluationEditor(props: {
               <PillarFields
                 fields={FIELDS_BY_PILLAR[pillar]}
                 value={pillarValue}
+                previousValue={
+                  (props.previousFormData?.[pillar] ?? {}) as Record<
+                    string,
+                    FieldAssessment | undefined
+                  >
+                }
                 onChange={(patch) =>
                   setData((d) => ({
                     ...d,
@@ -1105,39 +1134,71 @@ function actionLabel(action: ActionRecommendation) {
 function PillarFields({
   fields,
   value,
+  previousValue,
   onChange,
 }: {
   fields: FieldKey[];
   value: Record<string, FieldAssessment | undefined>;
+  previousValue: Record<string, FieldAssessment | undefined>;
   onChange: (patch: Record<string, FieldAssessment>) => void;
 }) {
   return (
     <div className="grid gap-5 md:grid-cols-2">
       {fields.map((key) => {
         const meta = FIELD_METADATA[key];
+        const guidance = FIELD_GUIDANCE[key];
         const current = value[key];
+        const previous = previousValue[key];
+
         const selectedValue = current?.value;
         const selectedOption = meta.options.find(
           (option) => option.value === selectedValue,
         );
 
+        const previousValueLabel = fieldLevelLabel(previous?.value);
+        const previousRationale = previous?.rationale?.trim();
+        const previousEvidence = previous?.evidenceNote?.trim();
+
+        const hasChangedFromPrevious =
+          typeof selectedValue === "number" &&
+          typeof previous?.value === "number" &&
+          selectedValue !== previous.value;
+
         const showRationale = requiresRationale(
           selectedValue,
           meta.requiresRationaleAtOrBelow,
         );
+
         const showConditional = requiresRationale(
           selectedValue,
           meta.requiresConditionalAtOrBelow,
         );
+
+        const showEvidence = requiresRationale(
+          selectedValue,
+          meta.requiresEvidenceAtOrBelow,
+        );
+
         const showAction = requiresRationale(
           selectedValue,
           meta.requiresActionAtOrBelow,
         );
 
         const rationaleRequired =
-          selectedValue !== undefined && selectedValue <= 40;
+          selectedValue !== undefined &&
+          selectedValue <= meta.requiresRationaleAtOrBelow;
+
+        const conditionalRequired =
+          selectedValue !== undefined &&
+          selectedValue <= meta.requiresConditionalAtOrBelow;
+
+        const evidenceRequired =
+          selectedValue !== undefined &&
+          selectedValue <= meta.requiresEvidenceAtOrBelow;
+
         const actionRequired =
-          selectedValue !== undefined && selectedValue <= 20;
+          selectedValue !== undefined &&
+          selectedValue <= meta.requiresActionAtOrBelow;
 
         function patchField(partial: Partial<FieldAssessment>) {
           onChange({
@@ -1165,6 +1226,29 @@ function PillarFields({
               {meta.helpText}
             </p>
 
+            {previous?.value ? (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+                <div>
+                  <span className="font-semibold">Ciclo anterior:</span>{" "}
+                  {previousValueLabel}
+                </div>
+
+                {previousRationale ? (
+                  <div className="mt-1">
+                    <span className="font-semibold">Observación previa:</span>{" "}
+                    {previousRationale}
+                  </div>
+                ) : null}
+
+                {previousEvidence ? (
+                  <div className="mt-1">
+                    <span className="font-semibold">Evidencia previa:</span>{" "}
+                    {previousEvidence}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
             <select
               className="mt-4 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
               value={selectedValue ?? ""}
@@ -1181,7 +1265,12 @@ function PillarFields({
 
                 if (nextValue > meta.requiresRationaleAtOrBelow) {
                   delete nextField.rationale;
+                }
+
+                if (nextValue > meta.requiresEvidenceAtOrBelow) {
                   delete nextField.evidenceNote;
+                  delete nextField.evidenceType;
+                  delete nextField.evidenceDate;
                 }
 
                 if (nextValue > meta.requiresConditionalAtOrBelow) {
@@ -1217,6 +1306,55 @@ function PillarFields({
               </div>
             ) : null}
 
+            {hasChangedFromPrevious ? (
+              <div className="mt-3 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-900">
+                Cambió respecto del ciclo anterior:{" "}
+                <span className="font-semibold">
+                  {fieldLevelLabel(previous?.value)}
+                </span>{" "}
+                →{" "}
+                <span className="font-semibold">
+                  {fieldLevelLabel(selectedValue)}
+                </span>
+              </div>
+            ) : null}
+
+            <details className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+              <summary className="cursor-pointer text-sm font-medium text-zinc-900">
+                Cómo evaluarlo
+              </summary>
+
+              <div className="mt-3 grid gap-4 md:grid-cols-2">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
+                    Qué mirar
+                  </div>
+                  <ul className="mt-2 space-y-2 text-sm leading-6 text-zinc-600">
+                    {guidance.whatToLookFor.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span className="mt-2 h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-zinc-700">
+                    Qué no usar como criterio
+                  </div>
+                  <ul className="mt-2 space-y-2 text-sm leading-6 text-zinc-600">
+                    {guidance.whatNotToUse.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span className="mt-2 h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </details>
+
             {showRationale ? (
               <div className="mt-5 space-y-4 rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
                 <div>
@@ -1248,32 +1386,36 @@ function PillarFields({
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
-                    Dato o evidencia breve
-                  </label>
+                {showEvidence ? (
+                  <div>
+                    <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
+                      Dato o evidencia breve
+                      {evidenceRequired ? " *" : ""}
+                    </label>
 
-                  <input
-                    type="text"
-                    value={current?.evidenceNote ?? ""}
-                    onChange={(e) =>
-                      patchField({
-                        evidenceNote: e.target.value,
-                      })
-                    }
-                    maxLength={140}
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                    placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas o incidente operativo."
-                  />
-                  <div className="mt-1 text-right text-xs text-zinc-500">
-                    {(current?.evidenceNote ?? "").length}/140
+                    <input
+                      type="text"
+                      value={current?.evidenceNote ?? ""}
+                      onChange={(e) =>
+                        patchField({
+                          evidenceNote: e.target.value,
+                        })
+                      }
+                      maxLength={140}
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
+                      placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas o incidente operativo."
+                    />
+                    <div className="mt-1 text-right text-xs text-zinc-500">
+                      {(current?.evidenceNote ?? "").length}/140
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 {showConditional ? (
                   <div>
                     <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
                       Tipo principal de problema
+                      {conditionalRequired ? " *" : ""}
                     </label>
 
                     <select

@@ -66,7 +66,7 @@ export function UserMenu({ email, name, image }: Props) {
         )}
 
         <div className="hidden min-w-0 text-left md:block">
-          <div className="max-w-[140px] truncate font-medium text-zinc-900">
+          <div className="max-w-35 truncate font-medium text-zinc-900">
             {name ?? "Cuenta"}
           </div>
         </div>

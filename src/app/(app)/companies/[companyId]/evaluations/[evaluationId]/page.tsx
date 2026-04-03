@@ -29,6 +29,27 @@ export default async function EvaluationPage({
     notFound();
   }
 
+  const previousFinalizedEvaluation = await prisma.evaluation.findFirst({
+    where: {
+      companyId,
+      status: "FINALIZED",
+      id: {
+        not: evaluation.id,
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      formData: true,
+    },
+  });
+
+  const previousFormData =
+    (previousFinalizedEvaluation?.formData as EvaluationFormData | null) ??
+    null;
+
   return (
     <EvaluationEditor
       companyId={companyId}
@@ -37,6 +58,7 @@ export default async function EvaluationPage({
       companyCriticality={evaluation.company.criticality}
       status={evaluation.status}
       formData={(evaluation.formData ?? {}) as EvaluationFormData}
+      previousFormData={previousFormData}
       overallScore={evaluation.overallScore}
       executiveCategory={evaluation.executiveCategory}
       deltas={{
