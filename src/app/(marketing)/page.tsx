@@ -440,7 +440,10 @@ export default function HomePage() {
       </section>
 
       {/* PRICING RESUMIDO */}
-      <section className="border-y border-zinc-200 bg-slate-50 py-20">
+      <section
+        id="planes"
+        className="border-y border-zinc-200 bg-slate-50 py-20"
+      >
         <div className="container-page">
           <div className="max-w-4xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
@@ -585,7 +588,8 @@ export default function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="bg-white py-20">
+      <section id="faq" className="bg-white py-20">
+        {" "}
         <div className="container-page">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
