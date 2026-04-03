@@ -102,7 +102,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Evaluá si el tercero muestra holgura razonable para sostener pagos y operación inmediata.",
     isCore: true,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -161,7 +161,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "No evalúes si tiene deuda sí o no, sino si esa deuda parece razonable o riesgosa para su escala.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -213,7 +213,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Considerá volatilidad, caídas recientes y dependencia de ciclos.",
     isCore: true,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -270,7 +270,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Evaluá si el tercero necesita apoyo financiero de actores externos para funcionar normalmente.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -325,7 +325,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Evaluá si la pérdida de uno o pocos clientes podría deteriorar significativamente al tercero.",
     isCore: true,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -382,7 +382,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Pensá si su propuesta sigue siendo defendible o si está perdiendo tracción.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -433,7 +433,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "No evalúa si el sector es bueno o malo, sino cuánto depende el tercero de uno solo.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -483,7 +483,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Evaluá si el tercero puede seguir originando contratos o depende de inercia o pocas renovaciones.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -533,7 +533,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Evaluá si una salida o indisponibilidad puntual comprometería el funcionamiento.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -590,7 +590,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "No hace falta una corporación perfecta; sí una estructura suficiente para operar con claridad.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -641,7 +641,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Este campo debe capturar el principal riesgo operativo actual, no una percepción general vaga.",
     isCore: true,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -699,7 +699,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
       "Capacidad del tercero para ajustarse a cambios de contexto, demanda o requerimientos.",
     helpText: "Evaluá flexibilidad real, no discurso.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -750,7 +750,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Acá importa si cumple con lo mínimo exigible para operar razonablemente.",
     isCore: true,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -806,7 +806,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "No evalúa cualquier disputa menor, sino si existe una señal jurídicamente relevante.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -857,7 +857,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Evaluá si hay contrato suficiente, vigente y claro para sostener la relación.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -907,7 +907,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     summary: "Sensibilidad del tercero a cambios regulatorios previsibles.",
     helpText: "Mide exposición futura razonable, no especulación abstracta.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -958,7 +958,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "No hace falta un plan corporativo perfecto, sí coherencia mínima en dirección y prioridades.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -1010,7 +1010,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Particularmente importante en LATAM, pero no debería usarse como excusa automática para todo.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -1062,7 +1062,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "No hace falta I+D formal; sí evidencia de mejora continua o adaptación evolutiva.",
     isCore: false,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
@@ -1113,7 +1113,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     helpText:
       "Este campo resume la fortaleza de fondo ante disrupciones relevantes.",
     isCore: true,
-    requiresRationaleAtOrBelow: 60,
+    requiresRationaleAtOrBelow: 40,
     requiresConditionalAtOrBelow: 40,
     requiresEvidenceAtOrBelow: 40,
     requiresActionAtOrBelow: 20,
