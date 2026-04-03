@@ -447,16 +447,16 @@ export default function HomePage() {
               Planes
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
-              Elegí si querés resolver un caso puntual o sostener seguimiento
-              recurrente
+              Elegí el nivel de seguimiento que necesitás para tu cartera
             </h2>
             <p className="mt-4 text-base leading-8 text-zinc-600">
               <span className="font-semibold text-zinc-900">Free</span> sirve
-              para conocer el flujo.{" "}
-              <span className="font-semibold text-sky-900">Pro</span> permite
-              trabajar de forma recurrente con más profundidad.{" "}
+              para probar el flujo y entender la metodología.{" "}
+              <span className="font-semibold text-sky-900">Pro</span> está
+              pensado para seguimiento completo de una cartera chica.{" "}
               <span className="font-semibold text-emerald-800">Business</span>{" "}
-              suma más capacidad, más histórico y monitoreo más activo.
+              suma más capacidad, más profundidad histórica y alertas
+              persistidas para un monitoreo más activo.
             </p>
           </div>
 
@@ -467,23 +467,17 @@ export default function HomePage() {
                 Para conocer cómo funciona
               </p>
               <p className="mt-3 text-base leading-7 text-zinc-600">
-                Probá la metodología y completá una primera evaluación.
+                Probá una primera evaluación y entendé cómo se ordena el
+                seguimiento de terceros.
               </p>
 
               <ul className="mt-6 space-y-3 text-sm text-zinc-600">
                 <li>
                   •{" "}
-                  <span className="font-semibold text-zinc-900">
-                    1 empresa activa
-                  </span>
+                  <span className="font-semibold text-zinc-900">1 empresa</span>
                 </li>
-                <li>
-                  •{" "}
-                  <span className="font-semibold text-zinc-900">
-                    1 evaluación total
-                  </span>
-                </li>
-                <li>• Vista limitada del resultado</li>
+                <li>• Vista parcial del resultado</li>
+                <li>• Ideal para conocer el sistema</li>
               </ul>
 
               <Link href="/pricing" className="btn btn-secondary mt-8 w-full">
@@ -492,32 +486,44 @@ export default function HomePage() {
             </div>
 
             <div className="rounded-3xl border border-sky-200 bg-white p-7 shadow-[0_12px_32px_rgba(2,132,199,0.10)]">
-              <p className="text-sm font-semibold text-sky-900">Pro</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-sky-900">Pro</p>
+                <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-900">
+                  Más elegido
+                </span>
+              </div>
+
               <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
-                Para seguimiento recurrente
+                Para seguimiento completo de cartera chica
               </p>
               <p className="mt-3 text-base leading-7 text-zinc-600">
-                Más empresas, más evaluaciones y comparativa entre ciclos para
-                usarlo de verdad.
+                Evaluá, compará ciclos y compartí resultados con una salida
+                ejecutiva clara.
               </p>
 
               <ul className="mt-6 space-y-3 text-sm text-zinc-600">
                 <li>
                   •{" "}
                   <span className="font-semibold text-zinc-900">
-                    Evaluaciones ilimitadas
+                    Hasta 3 empresas
                   </span>
                 </li>
                 <li>
                   •{" "}
                   <span className="font-semibold text-zinc-900">
-                    Histórico completo
+                    Reporte completo y PDF ejecutivo
                   </span>
                 </li>
                 <li>
                   •{" "}
                   <span className="font-semibold text-zinc-900">
-                    PDF ejecutivo
+                    Comparativa entre ciclos
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Tendencia histórica de hasta 3 ciclos
                   </span>
                 </li>
               </ul>
@@ -530,11 +536,11 @@ export default function HomePage() {
             <div className="rounded-3xl border border-emerald-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
               <p className="text-sm font-semibold text-emerald-800">Business</p>
               <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
-                Para mayor volumen y monitoreo activo
+                Para monitoreo continuo de cartera más amplia
               </p>
               <p className="mt-3 text-base leading-7 text-zinc-600">
-                Más capacidad, más tendencia histórica y alertas para una
-                operación más continua.
+                Sumá más capacidad, más memoria histórica y alertas persistidas
+                para seguir riesgos que no se resolvieron entre ciclos.
               </p>
 
               <ul className="mt-6 space-y-3 text-sm text-zinc-600">
@@ -547,13 +553,19 @@ export default function HomePage() {
                 <li>
                   •{" "}
                   <span className="font-semibold text-zinc-900">
-                    Tendencia extendida
+                    Todo lo incluido en Pro
                   </span>
                 </li>
                 <li>
                   •{" "}
                   <span className="font-semibold text-zinc-900">
-                    Alertas automáticas
+                    Tendencia histórica extendida de hasta 6 ciclos
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Alertas persistidas activas
                   </span>
                 </li>
               </ul>
@@ -563,6 +575,12 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
+
+          <p className="mt-8 max-w-4xl text-sm leading-6 text-zinc-500">
+            Si necesitás evaluar y comparar pocos terceros, Pro alcanza muy
+            bien. Si necesitás seguir una cartera más amplia y detectar riesgos
+            que persisten entre ciclos, Business es el plan correcto.
+          </p>
         </div>
       </section>
 

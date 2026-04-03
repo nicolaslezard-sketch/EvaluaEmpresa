@@ -5,12 +5,12 @@ const plans = [
     name: "Free",
     headline: "Para conocer el flujo y probar una primera evaluación",
     description:
-      "Ideal para entender cómo funciona la plataforma antes de desbloquear resultados completos.",
+      "Ideal para entender cómo funciona la plataforma antes de pasar a un resultado completo o a un seguimiento recurrente.",
     features: [
-      "Carga de empresa y evaluación",
-      "Acceso inicial al producto",
+      "1 empresa",
       "Vista parcial del resultado",
       "Score general y categoría ejecutiva",
+      "Ideal para conocer el sistema",
     ],
     ctaLabel: "Comenzar gratis",
     ctaHref: "/login",
@@ -19,7 +19,7 @@ const plans = [
     name: "Evaluación única",
     headline: "Para obtener un resultado completo sin suscripción",
     description:
-      "La mejor opción si necesitás una evaluación puntual con salida ejecutiva y sin compromiso mensual.",
+      "La mejor opción si necesitás resolver una evaluación puntual con salida ejecutiva y PDF, sin compromiso mensual.",
     features: [
       "Resultado completo",
       "Hallazgos y recomendaciones",
@@ -32,30 +32,31 @@ const plans = [
   },
   {
     name: "Pro",
-    headline: "Para trabajar evaluaciones completas con seguimiento recurrente",
+    headline: "Para seguimiento completo de una cartera chica",
     description:
-      "Pensado para quienes necesitan usar EvaluaEmpresa de forma continua y con más profundidad operativa.",
+      "Pensado para quienes necesitan evaluar, comparar ciclos y sostener seguimiento recurrente sobre pocos terceros estratégicos.",
     features: [
+      "Hasta 3 empresas",
       "Acceso completo al resultado",
       "Comparativa entre ciclos",
       "Histórico de evaluaciones",
       "PDF ejecutivo",
-      "Uso recurrente",
+      "Tendencia histórica de hasta 3 ciclos",
     ],
     ctaLabel: "Ver plan Pro",
     ctaHref: "/billing",
   },
   {
     name: "Business",
-    headline: "Para mayor volumen y monitoreo más activo",
+    headline: "Para monitoreo continuo de una cartera más amplia",
     description:
-      "La opción para quienes necesitan más capacidad, más histórico y una operación más continua sobre terceros.",
+      "La opción para quienes necesitan más capacidad, más profundidad histórica y alertas persistidas para seguir riesgos no resueltos entre ciclos.",
     features: [
-      "Mayor capacidad operativa",
-      "Más empresas y evaluaciones",
-      "Tendencia histórica extendida",
-      "Alertas y seguimiento más activo",
-      "Operación continua",
+      "Hasta 15 empresas",
+      "Todo lo incluido en Pro",
+      "Tendencia histórica extendida de hasta 6 ciclos",
+      "Alertas persistidas activas",
+      "Monitoreo más profundo de deterioros y riesgos no resueltos",
     ],
     ctaLabel: "Ver plan Business",
     ctaHref: "/billing",
@@ -76,7 +77,12 @@ const faqs = [
   {
     question: "¿Cuándo conviene pasar a Pro o Business?",
     answer:
-      "Cuando la evaluación de terceros deja de ser algo aislado y pasa a formar parte de un seguimiento más frecuente, con comparativa entre ciclos, histórico y mayor capacidad operativa.",
+      "Cuando la evaluación de terceros deja de ser algo aislado y pasa a formar parte de un seguimiento más frecuente, con comparativa entre ciclos, histórico y mayor capacidad de monitoreo.",
+  },
+  {
+    question: "¿Qué diferencia hay entre Pro y Business?",
+    answer:
+      "Pro está pensado para seguimiento completo de una cartera chica. Business suma más capacidad, más profundidad histórica y alertas persistidas para un monitoreo más activo de terceros.",
   },
   {
     question: "¿EvaluaEmpresa sirve solo para proveedores?",
@@ -86,7 +92,7 @@ const faqs = [
   {
     question: "¿Business es un plan para múltiples usuarios?",
     answer:
-      "Hoy Business está orientado a quienes necesitan más capacidad, más histórico y monitoreo más activo. No está planteado todavía como un plan colaborativo con roles o multiusuario avanzado.",
+      "Hoy Business está orientado a quienes necesitan seguir una cartera más amplia con mayor profundidad histórica y alertas persistidas. La colaboración entre múltiples usuarios puede sumarse más adelante.",
   },
 ];
 
@@ -130,22 +136,23 @@ export default function PricingPage() {
 
           <div className="card p-6">
             <p className="text-base font-medium text-zinc-900">
-              Pagá una sola vez si lo necesitás puntual
+              Resolvé un caso puntual sin suscripción
             </p>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              La evaluación única sirve cuando querés un resultado completo sin
-              pasar a una suscripción mensual.
+              La evaluación única sirve cuando necesitás un resultado completo
+              con hallazgos, recomendaciones y PDF ejecutivo, sin pasar a un
+              plan mensual.
             </p>
           </div>
 
           <div className="card p-6">
             <p className="text-base font-medium text-zinc-900">
-              Escalá a seguimiento recurrente
+              Pasá a seguimiento recurrente cuando lo necesites
             </p>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
               Pro y Business están pensados para sostener una práctica más
-              continua, con comparativa entre ciclos, histórico y mayor
-              capacidad.
+              continua, con comparativa entre ciclos, histórico y distintos
+              niveles de profundidad de monitoreo.
             </p>
           </div>
         </div>
@@ -191,8 +198,8 @@ export default function PricingPage() {
                         : isSingle
                           ? "Para resolver una necesidad puntual"
                           : isPro
-                            ? "Para usarlo de verdad"
-                            : "Para mayor volumen y monitoreo activo"}
+                            ? "Para seguimiento completo de cartera chica"
+                            : "Para monitoreo continuo de cartera más amplia"}
                     </p>
 
                     <p className="mt-4 text-base leading-7 text-zinc-600">
