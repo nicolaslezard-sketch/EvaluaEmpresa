@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LegalCheckoutNotice from "@/components/legal/LegalCheckoutNotice";
 
 const recurringPlans = [
   {
@@ -8,9 +9,9 @@ const recurringPlans = [
     description:
       "Ideal para conocer cómo funciona la plataforma y completar una primera evaluación antes de pagar.",
     highlights: [
-      "1 empresa activa",
-      "1 evaluación total",
+      "1 empresa",
       "Vista parcial del resultado",
+      "Score general y categoría ejecutiva",
     ],
     ctaLabel: "Plan actual",
     ctaHref: "#",
@@ -19,15 +20,16 @@ const recurringPlans = [
   {
     name: "Pro",
     tone: "sky",
-    title: "Para usar EvaluaEmpresa de forma recurrente",
+    title: "Para seguimiento completo de cartera chica",
     description:
-      "Pensado para quienes necesitan trabajar evaluaciones completas, comparar ciclos y sostener seguimiento real sobre terceros.",
+      "Pensado para quienes necesitan evaluar, comparar ciclos y sostener seguimiento recurrente sobre pocos terceros estratégicos.",
     highlights: [
-      "Más empresas activas",
-      "Evaluaciones ilimitadas",
+      "Hasta 3 empresas",
+      "Acceso completo al resultado",
       "Comparativa entre ciclos",
-      "Histórico completo",
+      "Histórico de evaluaciones",
       "PDF ejecutivo",
+      "Tendencia histórica de hasta 3 ciclos",
     ],
     ctaLabel: "Pasar a Pro",
     ctaHref: "/pricing",
@@ -36,15 +38,15 @@ const recurringPlans = [
   {
     name: "Business",
     tone: "emerald",
-    title: "Para mayor volumen y monitoreo más activo",
+    title: "Para monitoreo continuo de cartera más amplia",
     description:
-      "La opción para quienes necesitan más capacidad, más histórico y una operación más continua sobre proveedores, clientes o contrapartes.",
+      "La opción para quienes necesitan más capacidad, más profundidad histórica y alertas persistidas para seguir riesgos no resueltos entre ciclos.",
     highlights: [
-      "Mayor capacidad operativa",
-      "Más empresas y evaluaciones",
-      "Tendencia histórica extendida",
-      "Alertas y seguimiento más activo",
-      "Más profundidad temporal",
+      "Hasta 15 empresas",
+      "Todo lo incluido en Pro",
+      "Tendencia histórica extendida de hasta 6 ciclos",
+      "Alertas persistidas activas",
+      "Monitoreo más profundo de deterioros y riesgos no resueltos",
     ],
     ctaLabel: "Pasar a Business",
     ctaHref: "/pricing",
@@ -105,7 +107,7 @@ const faqs = [
   {
     question: "¿Cuándo conviene Business?",
     answer:
-      "Cuando el volumen crece y necesitás más capacidad, más histórico y monitoreo más activo. Hoy Business no está planteado como un plan multiusuario avanzado.",
+      "Cuando necesitás seguir una cartera más amplia con más profundidad histórica y alertas persistidas para monitoreo continuo.",
   },
   {
     question: "¿Puedo empezar gratis y después subir?",
@@ -238,6 +240,9 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
+        <div className="container-page">
+          <LegalCheckoutNotice />
+        </div>
       </section>
 
       {/* PLANES RECURRENTES */}
@@ -251,12 +256,12 @@ export default function BillingPage() {
               Para pasar de una evaluación puntual a una práctica sostenida
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              Free sirve para explorar. Pro y Business te permiten trabajar con
-              más profundidad operativa, más comparativa entre ciclos y una
-              lectura más útil para seguimiento real.
+              Free sirve para explorar. Pro está pensado para seguimiento
+              completo de una cartera chica. Business suma más capacidad, más
+              profundidad histórica y alertas persistidas para un monitoreo más
+              activo.
             </p>
           </div>
-
           <div className="mt-10 grid gap-8 lg:grid-cols-3">
             {recurringPlans.map((plan) => {
               const tone =
@@ -318,7 +323,6 @@ export default function BillingPage() {
               );
             })}
           </div>
-
           <p className="mt-8 max-w-4xl text-base leading-8 text-zinc-600">
             <span className="font-semibold text-zinc-900">Free</span> sirve para
             explorar el flujo.{" "}
@@ -328,6 +332,9 @@ export default function BillingPage() {
             <span className="font-semibold text-emerald-800">Business</span>{" "}
             suma más capacidad, más histórico y monitoreo más activo.
           </p>
+          <div className="container-page">
+            <LegalCheckoutNotice />
+          </div>{" "}
         </div>
       </section>
 

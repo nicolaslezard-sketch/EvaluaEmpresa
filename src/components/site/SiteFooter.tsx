@@ -28,7 +28,7 @@ export function SiteFooter() {
               <p className="font-medium text-zinc-900">Producto</p>
 
               <Link
-                href="/metodologia"
+                href="/#metodologia"
                 className="text-zinc-600 transition hover:text-zinc-900"
               >
                 Cómo funciona
@@ -49,7 +49,7 @@ export function SiteFooter() {
               </Link>
 
               <Link
-                href="/faq"
+                href="/#faq"
                 className="text-zinc-600 transition hover:text-zinc-900"
               >
                 FAQ
@@ -57,7 +57,7 @@ export function SiteFooter() {
             </div>
 
             <div className="grid gap-3">
-              <p className="font-medium text-zinc-900">Contacto</p>
+              <p className="font-medium text-zinc-900">Legales y contacto</p>
 
               <a
                 href="mailto:contacto@evaluaempresa.com"
@@ -66,9 +66,33 @@ export function SiteFooter() {
                 contacto@evaluaempresa.com
               </a>
 
-              <p className="text-zinc-500">
-                Términos y privacidad próximamente
-              </p>
+              <a
+                href="mailto:privacidad@evaluaempresa.com"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                privacidad@evaluaempresa.com
+              </a>
+
+              <Link
+                href="/terminos"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                Términos y Condiciones
+              </Link>
+
+              <Link
+                href="/privacidad"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                Política de Privacidad
+              </Link>
+
+              <Link
+                href="/arrepentimiento"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                Botón de Arrepentimiento
+              </Link>
             </div>
           </div>
         </div>
@@ -78,7 +102,7 @@ export function SiteFooter() {
             © {new Date().getFullYear()} EvaluaEmpresa. Todos los derechos
             reservados.
           </p>
-          <p>Hecho para seguimiento y decisiones mejor respaldadas.</p>
+          <p>Provincia de Buenos Aires, República Argentina.</p>
         </div>
       </div>
     </footer>

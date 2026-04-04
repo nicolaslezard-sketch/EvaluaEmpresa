@@ -22,6 +22,7 @@ import {
   RELATIONSHIP_IMPORTANCE_LABEL,
   relationshipImportanceLabel,
 } from "@/lib/ui/relationshipImportance";
+import LegalCheckoutNotice from "@/components/legal/LegalCheckoutNotice";
 /* ===============================
    Helpers
 =================================*/
@@ -615,15 +616,19 @@ export default function EvaluationEditor(props: {
                 Pago registrado. El acceso puede demorar unos instantes.
               </div>
             ) : (
-              <button
-                onClick={startOneTimeCheckout}
-                disabled={checkoutLoading}
-                className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {checkoutLoading
-                  ? "Iniciando checkout..."
-                  : "Desbloquear evaluación completa"}
-              </button>
+              <div className="w-full">
+                <button
+                  onClick={startOneTimeCheckout}
+                  disabled={checkoutLoading}
+                  className="inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {checkoutLoading
+                    ? "Iniciando checkout..."
+                    : "Desbloquear evaluación completa"}
+                </button>
+
+                <LegalCheckoutNotice />
+              </div>
             )}
           </div>
         </div>
@@ -837,6 +842,8 @@ export default function EvaluationEditor(props: {
                     ? "Iniciando checkout..."
                     : "Comprar evaluación única"}
                 </button>
+
+                <LegalCheckoutNotice />
               </div>
             )}
           </div>
