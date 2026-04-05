@@ -28,7 +28,7 @@ export async function createMpSubscriptionCheckout({
       preapproval_plan_id: planId,
       reason: `EvaluaEmpresa ${plan} (monthly)`,
       external_reference: `sub:${userId}:${plan}:${period}`,
-      back_url: `${backUrl}/app/billing`,
+      back_url: `${backUrl}/billing`,
       status: "pending",
       auto_recurring: undefined,
       notification_url: webhookUrl || undefined,

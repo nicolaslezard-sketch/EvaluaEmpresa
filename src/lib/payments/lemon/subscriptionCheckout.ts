@@ -36,7 +36,7 @@ export async function createLemonSubscriptionCheckout({
             },
           },
           product_options: {
-            redirect_url: `${baseUrl}/app/billing`,
+            redirect_url: `${baseUrl}/billing`,
           },
         },
         relationships: {

@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getUserEntitlements } from "@/lib/access/getEntitlements";
+import { UpgradeButton } from "@/components/billing/UpgradeButton";
 import LegalCheckoutNotice from "@/components/legal/LegalCheckoutNotice";
 
 const recurringPlans = [
@@ -13,9 +17,6 @@ const recurringPlans = [
       "Vista parcial del resultado",
       "Score general y categoría ejecutiva",
     ],
-    ctaLabel: "Plan actual",
-    ctaHref: "#",
-    disabled: true,
   },
   {
     name: "Pro",
@@ -31,9 +32,6 @@ const recurringPlans = [
       "PDF ejecutivo",
       "Tendencia histórica de hasta 3 ciclos",
     ],
-    ctaLabel: "Pasar a Pro",
-    ctaHref: "/pricing",
-    disabled: false,
   },
   {
     name: "Business",
@@ -48,11 +46,8 @@ const recurringPlans = [
       "Alertas persistidas activas",
       "Monitoreo más profundo de deterioros y riesgos no resueltos",
     ],
-    ctaLabel: "Pasar a Business",
-    ctaHref: "/pricing",
-    disabled: false,
   },
-];
+] as const;
 
 const oneTimeAccess = {
   name: "Evaluación única",
@@ -139,10 +134,15 @@ function getNameClass(tone: "zinc" | "sky" | "emerald" | "amber") {
   return "text-sm font-medium text-zinc-900";
 }
 
-export default function BillingPage() {
+export default async function BillingPage() {
+  const session = await getServerSession(authOptions);
+
+  const currentPlan = session?.user?.id
+    ? (await getUserEntitlements(session.user.id)).plan
+    : "FREE";
+
   return (
     <div className="space-y-0">
-      {/* HERO */}
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-zinc-50 to-white">
         <div className="container-page py-16">
           <div className="max-w-3xl">
@@ -163,7 +163,6 @@ export default function BillingPage() {
         </div>
       </section>
 
-      {/* CUÁNDO SUBIR */}
       <section className="bg-white py-16">
         <div className="container-page">
           <div className="max-w-3xl">
@@ -198,7 +197,6 @@ export default function BillingPage() {
         </div>
       </section>
 
-      {/* EVALUACIÓN ÚNICA */}
       <section className="border-y border-zinc-200 bg-amber-50/40 py-16">
         <div className="container-page">
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
@@ -240,12 +238,12 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
+
         <div className="container-page">
-          <LegalCheckoutNotice />
+          <LegalCheckoutNotice className="mt-6 max-w-3xl text-sm leading-6 text-zinc-500" />
         </div>
       </section>
 
-      {/* PLANES RECURRENTES */}
       <section className="bg-zinc-50 py-20">
         <div className="container-page">
           <div className="max-w-3xl">
@@ -262,14 +260,15 @@ export default function BillingPage() {
               activo.
             </p>
           </div>
+
           <div className="mt-10 grid gap-8 lg:grid-cols-3">
             {recurringPlans.map((plan) => {
-              const tone =
-                plan.name === "Pro"
-                  ? "sky"
-                  : plan.name === "Business"
-                    ? "emerald"
-                    : "zinc";
+              const tone = plan.tone;
+              const normalizedPlan = plan.name.toUpperCase() as
+                | "FREE"
+                | "PRO"
+                | "BUSINESS";
+              const isCurrentPlan = currentPlan === normalizedPlan;
 
               return (
                 <div
@@ -298,31 +297,31 @@ export default function BillingPage() {
                   </div>
 
                   <div className="mt-8">
-                    {plan.disabled ? (
+                    {isCurrentPlan ? (
                       <button
                         type="button"
                         disabled
-                        className="btn btn-secondary w-full opacity-70 cursor-not-allowed"
+                        className="btn btn-secondary w-full cursor-not-allowed opacity-70"
                       >
-                        {plan.ctaLabel}
+                        Plan actual
+                      </button>
+                    ) : normalizedPlan === "FREE" ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="btn btn-secondary w-full cursor-not-allowed opacity-70"
+                      >
+                        Plan base
                       </button>
                     ) : (
-                      <Link
-                        href={plan.ctaHref}
-                        className={
-                          plan.name === "Pro"
-                            ? "btn btn-primary w-full"
-                            : "btn btn-secondary w-full"
-                        }
-                      >
-                        {plan.ctaLabel}
-                      </Link>
+                      <UpgradeButton plan={normalizedPlan} />
                     )}
                   </div>
                 </div>
               );
             })}
           </div>
+
           <p className="mt-8 max-w-4xl text-base leading-8 text-zinc-600">
             <span className="font-semibold text-zinc-900">Free</span> sirve para
             explorar el flujo.{" "}
@@ -332,13 +331,11 @@ export default function BillingPage() {
             <span className="font-semibold text-emerald-800">Business</span>{" "}
             suma más capacidad, más histórico y monitoreo más activo.
           </p>
-          <div className="container-page">
-            <LegalCheckoutNotice />
-          </div>{" "}
+
+          <LegalCheckoutNotice className="mt-6 max-w-3xl text-sm leading-6 text-zinc-500" />
         </div>
       </section>
 
-      {/* ESCENARIOS */}
       <section className="bg-white py-20">
         <div className="container-page">
           <div className="max-w-3xl">
@@ -390,7 +387,6 @@ export default function BillingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="border-y border-zinc-200 bg-zinc-50 py-20">
         <div className="container-page">
           <div className="max-w-3xl">
@@ -420,7 +416,6 @@ export default function BillingPage() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
       <section className="bg-white py-20">
         <div className="container-page text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
