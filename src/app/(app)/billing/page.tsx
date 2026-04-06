@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
+import { StartTrialButton } from "@/components/billing/StartTrialButton";
 import { UpgradeButton } from "@/components/billing/UpgradeButton";
 import LegalCheckoutNotice from "@/components/legal/LegalCheckoutNotice";
 
@@ -141,6 +143,37 @@ export default async function BillingPage() {
     ? (await getUserEntitlements(session.user.id)).plan
     : "FREE";
 
+  const billingState = session?.user?.id
+    ? await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          proTrialUsedAt: true,
+          subscription: {
+            select: {
+              status: true,
+              source: true,
+              isTrial: true,
+              trialEndsAt: true,
+              currentPeriodEnd: true,
+            },
+          },
+        },
+      })
+    : null;
+
+  const hasUsedProTrial = Boolean(billingState?.proTrialUsedAt);
+
+  const activeTrialEndsAt =
+    billingState?.subscription?.status === "ACTIVE" &&
+    billingState?.subscription?.isTrial &&
+    billingState?.subscription?.trialEndsAt
+      ? new Intl.DateTimeFormat("es-AR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(billingState.subscription.trialEndsAt)
+      : null;
+
   return (
     <div className="space-y-0">
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-zinc-50 to-white">
@@ -261,6 +294,14 @@ export default async function BillingPage() {
             </p>
           </div>
 
+          {currentPlan === "PRO" && activeTrialEndsAt ? (
+            <div className="mb-8 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
+              Tu acceso Pro de prueba está activo hasta el {activeTrialEndsAt}.
+              Cuando termine el trial, la cuenta volverá a Free si no activás
+              una suscripción.
+            </div>
+          ) : null}
+
           <div className="mt-10 grid gap-8 lg:grid-cols-3">
             {recurringPlans.map((plan) => {
               const tone = plan.tone;
@@ -297,7 +338,37 @@ export default async function BillingPage() {
                   </div>
 
                   <div className="mt-8">
-                    {isCurrentPlan ? (
+                    {normalizedPlan === "FREE" ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="btn btn-secondary w-full cursor-not-allowed opacity-70"
+                      >
+                        {currentPlan === "FREE" ? "Plan actual" : "Plan base"}
+                      </button>
+                    ) : normalizedPlan === "PRO" ? (
+                      currentPlan === "PRO" ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="btn btn-secondary w-full cursor-not-allowed opacity-70"
+                        >
+                          Plan actual
+                        </button>
+                      ) : currentPlan === "BUSINESS" ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="btn btn-secondary w-full cursor-not-allowed opacity-70"
+                        >
+                          Ya tenés Business
+                        </button>
+                      ) : !hasUsedProTrial ? (
+                        <StartTrialButton />
+                      ) : (
+                        <UpgradeButton plan="PRO" />
+                      )
+                    ) : currentPlan === "BUSINESS" ? (
                       <button
                         type="button"
                         disabled
@@ -305,16 +376,8 @@ export default async function BillingPage() {
                       >
                         Plan actual
                       </button>
-                    ) : normalizedPlan === "FREE" ? (
-                      <button
-                        type="button"
-                        disabled
-                        className="btn btn-secondary w-full cursor-not-allowed opacity-70"
-                      >
-                        Plan base
-                      </button>
                     ) : (
-                      <UpgradeButton plan={normalizedPlan} />
+                      <UpgradeButton plan="BUSINESS" />
                     )}
                   </div>
                 </div>
