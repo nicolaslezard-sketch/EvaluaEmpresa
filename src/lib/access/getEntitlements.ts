@@ -5,21 +5,58 @@ import type { Entitlements } from "./entitlements";
 export async function getUserEntitlements(
   userId: string,
 ): Promise<Entitlements> {
-  const activeSubscription = await prisma.subscription.findFirst({
-    where: {
-      userId,
-      status: "ACTIVE",
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+  const now = new Date();
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId },
     select: {
       plan: true,
+      status: true,
+      isTrial: true,
+      trialEndsAt: true,
+      currentPeriodEnd: true,
     },
   });
 
-  const rawPlan = activeSubscription?.plan ?? "FREE";
-  const plan = String(rawPlan).toUpperCase() as "FREE" | "PRO" | "BUSINESS";
+  if (!subscription) {
+    return resolveEntitlements("FREE");
+  }
 
-  return resolveEntitlements(plan);
+  if (subscription.status !== "ACTIVE") {
+    return resolveEntitlements("FREE");
+  }
+
+  if (subscription.isTrial) {
+    const trialExpired =
+      !subscription.trialEndsAt || subscription.trialEndsAt < now;
+
+    if (trialExpired) {
+      await prisma.subscription.update({
+        where: { userId },
+        data: {
+          status: "EXPIRED",
+        },
+      });
+
+      return resolveEntitlements("FREE");
+    }
+
+    return resolveEntitlements(subscription.plan);
+  }
+
+  const paidExpired =
+    subscription.currentPeriodEnd && subscription.currentPeriodEnd < now;
+
+  if (paidExpired) {
+    await prisma.subscription.update({
+      where: { userId },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
+    return resolveEntitlements("FREE");
+  }
+
+  return resolveEntitlements(subscription.plan);
 }

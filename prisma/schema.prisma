@@ -16,6 +16,7 @@ model User {
   image           String?
   createdAt       DateTime                  @default(now())
   updatedAt       DateTime                  @updatedAt
+  proTrialUsedAt  DateTime?
   accounts        Account[]
   companies       Company[]
   oneTimeAccesses OneTimeEvaluationAccess[]
@@ -64,6 +65,10 @@ model Subscription {
   id                 String             @id @default(cuid())
   plan               SubscriptionPlan   @default(FREE)
   status             SubscriptionStatus @default(ACTIVE)
+  source             SubscriptionSource @default(MANUAL)
+  isTrial            Boolean            @default(false)
+  trialStartedAt     DateTime?
+  trialEndsAt        DateTime?
   currentPeriodStart DateTime?
   currentPeriodEnd   DateTime?
   userId             String             @unique
@@ -73,6 +78,8 @@ model Subscription {
 
   @@index([plan])
   @@index([status])
+  @@index([source])
+  @@index([isTrial])
 }
 
 model Company {
@@ -96,24 +103,24 @@ model Company {
 }
 
 model Evaluation {
-  id                String                    @id @default(cuid())
-  companyId         String
-  status            EvaluationStatus          @default(DRAFT)
+  id        String           @id @default(cuid())
+  companyId String
+  status    EvaluationStatus @default(DRAFT)
 
   /**
    * Versionado del motor
    */
-  engineVersion     String                    @default("1.0.0")
+  engineVersion String @default("1.0.0")
 
   /**
    * Versionado del esquema de formData
    */
-  schemaVersion     Int                       @default(2)
+  schemaVersion Int @default(2)
 
   /**
    * Formulario estructurado
    */
-  formData          Json
+  formData Json
 
   /**
    * Scores determinísticos
@@ -129,31 +136,31 @@ model Evaluation {
   /**
    * Deltas
    */
-  deltaOverall      Float?
-  deltaFinancial    Float?
-  deltaCommercial   Float?
-  deltaOperational  Float?
-  deltaLegal        Float?
-  deltaStrategic    Float?
+  deltaOverall     Float?
+  deltaFinancial   Float?
+  deltaCommercial  Float?
+  deltaOperational Float?
+  deltaLegal       Float?
+  deltaStrategic   Float?
 
   /**
    * Datos estructurados del reporte/export
    */
-  reportData        Json?
+  reportData Json?
 
   /**
    * PDF opcional
    */
-  pdfKey            String?
-  pdfSize           Int?
-  pdfMime           String?
+  pdfKey  String?
+  pdfSize Int?
+  pdfMime String?
 
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  alerts            Alert[]
-  company           Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  oneTimeAccesses   OneTimeEvaluationAccess[]
+  alerts          Alert[]
+  company         Company                   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  oneTimeAccesses OneTimeEvaluationAccess[]
 
   @@index([companyId])
   @@index([status])
@@ -200,6 +207,13 @@ enum SubscriptionStatus {
   PAUSED
   CANCELLED
   EXPIRED
+}
+
+enum SubscriptionSource {
+  TRIAL
+  MP
+  LEMON
+  MANUAL
 }
 
 enum CompanyStatus {
