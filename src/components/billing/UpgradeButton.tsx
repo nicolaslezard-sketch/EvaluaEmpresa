@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export function UpgradeButton({ plan }: { plan: "PRO" | "BUSINESS" }) {
+export function UpgradeButton({
+  plan,
+  label,
+}: {
+  plan: "PRO" | "BUSINESS";
+  label?: string;
+}) {
   const [loading, setLoading] = useState(false);
 
   async function handleCheckout() {
@@ -44,6 +50,8 @@ export function UpgradeButton({ plan }: { plan: "PRO" | "BUSINESS" }) {
     }
   }
 
+  const defaultLabel = plan === "PRO" ? "Pasar a Pro" : "Pasar a Business";
+
   return (
     <button
       type="button"
@@ -51,7 +59,7 @@ export function UpgradeButton({ plan }: { plan: "PRO" | "BUSINESS" }) {
       onClick={handleCheckout}
       className="btn btn-primary w-full"
     >
-      {loading ? "Redirigiendo..." : "Elegir plan"}
+      {loading ? "Redirigiendo..." : (label ?? defaultLabel)}
     </button>
   );
 }

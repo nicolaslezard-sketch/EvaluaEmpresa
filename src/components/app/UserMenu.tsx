@@ -9,6 +9,8 @@ type Props = {
   email?: string | null;
   name?: string | null;
   image?: string | null;
+  planLabel?: string;
+  planStatusLabel?: string;
 };
 
 function initials(nameOrEmail?: string | null) {
@@ -19,7 +21,13 @@ function initials(nameOrEmail?: string | null) {
   return base.slice(0, 2).toUpperCase();
 }
 
-export function UserMenu({ email, name, image }: Props) {
+export function UserMenu({
+  email,
+  name,
+  image,
+  planLabel,
+  planStatusLabel,
+}: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -110,6 +118,22 @@ export function UserMenu({ email, name, image }: Props) {
                 <p className="mt-0.5 truncate text-sm text-zinc-500">
                   {email ?? ""}
                 </p>
+
+                {planLabel ? (
+                  <div className="mt-3 rounded-2xl border border-sky-100 bg-sky-50 px-3 py-2">
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-sky-800">
+                      Plan actual
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-zinc-900">
+                      {planLabel}
+                    </p>
+                    {planStatusLabel ? (
+                      <p className="mt-1 text-xs leading-5 text-zinc-600">
+                        {planStatusLabel}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>

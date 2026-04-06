@@ -71,12 +71,22 @@ function deltaStyles(delta: number | null) {
 function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
   switch (plan) {
     case "PRO":
-      return "PRO";
+      return "Pro";
     case "BUSINESS":
-      return "BUSINESS";
+      return "Business";
     default:
-      return "FREE";
+      return "Free";
   }
+}
+
+function formatTrialDate(date?: Date | null) {
+  if (!date) return null;
+
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 function stalePriorityDate(value: Date | string | null | undefined) {
@@ -143,6 +153,22 @@ export default async function DashboardPage() {
   }
 
   const ent = await getUserEntitlements(session.user.id);
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId: session.user.id },
+    select: {
+      isTrial: true,
+      trialEndsAt: true,
+    },
+  });
+
+  const isTrialActive =
+    ent.plan === "PRO" &&
+    subscription?.isTrial === true &&
+    subscription?.trialEndsAt &&
+    subscription.trialEndsAt >= new Date();
+
+  const trialEndsAtLabel = formatTrialDate(subscription?.trialEndsAt);
 
   const [companies, activeCompanyCount] = await Promise.all([
     prisma.company.findMany({
@@ -309,9 +335,16 @@ export default async function DashboardPage() {
             <div className="mt-1 text-2xl font-semibold text-zinc-900">
               {activeCompanyCount}/{ent.maxCompanies}
             </div>
-            <div className="mt-1 text-sm text-zinc-500">
-              Empresas activas · {planLabel(ent.plan)}
+            <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
+            <div className="mt-3 text-sm font-medium text-zinc-900">
+              {planLabel(ent.plan)}
+              {isTrialActive ? " · Trial" : ""}
             </div>
+            {isTrialActive && trialEndsAtLabel ? (
+              <div className="mt-1 text-xs leading-5 text-zinc-500">
+                Activo hasta {trialEndsAtLabel}
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -438,9 +471,16 @@ export default async function DashboardPage() {
           <div className="mt-1 text-2xl font-semibold text-zinc-900">
             {activeCompanyCount}/{ent.maxCompanies}
           </div>
-          <div className="mt-1 text-sm text-zinc-500">
-            Empresas activas · {planLabel(ent.plan)}
+          <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
+          <div className="mt-3 text-sm font-medium text-zinc-900">
+            {planLabel(ent.plan)}
+            {isTrialActive ? " · Trial" : ""}
           </div>
+          {isTrialActive && trialEndsAtLabel ? (
+            <div className="mt-1 text-xs leading-5 text-zinc-500">
+              Activo hasta {trialEndsAtLabel}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -751,7 +791,7 @@ export default async function DashboardPage() {
 
                         <div className="rounded-xl border border-zinc-200 bg-white px-4 py-3">
                           <div className="text-xs uppercase tracking-wide text-zinc-500">
-                           Cambios relevantes
+                            Cambios relevantes
                           </div>
                           <div className="mt-1 text-lg font-semibold text-zinc-900">
                             {latest ? relevantCycleChanges.length : 0}

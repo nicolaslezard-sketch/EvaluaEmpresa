@@ -309,7 +309,6 @@ export default async function BillingPage() {
                 | "FREE"
                 | "PRO"
                 | "BUSINESS";
-              const isCurrentPlan = currentPlan === normalizedPlan;
 
               return (
                 <div
@@ -366,7 +365,7 @@ export default async function BillingPage() {
                       ) : !hasUsedProTrial ? (
                         <StartTrialButton />
                       ) : (
-                        <UpgradeButton plan="PRO" />
+                        <UpgradeButton plan="PRO" label="Pasar a Pro" />
                       )
                     ) : currentPlan === "BUSINESS" ? (
                       <button
@@ -377,7 +376,14 @@ export default async function BillingPage() {
                         Plan actual
                       </button>
                     ) : (
-                      <UpgradeButton plan="BUSINESS" />
+                      <UpgradeButton
+                        plan="BUSINESS"
+                        label={
+                          currentPlan === "PRO"
+                            ? "Pasar a Business"
+                            : "Elegir plan"
+                        }
+                      />
                     )}
                   </div>
                 </div>

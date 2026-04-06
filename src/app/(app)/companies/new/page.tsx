@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { createCompany, getActiveCompanyUsage } from "@/lib/services/companies";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
+import { prisma } from "@/lib/prisma";
 
 /* =========================
    SERVER ACTION
@@ -48,12 +49,22 @@ async function createCompanyAction(formData: FormData) {
 function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
   switch (plan) {
     case "PRO":
-      return "PRO";
+      return "Pro";
     case "BUSINESS":
-      return "BUSINESS";
+      return "Business";
     default:
-      return "FREE";
+      return "Free";
   }
+}
+
+function formatTrialDate(date?: Date | null) {
+  if (!date) return null;
+
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 /* =========================
@@ -66,6 +77,22 @@ export default async function NewCompanyPage() {
 
   const ent = await getUserEntitlements(session.user.id);
   const usage = await getActiveCompanyUsage(session.user.id);
+
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId: session.user.id },
+    select: {
+      isTrial: true,
+      trialEndsAt: true,
+    },
+  });
+
+  const isTrialActive =
+    ent.plan === "PRO" &&
+    subscription?.isTrial === true &&
+    subscription?.trialEndsAt &&
+    subscription.trialEndsAt >= new Date();
+
+  const trialEndsAtLabel = formatTrialDate(subscription?.trialEndsAt);
   const limitReached = usage.used >= usage.limit;
 
   return (
@@ -91,9 +118,16 @@ export default async function NewCompanyPage() {
           <div className="mt-1 text-2xl font-semibold text-zinc-900">
             {usage.used}/{ent.maxCompanies}
           </div>
-          <div className="mt-1 text-sm text-zinc-500">
-            Empresas activas · {planLabel(ent.plan)}
+          <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
+          <div className="mt-3 text-sm font-medium text-zinc-900">
+            {planLabel(ent.plan)}
+            {isTrialActive ? " · Trial" : ""}
           </div>
+          {isTrialActive && trialEndsAtLabel ? (
+            <div className="mt-1 text-xs leading-5 text-zinc-500">
+              Activo hasta {trialEndsAtLabel}
+            </div>
+          ) : null}
         </div>
       </div>
 
