@@ -3,6 +3,10 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PRICING } from "@/lib/pricing/config";
+import {
+  parseProviderDate,
+  upsertPaidSubscription,
+} from "@/lib/payments/subscriptionPersistence";
 
 function mapMpStatus(
   status: string,
@@ -21,12 +25,23 @@ function mapMpStatus(
   }
 }
 
+function buildMpEventExternalId(topic: string, dataId: string) {
+  return `${topic}:${dataId}`;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => null);
 
-    const topic = body.type;
-    const dataId = body.data?.id;
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ ok: true });
+    }
+
+    const topic = typeof body.type === "string" ? body.type : "";
+    const dataId =
+      body.data?.id !== undefined && body.data?.id !== null
+        ? String(body.data.id)
+        : "";
 
     if (topic === "payment" && dataId) {
       const paymentRes = await fetch(
@@ -104,15 +119,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    if (!dataId) {
+    if (!topic || !dataId) {
       return NextResponse.json({ ok: true });
     }
+
+    const eventExternalId = buildMpEventExternalId(topic, dataId);
 
     const existingEvent = await prisma.paymentEvent.findUnique({
       where: {
         provider_externalId: {
           provider: "mp",
-          externalId: dataId,
+          externalId: eventExternalId,
         },
       },
     });
@@ -136,44 +153,57 @@ export async function POST(req: NextRequest) {
 
     const subscription = await mpRes.json();
 
-    const externalReference = subscription.external_reference as string;
-    if (!externalReference) return NextResponse.json({ ok: true });
+    const externalReference =
+      typeof subscription.external_reference === "string"
+        ? subscription.external_reference
+        : "";
+
+    if (!externalReference.startsWith("sub:")) {
+      return NextResponse.json({ ok: true });
+    }
 
     const parts = externalReference.split(":");
-    if (parts.length < 4) return NextResponse.json({ ok: true });
+    if (parts.length < 4) {
+      return NextResponse.json({ ok: true });
+    }
 
     const userId = parts[1];
     const plan = parts[2] as "PRO" | "BUSINESS";
 
-    const mappedStatus = mapMpStatus(subscription.status);
+    if (!userId || !["PRO", "BUSINESS"].includes(plan)) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const mappedStatus = mapMpStatus(String(subscription.status || ""));
+
+    const currentPeriodStart =
+      parseProviderDate(subscription.date_created) ||
+      parseProviderDate(subscription.last_modified);
+
+    const currentPeriodEnd =
+      parseProviderDate(subscription.next_payment_date) ||
+      parseProviderDate(subscription.auto_recurring?.end_date);
 
     await prisma.$transaction(async (tx) => {
       await tx.paymentEvent.create({
         data: {
           provider: "mp",
-          externalId: dataId,
+          externalId: eventExternalId,
           type: topic,
-          payload: body,
+          payload: {
+            webhook: body,
+            subscription,
+          },
         },
       });
 
-      await tx.subscription.upsert({
-        where: { userId },
-        update: {
-          plan,
-          status: mappedStatus,
-          currentPeriodStart: subscription.date_created
-            ? new Date(subscription.date_created)
-            : null,
-          currentPeriodEnd: subscription.next_payment_date
-            ? new Date(subscription.next_payment_date)
-            : null,
-        },
-        create: {
-          userId,
-          plan,
-          status: mappedStatus,
-        },
+      await upsertPaidSubscription(tx, {
+        userId,
+        plan,
+        status: mappedStatus,
+        source: "MP",
+        currentPeriodStart,
+        currentPeriodEnd,
       });
     });
 

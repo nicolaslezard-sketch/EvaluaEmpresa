@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createCompany, getActiveCompanyUsage } from "@/lib/services/companies";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { prisma } from "@/lib/prisma";
+import { getSubscriptionPresentation } from "@/lib/billing/getSubscriptionPresentation";
 
 /* =========================
    SERVER ACTION
@@ -46,27 +47,6 @@ async function createCompanyAction(formData: FormData) {
   }
 }
 
-function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
-  switch (plan) {
-    case "PRO":
-      return "Pro";
-    case "BUSINESS":
-      return "Business";
-    default:
-      return "Free";
-  }
-}
-
-function formatTrialDate(date?: Date | null) {
-  if (!date) return null;
-
-  return new Intl.DateTimeFormat("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
-
 /* =========================
    PAGE
 ========================= */
@@ -81,18 +61,17 @@ export default async function NewCompanyPage() {
   const subscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
     select: {
+      status: true,
       isTrial: true,
       trialEndsAt: true,
+      currentPeriodEnd: true,
     },
   });
 
-  const isTrialActive =
-    ent.plan === "PRO" &&
-    subscription?.isTrial === true &&
-    subscription?.trialEndsAt &&
-    subscription.trialEndsAt >= new Date();
-
-  const trialEndsAtLabel = formatTrialDate(subscription?.trialEndsAt);
+  const subscriptionPresentation = getSubscriptionPresentation({
+    plan: ent.plan,
+    subscription,
+  });
   const limitReached = usage.used >= usage.limit;
 
   return (
@@ -120,12 +99,11 @@ export default async function NewCompanyPage() {
           </div>
           <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
           <div className="mt-3 text-sm font-medium text-zinc-900">
-            {planLabel(ent.plan)}
-            {isTrialActive ? " · Trial" : ""}
+            {subscriptionPresentation.usagePlanLabel}
           </div>
-          {isTrialActive && trialEndsAtLabel ? (
+          {subscriptionPresentation.usagePlanSubLabel ? (
             <div className="mt-1 text-xs leading-5 text-zinc-500">
-              Activo hasta {trialEndsAtLabel}
+              {subscriptionPresentation.usagePlanSubLabel}
             </div>
           ) : null}
         </div>

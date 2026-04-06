@@ -5,27 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { UserMenu } from "@/components/app/UserMenu";
-
-function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
-  switch (plan) {
-    case "PRO":
-      return "Pro";
-    case "BUSINESS":
-      return "Business";
-    default:
-      return "Free";
-  }
-}
-
-function formatDate(date?: Date | null) {
-  if (!date) return null;
-
-  return new Intl.DateTimeFormat("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
+import { getSubscriptionPresentation } from "@/lib/billing/getSubscriptionPresentation";
 
 function Shell({
   children,
@@ -44,7 +24,6 @@ function Shell({
     <div className="min-h-screen bg-zinc-50">
       <div className="border-b border-zinc-200 bg-white">
         <div className="container-page flex h-16 items-center justify-between">
-          {/* LOGO → HOME */}
           <Link href="/" className="font-semibold text-zinc-900">
             EvaluaEmpresa
           </Link>
@@ -53,13 +32,14 @@ function Shell({
             <Link href="/companies/new" className="btn btn-primary">
               Nueva empresa
             </Link>
+
             <UserMenu
               email={user.email}
               name={user.name}
               image={user.image}
               planLabel={user.planLabel}
               planStatusLabel={user.planStatusLabel}
-            />{" "}
+            />
           </div>
         </div>
       </div>
@@ -83,25 +63,17 @@ export default async function AppLayout({
   const subscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
     select: {
+      status: true,
       isTrial: true,
       trialEndsAt: true,
+      currentPeriodEnd: true,
     },
   });
 
-  const isTrialActive =
-    entitlements.plan === "PRO" &&
-    subscription?.isTrial === true &&
-    subscription?.trialEndsAt &&
-    subscription.trialEndsAt >= new Date();
-
-  const trialEndsAtLabel = formatDate(subscription?.trialEndsAt);
-
-  const planStatusLabel =
-    isTrialActive && trialEndsAtLabel
-      ? `Trial activo hasta ${trialEndsAtLabel}`
-      : entitlements.plan === "FREE"
-        ? "Plan base activo"
-        : "Suscripción activa";
+  const subscriptionPresentation = getSubscriptionPresentation({
+    plan: entitlements.plan,
+    subscription,
+  });
 
   return (
     <Shell
@@ -109,8 +81,8 @@ export default async function AppLayout({
         email: session.user.email,
         name: session.user.name,
         image: session.user.image,
-        planLabel: planLabel(entitlements.plan),
-        planStatusLabel,
+        planLabel: subscriptionPresentation.planLabel,
+        planStatusLabel: subscriptionPresentation.planStatusLabel,
       }}
     >
       {children}

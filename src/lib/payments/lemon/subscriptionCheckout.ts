@@ -1,5 +1,5 @@
 import { PRICING, assertConfig } from "@/lib/pricing/config";
-import { lemonHeaders } from "@/lib/payments/lemon/client";
+import { lemonHeaders, LEMON_STORE_ID } from "@/lib/payments/lemon/client";
 
 export async function createLemonSubscriptionCheckout({
   userId,
@@ -11,12 +11,14 @@ export async function createLemonSubscriptionCheckout({
   period: "monthly";
 }) {
   const priceId = PRICING.INTL.subscription[plan][period].lemon_price_id;
+
   assertConfig(
     priceId,
     plan === "PRO"
       ? "LEMON_PRO_MONTHLY_PRICE_ID"
       : "LEMON_BUSINESS_MONTHLY_PRICE_ID",
   );
+  assertConfig(LEMON_STORE_ID, "LEMON_STORE_ID");
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
@@ -40,7 +42,7 @@ export async function createLemonSubscriptionCheckout({
           },
         },
         relationships: {
-          store: { data: { type: "stores", id: process.env.LEMON_STORE_ID } },
+          store: { data: { type: "stores", id: LEMON_STORE_ID } },
           variant: { data: { type: "variants", id: priceId } },
         },
       },
@@ -48,10 +50,15 @@ export async function createLemonSubscriptionCheckout({
   });
 
   const json = await res.json();
-  if (!res.ok)
-    throw new Error(json?.errors?.[0]?.detail || "Lemon checkout failed");
 
-  const url = json?.data?.attributes?.url as string;
-  if (!url) throw new Error("Lemon missing checkout url");
+  if (!res.ok) {
+    throw new Error(json?.errors?.[0]?.detail || "Lemon checkout failed");
+  }
+
+  const url = json?.data?.attributes?.url as string | undefined;
+  if (!url) {
+    throw new Error("Lemon missing checkout url");
+  }
+
   return url;
 }

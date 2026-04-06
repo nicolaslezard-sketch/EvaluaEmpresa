@@ -28,7 +28,7 @@ export async function getUserEntitlements(
 
   if (subscription.isTrial) {
     const trialExpired =
-      !subscription.trialEndsAt || subscription.trialEndsAt < now;
+      subscription.trialEndsAt === null || subscription.trialEndsAt < now;
 
     if (trialExpired) {
       await prisma.subscription.update({
@@ -45,7 +45,8 @@ export async function getUserEntitlements(
   }
 
   const paidExpired =
-    subscription.currentPeriodEnd && subscription.currentPeriodEnd < now;
+    subscription.currentPeriodEnd !== null &&
+    subscription.currentPeriodEnd < now;
 
   if (paidExpired) {
     await prisma.subscription.update({

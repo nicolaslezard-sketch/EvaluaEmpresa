@@ -16,10 +16,9 @@ export async function createMpSubscriptionCheckout({
     plan === "PRO" ? "MP_PRO_MONTHLY_PLAN_ID" : "MP_BUSINESS_MONTHLY_PLAN_ID",
   );
 
-  const backUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const webhookUrl = process.env.MP_SUBSCRIPTION_WEBHOOK_URL || ""; // opcional, podemos usar /api/webhooks/mp
-  // NOTA: MP usa preapproval “subscription” sobre un plan. Endpoint según API.
-  // Implementamos URL de init_point desde respuesta.
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const webhookUrl =
+    process.env.MP_SUBSCRIPTION_WEBHOOK_URL || `${baseUrl}/api/webhooks/mp`;
 
   const res = await fetch("https://api.mercadopago.com/preapproval", {
     method: "POST",
@@ -28,18 +27,22 @@ export async function createMpSubscriptionCheckout({
       preapproval_plan_id: planId,
       reason: `EvaluaEmpresa ${plan} (monthly)`,
       external_reference: `sub:${userId}:${plan}:${period}`,
-      back_url: `${backUrl}/billing`,
+      back_url: `${baseUrl}/billing`,
       status: "pending",
-      auto_recurring: undefined,
-      notification_url: webhookUrl || undefined,
+      notification_url: webhookUrl,
     }),
   });
 
   const json = await res.json();
-  if (!res.ok) throw new Error(json?.message || "MP preapproval failed");
 
-  // MP suele devolver init_point
-  const initPoint = json.init_point as string;
-  if (!initPoint) throw new Error("MP missing init_point");
+  if (!res.ok) {
+    throw new Error(json?.message || "MP preapproval failed");
+  }
+
+  const initPoint = json.init_point as string | undefined;
+  if (!initPoint) {
+    throw new Error("MP missing init_point");
+  }
+
   return initPoint;
 }

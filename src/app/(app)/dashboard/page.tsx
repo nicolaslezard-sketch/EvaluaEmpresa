@@ -10,6 +10,7 @@ import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { getReviewStatus } from "@/lib/reviews/getReviewStatus";
 import { DashboardFilters } from "@/components/dashboard/DashboardFilters";
 import { relationshipImportanceLabel } from "@/lib/ui/relationshipImportance";
+import { getSubscriptionPresentation } from "@/lib/billing/getSubscriptionPresentation";
 
 type ReportCycleChange = {
   kind: "WORSENED" | "PERSISTING_RISK" | "IMPROVED";
@@ -77,16 +78,6 @@ function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
     default:
       return "Free";
   }
-}
-
-function formatTrialDate(date?: Date | null) {
-  if (!date) return null;
-
-  return new Intl.DateTimeFormat("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
 }
 
 function stalePriorityDate(value: Date | string | null | undefined) {
@@ -157,18 +148,17 @@ export default async function DashboardPage() {
   const subscription = await prisma.subscription.findUnique({
     where: { userId: session.user.id },
     select: {
+      status: true,
       isTrial: true,
       trialEndsAt: true,
+      currentPeriodEnd: true,
     },
   });
 
-  const isTrialActive =
-    ent.plan === "PRO" &&
-    subscription?.isTrial === true &&
-    subscription?.trialEndsAt &&
-    subscription.trialEndsAt >= new Date();
-
-  const trialEndsAtLabel = formatTrialDate(subscription?.trialEndsAt);
+  const subscriptionPresentation = getSubscriptionPresentation({
+    plan: ent.plan,
+    subscription,
+  });
 
   const [companies, activeCompanyCount] = await Promise.all([
     prisma.company.findMany({
@@ -337,12 +327,11 @@ export default async function DashboardPage() {
             </div>
             <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
             <div className="mt-3 text-sm font-medium text-zinc-900">
-              {planLabel(ent.plan)}
-              {isTrialActive ? " · Trial" : ""}
+              {subscriptionPresentation.usagePlanLabel}
             </div>
-            {isTrialActive && trialEndsAtLabel ? (
+            {subscriptionPresentation.usagePlanSubLabel ? (
               <div className="mt-1 text-xs leading-5 text-zinc-500">
-                Activo hasta {trialEndsAtLabel}
+                {subscriptionPresentation.usagePlanSubLabel}
               </div>
             ) : null}
           </div>
@@ -473,12 +462,11 @@ export default async function DashboardPage() {
           </div>
           <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
           <div className="mt-3 text-sm font-medium text-zinc-900">
-            {planLabel(ent.plan)}
-            {isTrialActive ? " · Trial" : ""}
+            {subscriptionPresentation.usagePlanLabel}
           </div>
-          {isTrialActive && trialEndsAtLabel ? (
+          {subscriptionPresentation.usagePlanSubLabel ? (
             <div className="mt-1 text-xs leading-5 text-zinc-500">
-              Activo hasta {trialEndsAtLabel}
+              {subscriptionPresentation.usagePlanSubLabel}
             </div>
           ) : null}
         </div>

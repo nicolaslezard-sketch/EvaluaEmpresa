@@ -63,7 +63,7 @@ export async function GET(
       provider: "lemon",
       type: "order_one_time",
       payload: {
-        path: ["data", "attributes", "custom", "evaluationId"],
+        path: ["meta", "custom_data", "evaluationId"],
         equals: evaluationId,
       },
     },

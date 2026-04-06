@@ -6,6 +6,7 @@ import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { StartTrialButton } from "@/components/billing/StartTrialButton";
 import { UpgradeButton } from "@/components/billing/UpgradeButton";
 import LegalCheckoutNotice from "@/components/legal/LegalCheckoutNotice";
+import { getSubscriptionPresentation } from "@/lib/billing/getSubscriptionPresentation";
 
 const recurringPlans = [
   {
@@ -163,16 +164,17 @@ export default async function BillingPage() {
 
   const hasUsedProTrial = Boolean(billingState?.proTrialUsedAt);
 
-  const activeTrialEndsAt =
-    billingState?.subscription?.status === "ACTIVE" &&
-    billingState?.subscription?.isTrial &&
-    billingState?.subscription?.trialEndsAt
-      ? new Intl.DateTimeFormat("es-AR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(billingState.subscription.trialEndsAt)
-      : null;
+  const subscriptionPresentation = getSubscriptionPresentation({
+    plan: currentPlan,
+    subscription: billingState?.subscription
+      ? {
+          status: billingState.subscription.status,
+          isTrial: billingState.subscription.isTrial,
+          trialEndsAt: billingState.subscription.trialEndsAt,
+          currentPeriodEnd: billingState.subscription.currentPeriodEnd,
+        }
+      : null,
+  });
 
   return (
     <div className="space-y-0">
@@ -294,11 +296,12 @@ export default async function BillingPage() {
             </p>
           </div>
 
-          {currentPlan === "PRO" && activeTrialEndsAt ? (
+          {subscriptionPresentation.isTrialActive &&
+          subscriptionPresentation.trialEndsAtLabel ? (
             <div className="mb-8 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-              Tu acceso Pro de prueba está activo hasta el {activeTrialEndsAt}.
-              Cuando termine el trial, la cuenta volverá a Free si no activás
-              una suscripción.
+              Tu acceso Pro de prueba está activo hasta el{" "}
+              {subscriptionPresentation.trialEndsAtLabel}. Cuando termine el
+              trial, la cuenta volverá a Free si no activás una suscripción.
             </div>
           ) : null}
 
