@@ -24,6 +24,8 @@ export async function upsertPaidSubscription(
     source,
     currentPeriodStart,
     currentPeriodEnd,
+    providerSubscriptionId,
+    providerCustomerId,
   }: {
     userId: string;
     plan: PaidSubscriptionPlan;
@@ -31,6 +33,8 @@ export async function upsertPaidSubscription(
     source: PaidSubscriptionSource;
     currentPeriodStart?: Date | null;
     currentPeriodEnd?: Date | null;
+    providerSubscriptionId?: string | null;
+    providerCustomerId?: string | null;
   },
 ) {
   return tx.subscription.upsert({
@@ -42,8 +46,12 @@ export async function upsertPaidSubscription(
       isTrial: false,
       currentPeriodStart: currentPeriodStart ?? null,
       currentPeriodEnd: currentPeriodEnd ?? null,
-      // trialStartedAt / trialEndsAt se conservan a propósito
-      // proTrialUsedAt vive en User y no se toca
+      providerSubscriptionId:
+        providerSubscriptionId !== undefined
+          ? providerSubscriptionId
+          : undefined,
+      providerCustomerId:
+        providerCustomerId !== undefined ? providerCustomerId : undefined,
     },
     create: {
       userId,
@@ -53,6 +61,8 @@ export async function upsertPaidSubscription(
       isTrial: false,
       currentPeriodStart: currentPeriodStart ?? null,
       currentPeriodEnd: currentPeriodEnd ?? null,
+      providerSubscriptionId: providerSubscriptionId ?? null,
+      providerCustomerId: providerCustomerId ?? null,
     },
   });
 }

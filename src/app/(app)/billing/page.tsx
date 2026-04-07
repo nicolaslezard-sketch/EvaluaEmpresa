@@ -7,6 +7,7 @@ import { StartTrialButton } from "@/components/billing/StartTrialButton";
 import { UpgradeButton } from "@/components/billing/UpgradeButton";
 import LegalCheckoutNotice from "@/components/legal/LegalCheckoutNotice";
 import { getSubscriptionPresentation } from "@/lib/billing/getSubscriptionPresentation";
+import { ReactivatePlanButton } from "@/components/billing/ReactivatePlanButton";
 
 const recurringPlans = [
   {
@@ -164,6 +165,16 @@ export default async function BillingPage() {
 
   const hasUsedProTrial = Boolean(billingState?.proTrialUsedAt);
 
+  const canReactivateSubscription =
+    billingState?.subscription?.status === "CANCELLED" &&
+    !billingState.subscription.isTrial &&
+    !!billingState.subscription.currentPeriodEnd &&
+    billingState.subscription.currentPeriodEnd >= new Date() &&
+    (currentPlan === "PRO" || currentPlan === "BUSINESS");
+
+  const reactivationPlan =
+    currentPlan === "PRO" || currentPlan === "BUSINESS" ? currentPlan : null;
+
   const subscriptionPresentation = getSubscriptionPresentation({
     plan: currentPlan,
     subscription: billingState?.subscription
@@ -302,6 +313,32 @@ export default async function BillingPage() {
               Tu acceso Pro de prueba está activo hasta el{" "}
               {subscriptionPresentation.trialEndsAtLabel}. Cuando termine el
               trial, la cuenta volverá a Free si no activás una suscripción.
+            </div>
+          ) : billingState?.subscription?.status === "CANCELLED" &&
+            billingState.subscription.currentPeriodEnd ? (
+            <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900">
+              <div>
+                La renovación de tu suscripción está cancelada. Vas a mantener
+                el acceso hasta el{" "}
+                {new Intl.DateTimeFormat("es-AR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                }).format(billingState.subscription.currentPeriodEnd)}
+                .
+              </div>
+
+              {canReactivateSubscription && reactivationPlan ? (
+                <div className="mt-4 max-w-xs">
+                  <ReactivatePlanButton
+                    plan={reactivationPlan}
+                    label={`Volver a activar ${
+                      reactivationPlan === "PRO" ? "Pro" : "Business"
+                    }`}
+                    className="w-full rounded-2xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  />
+                </div>
+              ) : null}
             </div>
           ) : null}
 

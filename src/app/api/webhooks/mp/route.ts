@@ -204,6 +204,14 @@ export async function POST(req: NextRequest) {
         source: "MP",
         currentPeriodStart,
         currentPeriodEnd,
+        providerSubscriptionId:
+          subscription.id !== undefined && subscription.id !== null
+            ? String(subscription.id)
+            : null,
+        providerCustomerId:
+          subscription.payer_id !== undefined && subscription.payer_id !== null
+            ? String(subscription.payer_id)
+            : null,
       });
     });
 

@@ -177,6 +177,15 @@ export async function POST(req: NextRequest) {
         source: "LEMON",
         currentPeriodStart,
         currentPeriodEnd,
+        providerSubscriptionId:
+          event?.data?.id !== undefined && event?.data?.id !== null
+            ? String(event.data.id)
+            : null,
+        providerCustomerId:
+          event?.data?.attributes?.customer_id !== undefined &&
+          event?.data?.attributes?.customer_id !== null
+            ? String(event.data.attributes.customer_id)
+            : null,
       });
     });
 

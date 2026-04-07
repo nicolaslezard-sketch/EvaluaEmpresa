@@ -69,17 +69,6 @@ function deltaStyles(delta: number | null) {
   return delta > 0 ? "text-emerald-600" : "text-red-600";
 }
 
-function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
-  switch (plan) {
-    case "PRO":
-      return "Pro";
-    case "BUSINESS":
-      return "Business";
-    default:
-      return "Free";
-  }
-}
-
 function stalePriorityDate(value: Date | string | null | undefined) {
   if (!value) return 0;
   return new Date(value).getTime();

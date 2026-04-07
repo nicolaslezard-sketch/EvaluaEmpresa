@@ -22,10 +22,6 @@ export async function getUserEntitlements(
     return resolveEntitlements("FREE");
   }
 
-  if (subscription.status !== "ACTIVE") {
-    return resolveEntitlements("FREE");
-  }
-
   if (subscription.isTrial) {
     const trialExpired =
       subscription.trialEndsAt === null || subscription.trialEndsAt < now;
@@ -44,11 +40,15 @@ export async function getUserEntitlements(
     return resolveEntitlements(subscription.plan);
   }
 
-  const paidExpired =
+  if (subscription.status === "EXPIRED") {
+    return resolveEntitlements("FREE");
+  }
+
+  const periodExpired =
     subscription.currentPeriodEnd !== null &&
     subscription.currentPeriodEnd < now;
 
-  if (paidExpired) {
+  if (periodExpired) {
     await prisma.subscription.update({
       where: { userId },
       data: {
@@ -59,5 +59,13 @@ export async function getUserEntitlements(
     return resolveEntitlements("FREE");
   }
 
-  return resolveEntitlements(subscription.plan);
+  if (
+    subscription.status === "ACTIVE" ||
+    subscription.status === "PAUSED" ||
+    subscription.status === "CANCELLED"
+  ) {
+    return resolveEntitlements(subscription.plan);
+  }
+
+  return resolveEntitlements("FREE");
 }

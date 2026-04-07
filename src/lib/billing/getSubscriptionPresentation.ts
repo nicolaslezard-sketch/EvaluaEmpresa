@@ -55,6 +55,7 @@ export function getSubscriptionPresentation({
     subscription.trialEndsAt >= now;
 
   const trialEndsAtLabel = formatDate(subscription?.trialEndsAt);
+  const currentPeriodEndLabel = formatDate(subscription?.currentPeriodEnd);
 
   if (isTrialActive) {
     return {
@@ -71,12 +72,40 @@ export function getSubscriptionPresentation({
     };
   }
 
+  if (
+    subscription?.status === "CANCELLED" &&
+    plan !== "FREE" &&
+    currentPeriodEndLabel
+  ) {
+    return {
+      planLabel: basePlanLabel(plan),
+      planStatusLabel: `Cancelada. Acceso hasta ${currentPeriodEndLabel}`,
+      usagePlanLabel: `${basePlanLabel(plan)} · Cancelada`,
+      usagePlanSubLabel: `Acceso disponible hasta ${currentPeriodEndLabel}`,
+      isTrialActive: false,
+      trialEndsAtLabel: null,
+    };
+  }
+
   if (plan === "FREE") {
     return {
       planLabel: "Free",
       planStatusLabel: "Plan base activo",
       usagePlanLabel: "Free",
       usagePlanSubLabel: null,
+      isTrialActive: false,
+      trialEndsAtLabel: null,
+    };
+  }
+
+  if (subscription?.status === "PAUSED") {
+    return {
+      planLabel: basePlanLabel(plan),
+      planStatusLabel: "Cobro pausado",
+      usagePlanLabel: `${basePlanLabel(plan)} · En pausa`,
+      usagePlanSubLabel: currentPeriodEndLabel
+        ? `Acceso disponible hasta ${currentPeriodEndLabel}`
+        : null,
       isTrialActive: false,
       trialEndsAtLabel: null,
     };

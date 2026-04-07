@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
 type Props = {
@@ -30,6 +31,7 @@ export function UserMenu({
 }: Props) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
@@ -49,6 +51,26 @@ export function UserMenu({
       document.removeEventListener("keydown", onEscape);
     };
   }, []);
+
+  function itemClass(href: string, primary = false) {
+    const active = pathname === href;
+
+    if (primary) {
+      return [
+        "block rounded-2xl px-4 py-3 text-sm font-medium transition",
+        active
+          ? "bg-zinc-100 text-zinc-900"
+          : "bg-zinc-50 text-zinc-900 hover:bg-zinc-100",
+      ].join(" ");
+    }
+
+    return [
+      "mt-1 block rounded-2xl px-4 py-3 text-sm transition",
+      active
+        ? "bg-zinc-100 font-medium text-zinc-900"
+        : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900",
+    ].join(" ");
+  }
 
   return (
     <div className="relative" ref={ref}>
@@ -141,7 +163,7 @@ export function UserMenu({
           <div className="p-2">
             <Link
               href="/dashboard"
-              className="block rounded-2xl bg-zinc-50 px-4 py-3 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
+              className={itemClass("/dashboard", true)}
               onClick={() => setOpen(false)}
             >
               Monitoreo
@@ -149,10 +171,18 @@ export function UserMenu({
 
             <Link
               href="/companies/new"
-              className="mt-1 block rounded-2xl px-4 py-3 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-zinc-900"
+              className={itemClass("/companies/new")}
               onClick={() => setOpen(false)}
             >
               Nueva empresa
+            </Link>
+
+            <Link
+              href="/account"
+              className={itemClass("/account")}
+              onClick={() => setOpen(false)}
+            >
+              Cuenta
             </Link>
 
             <div className="mt-2 border-t border-zinc-100 pt-2">
