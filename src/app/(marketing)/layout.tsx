@@ -1,58 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-
-const navItems = [
-  { href: "/#metodologia", label: "Metodología" },
-  { href: "/informe-modelo", label: "Informe modelo" },
-  { href: "/pricing", label: "Planes" },
-  { href: "/#faq", label: "FAQ" },
-];
+import { MainHeader } from "@/components/site/MainHeader";
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-white text-zinc-900">
-      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/90 backdrop-blur">
-        <div className="container-page flex h-16 items-center justify-between gap-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-semibold text-white">
-              EE
-            </div>
-            <div>
-              <p className="text-sm font-semibold leading-none text-zinc-900">
-                EvaluaEmpresa
-              </p>
-              <p className="mt-1 text-[11px] leading-none text-zinc-500">
-                Evaluación estructurada de terceros
-              </p>
-            </div>
-          </Link>
-
-          <nav className="hidden items-center gap-8 lg:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm text-zinc-600 transition hover:text-zinc-900"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden text-sm font-medium text-zinc-600 transition hover:text-zinc-900 sm:inline-flex"
-            >
-              Ingresar
-            </Link>
-
-            <Link href="/login" className="btn btn-primary">
-              Probar ahora
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MainHeader mode="marketing" />
 
       <main>{children}</main>
 
