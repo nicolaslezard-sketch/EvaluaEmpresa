@@ -279,7 +279,7 @@ export default async function DashboardPage() {
       reviewTone: item.reviewStatus.tone,
       executiveCategory: item.latest?.executiveCategory ?? null,
       overallScore: item.latest?.overallScore ?? null,
-      deltaOverall: item.latest?.deltaOverall ?? null,
+      scoreDelta: item.latest?.deltaOverall ?? null,
       updatedAtLabel: item.latest
         ? new Date(item.latest.createdAt).toLocaleDateString()
         : null,
