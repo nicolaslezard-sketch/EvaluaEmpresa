@@ -10,6 +10,7 @@ import type {
 } from "@/lib/types/evaluationForm";
 import {
   FIELD_GUIDANCE,
+  FIELD_INPUT_HELPERS,
   FIELD_METADATA,
   FIELDS_BY_PILLAR,
   PILLAR_LABELS,
@@ -605,6 +606,14 @@ export default function EvaluationEditor(props: {
             />
           </div>
 
+          {props.deltas.overall === null ? (
+            <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+              Esta es la primera evaluación finalizada de esta empresa. Las
+              variaciones entre ciclos se mostrarán a partir del segundo ciclo
+              finalizado.
+            </div>
+          ) : null}
+
           <div className="mt-6 h-2 w-full rounded-full bg-zinc-100">
             <div
               className="h-2 rounded-full bg-zinc-900 transition-all"
@@ -1186,16 +1195,15 @@ function PillarFields({
         const previousValueLabel = fieldLevelLabel(previous?.value);
         const previousRationale = previous?.rationale?.trim();
         const previousEvidence = previous?.evidenceNote?.trim();
+        const inputHelpers = FIELD_INPUT_HELPERS[key];
 
         const hasChangedFromPrevious =
           typeof selectedValue === "number" &&
           typeof previous?.value === "number" &&
           selectedValue !== previous.value;
 
-        const showRationale = requiresRationale(
-          selectedValue,
-          meta.requiresRationaleAtOrBelow,
-        );
+        const showRationale =
+          typeof selectedValue === "number" && selectedValue <= 60;
 
         const showConditional = requiresRationale(
           selectedValue,
@@ -1387,8 +1395,11 @@ function PillarFields({
               <div className="mt-5 space-y-4 rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-sky-900">
-                    ¿Qué situación explica esta evaluación?
+                    {selectedValue === 60
+                      ? "Observación breve"
+                      : "¿Qué situación explica esta evaluación?"}
                     {rationaleRequired ? " *" : ""}
+                    {selectedValue === 60 ? " (opcional)" : ""}
                   </label>
 
                   <textarea
@@ -1403,14 +1414,21 @@ function PillarFields({
                     className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                     placeholder={
                       selectedValue === 60
-                        ? "Describí la observación principal."
+                        ? inputHelpers.observationPlaceholder
                         : selectedValue === 40
-                          ? "Describí la debilidad detectada."
-                          : "Describí la situación crítica detectada."
+                          ? inputHelpers.weaknessPlaceholder
+                          : inputHelpers.criticalPlaceholder
                     }
                   />
-                  <div className="mt-1 text-right text-xs text-zinc-500">
-                    {(current?.rationale ?? "").length}/280
+                  <div className="mt-1 flex items-center justify-between gap-3">
+                    <div className="text-xs text-zinc-500">
+                      {selectedValue === 60
+                        ? "Podés dejar una observación breve si querés registrar un seguimiento menor."
+                        : "Explicá la situación detectada en forma concreta y breve."}
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      {(current?.rationale ?? "").length}/280
+                    </div>
                   </div>
                 </div>
 
@@ -1431,7 +1449,7 @@ function PillarFields({
                       }
                       maxLength={140}
                       className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                      placeholder="Ej: atraso reciente, contrato pendiente, caída de ventas o incidente operativo."
+                      placeholder={inputHelpers.evidencePlaceholder}
                     />
                     <div className="mt-1 text-right text-xs text-zinc-500">
                       {(current?.evidenceNote ?? "").length}/140

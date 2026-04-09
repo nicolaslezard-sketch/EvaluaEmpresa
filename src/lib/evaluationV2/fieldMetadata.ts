@@ -17,6 +17,8 @@ export type FieldMetadata = {
   label: string;
   summary: string;
   helpText: string;
+  observationPlaceholder?: string;
+  evidencePlaceholder?: string;
   isCore: boolean;
   requiresRationaleAtOrBelow: EvaluationFieldValue;
   requiresConditionalAtOrBelow: EvaluationFieldValue;
@@ -1160,6 +1162,38 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     ],
   },
 };
+
+export const FIELD_INPUT_HELPERS: Record<
+  FieldKey,
+  {
+    observationPlaceholder: string;
+    weaknessPlaceholder: string;
+    criticalPlaceholder: string;
+    evidencePlaceholder: string;
+  }
+> = Object.fromEntries(
+  Object.entries(FIELD_METADATA).map(([key, meta]) => [
+    key,
+    {
+      observationPlaceholder:
+        meta.observationPlaceholder ??
+        `Describí la observación principal sobre ${meta.label.toLowerCase()}.`,
+      weaknessPlaceholder: `Describí la debilidad detectada en ${meta.label.toLowerCase()}.`,
+      criticalPlaceholder: `Describí la situación crítica detectada en ${meta.label.toLowerCase()}.`,
+      evidencePlaceholder:
+        meta.evidencePlaceholder ??
+        `Ej: dato, señal o hecho puntual que explique la evaluación de ${meta.label.toLowerCase()}.`,
+    },
+  ]),
+) as Record<
+  FieldKey,
+  {
+    observationPlaceholder: string;
+    weaknessPlaceholder: string;
+    criticalPlaceholder: string;
+    evidencePlaceholder: string;
+  }
+>;
 
 export const FIELD_GUIDANCE: Record<FieldKey, FieldGuidance> = {
   liquidity: {
