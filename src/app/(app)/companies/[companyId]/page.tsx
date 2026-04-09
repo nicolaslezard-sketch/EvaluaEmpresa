@@ -13,6 +13,7 @@ import {
   RELATIONSHIP_IMPORTANCE_LABEL,
   relationshipImportanceLabel,
 } from "@/lib/ui/relationshipImportance";
+import { DeleteCompanyCard } from "@/components/app/DeleteCompanyCard";
 
 /* =========================
    TYPES
@@ -587,6 +588,7 @@ export default async function CompanyPage({
               </div>
             </div>
           </div>
+
           <div className="flex flex-wrap gap-3">
             <Link
               href={actionCard.primaryAction.href}
@@ -990,6 +992,12 @@ export default async function CompanyPage({
             </a>
           </div>
         )}
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-lg font-medium text-zinc-900">Zona sensible</h2>
+
+        <DeleteCompanyCard companyId={data.id} companyName={data.name} />
       </div>
     </div>
   );

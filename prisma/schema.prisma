@@ -62,21 +62,21 @@ model PaymentEvent {
 }
 
 model Subscription {
-  id                 String             @id @default(cuid())
-  plan               SubscriptionPlan   @default(FREE)
-  status             SubscriptionStatus @default(ACTIVE)
-  source             SubscriptionSource @default(MANUAL)
-  isTrial            Boolean            @default(false)
-  trialStartedAt     DateTime?
-  trialEndsAt        DateTime?
-  currentPeriodStart DateTime?
-  currentPeriodEnd   DateTime?
+  id                     String             @id @default(cuid())
+  plan                   SubscriptionPlan   @default(FREE)
+  status                 SubscriptionStatus @default(ACTIVE)
+  source                 SubscriptionSource @default(MANUAL)
+  isTrial                Boolean            @default(false)
+  trialStartedAt         DateTime?
+  trialEndsAt            DateTime?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
   providerSubscriptionId String?
   providerCustomerId     String?
-  userId             String             @unique
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                 String             @unique
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([plan])
   @@index([status])
@@ -85,21 +85,23 @@ model Subscription {
 }
 
 model Company {
-  id           String           @id @default(cuid())
-  name         String
-  relationType String
-  sector       String?
-  size         String?
-  criticality  CriticalityLevel @default(MEDIUM)
-  description  String?
-  status       CompanyStatus    @default(ACTIVE)
-  ownerId      String
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  alerts       Alert[]
-  owner        User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  evaluations  Evaluation[]
+  id             String           @id @default(cuid())
+  name           String
+  normalizedName String
+  relationType   String
+  sector         String?
+  size           String?
+  criticality    CriticalityLevel @default(MEDIUM)
+  description    String?
+  status         CompanyStatus    @default(ACTIVE)
+  ownerId        String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  alerts         Alert[]
+  owner          User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  evaluations    Evaluation[]
 
+  @@unique([ownerId, normalizedName])
   @@index([ownerId])
   @@index([status])
 }

@@ -1,16 +1,27 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { createCompany, getActiveCompanyUsage } from "@/lib/services/companies";
+import {
+  getActiveCompanyUsage,
+  createCompany,
+  COMPANY_DESCRIPTION_MAX_LENGTH,
+} from "@/lib/services/companies";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 import { prisma } from "@/lib/prisma";
 import { getSubscriptionPresentation } from "@/lib/billing/getSubscriptionPresentation";
+import {
+  CreateCompanyForm,
+  type CreateCompanyFormState,
+} from "@/components/app/CreateCompanyForm";
 
 /* =========================
    SERVER ACTION
 ========================= */
 
-async function createCompanyAction(formData: FormData) {
+async function createCompanyAction(
+  _prevState: CreateCompanyFormState,
+  formData: FormData,
+): Promise<CreateCompanyFormState> {
   "use server";
 
   const session = await getServerSession(authOptions);
@@ -18,15 +29,11 @@ async function createCompanyAction(formData: FormData) {
     redirect("/login");
   }
 
-  const name = formData.get("name") as string;
-  const relationType = formData.get("relationType") as string;
-  const sector = formData.get("sector") as string | null;
-  const size = formData.get("size") as string | null;
-  const description = formData.get("description") as string | null;
-
-  if (!name || !relationType) {
-    throw new Error("Campos obligatorios faltantes.");
-  }
+  const name = String(formData.get("name") ?? "");
+  const relationType = String(formData.get("relationType") ?? "");
+  const sector = String(formData.get("sector") ?? "");
+  const size = String(formData.get("size") ?? "");
+  const description = String(formData.get("description") ?? "");
 
   try {
     const company = await createCompany({
@@ -40,10 +47,67 @@ async function createCompanyAction(formData: FormData) {
 
     redirect(`/companies/${company.id}/evaluations/new`);
   } catch (err) {
-    if (err instanceof Error && err.message === "PLAN_LIMIT_COMPANIES") {
-      redirect("/billing");
+    if (!(err instanceof Error)) {
+      return {
+        formError: "Ocurrió un error inesperado al crear la empresa.",
+        fieldErrors: {},
+      };
     }
-    throw err;
+
+    switch (err.message) {
+      case "INVALID_COMPANY_NAME":
+        return {
+          formError: null,
+          fieldErrors: {
+            name: "Ingresá un nombre válido.",
+          },
+        };
+
+      case "INVALID_RELATION_TYPE":
+        return {
+          formError: null,
+          fieldErrors: {
+            relationType: "Seleccioná un tipo de relación.",
+          },
+        };
+
+      case "COMPANY_DESCRIPTION_TOO_LONG":
+        return {
+          formError: null,
+          fieldErrors: {
+            description: `La descripción no puede superar ${COMPANY_DESCRIPTION_MAX_LENGTH} caracteres.`,
+          },
+        };
+
+      case "PLAN_LIMIT_COMPANIES":
+        return {
+          formError:
+            "Alcanzaste el límite de empresas activas de tu plan. Para crear una nueva, necesitás actualizarlo o liberar una empresa.",
+          fieldErrors: {},
+        };
+
+      case "COMPANY_NAME_ALREADY_EXISTS":
+        return {
+          formError:
+            "Ya tenés una empresa con ese nombre. Revisá mayúsculas, minúsculas y espacios: para el sistema ya existe.",
+          fieldErrors: {
+            name: "Ese nombre ya está en uso dentro de tu cuenta.",
+          },
+        };
+
+      case "COMPANY_WRITE_CONFLICT":
+        return {
+          formError:
+            "Se detectó un conflicto al crear la empresa. Probá nuevamente.",
+          fieldErrors: {},
+        };
+
+      default:
+        return {
+          formError: "No se pudo crear la empresa.",
+          fieldErrors: {},
+        };
+    }
   }
 }
 
@@ -72,6 +136,7 @@ export default async function NewCompanyPage() {
     plan: ent.plan,
     subscription,
   });
+
   const limitReached = usage.used >= usage.limit;
 
   return (
@@ -130,89 +195,11 @@ export default async function NewCompanyPage() {
         </p>
       </div>
 
-      <form
+      <CreateCompanyForm
         action={createCompanyAction}
-        className="space-y-6 rounded-2xl border bg-white p-8 shadow-sm"
-      >
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Nombre de la empresa *
-          </label>
-          <input
-            name="name"
-            required
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
-            placeholder="Ej: Constructora Delta SA"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Tipo de relación *
-          </label>
-          <select
-            name="relationType"
-            required
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-          >
-            <option value="">Seleccionar</option>
-            <option value="CLIENTE">Cliente</option>
-            <option value="PROVEEDOR">Proveedor</option>
-            <option value="SOCIO">Socio</option>
-            <option value="OBJETIVO_ADQUISICION">
-              Objetivo de adquisición
-            </option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Sector
-          </label>
-          <input
-            name="sector"
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
-            placeholder="Ej: Construcción, logística, software..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Tamaño
-          </label>
-          <select
-            name="size"
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
-          >
-            <option value="">Seleccionar</option>
-            <option value="MICRO">Micro</option>
-            <option value="PEQUENA">Pequeña</option>
-            <option value="MEDIANA">Mediana</option>
-            <option value="GRANDE">Grande</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-zinc-700">
-            Descripción
-          </label>
-          <textarea
-            name="description"
-            rows={4}
-            className="mt-2 w-full rounded-lg border px-4 py-2 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"
-            placeholder="Contexto breve para identificar mejor a la empresa."
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-3 pt-2">
-          <button type="submit" className="btn btn-primary">
-            Crear empresa
-          </button>
-          <a href="/dashboard" className="btn btn-secondary">
-            Volver
-          </a>
-        </div>
-      </form>
+        descriptionMaxLength={COMPANY_DESCRIPTION_MAX_LENGTH}
+        disabled={limitReached}
+      />
     </div>
   );
 }
