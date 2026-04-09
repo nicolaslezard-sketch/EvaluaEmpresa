@@ -2,9 +2,9 @@ import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-zinc-200 bg-white">
+    <footer className="border-t border-zinc-200 bg-zinc-50">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-md">
             <p className="text-sm font-semibold tracking-tight text-zinc-900">
               EvaluaEmpresa
@@ -23,15 +23,15 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 text-sm">
-            <div className="grid gap-3">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 text-sm">
               <p className="font-medium text-zinc-900">Producto</p>
 
               <Link
                 href="/#metodologia"
                 className="text-zinc-600 transition hover:text-zinc-900"
               >
-                Cómo funciona
+                Metodología
               </Link>
 
               <Link
@@ -45,7 +45,7 @@ export function SiteFooter() {
                 href="/pricing"
                 className="text-zinc-600 transition hover:text-zinc-900"
               >
-                Pricing
+                Planes
               </Link>
 
               <Link
@@ -56,22 +56,8 @@ export function SiteFooter() {
               </Link>
             </div>
 
-            <div className="grid gap-3">
-              <p className="font-medium text-zinc-900">Legales y contacto</p>
-
-              <a
-                href="mailto:contacto@evaluaempresa.com"
-                className="text-zinc-600 transition hover:text-zinc-900"
-              >
-                contacto@evaluaempresa.com
-              </a>
-
-              <a
-                href="mailto:privacidad@evaluaempresa.com"
-                className="text-zinc-600 transition hover:text-zinc-900"
-              >
-                privacidad@evaluaempresa.com
-              </a>
+            <div className="grid gap-3 text-sm">
+              <p className="font-medium text-zinc-900">Legales</p>
 
               <Link
                 href="/terminos"
@@ -93,6 +79,24 @@ export function SiteFooter() {
               >
                 Botón de Arrepentimiento
               </Link>
+            </div>
+
+            <div className="grid gap-3 text-sm">
+              <p className="font-medium text-zinc-900">Contacto</p>
+
+              <a
+                href="mailto:contacto@evaluaempresa.com"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                contacto@evaluaempresa.com
+              </a>
+
+              <a
+                href="mailto:privacidad@evaluaempresa.com"
+                className="text-zinc-600 transition hover:text-zinc-900"
+              >
+                privacidad@evaluaempresa.com
+              </a>
             </div>
           </div>
         </div>
