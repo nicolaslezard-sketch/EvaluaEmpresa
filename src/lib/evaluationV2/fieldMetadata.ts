@@ -98,8 +98,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   liquidity: {
     observationPlaceholder:
       "Describí la observación puntual sobre liquidez actual.",
-    evidencePlaceholder:
-      "Ej: pagos con demora, necesidad de adelanto, uso más frecuente de descubierto o caja ajustada.",
+    evidencePlaceholder: "Ej: mora, adelanto, descubierto.",
     key: "liquidity",
     pillar: "financial",
     label: "Liquidez actual",
@@ -161,8 +160,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   debtLevel: {
     observationPlaceholder:
       "Describí la observación principal sobre el nivel de endeudamiento.",
-    evidencePlaceholder:
-      "Ej: cuotas exigentes, refinanciación reciente, aumento de deuda o costo financiero elevado.",
+    evidencePlaceholder: "Ej: cuotas altas, refinanciación, mora.",
     key: "debtLevel",
     pillar: "financial",
     label: "Nivel de endeudamiento",
@@ -218,7 +216,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación principal sobre estabilidad de ingresos.",
     evidencePlaceholder:
-      "Ej: caída de ingresos en los últimos meses, cobros irregulares o concentración temporal de facturación.",
+      "Ej: caída de ventas, cobros irregulares, estacionalidad.",
     key: "revenueStability",
     pillar: "financial",
     label: "Estabilidad de ingresos",
@@ -278,8 +276,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   externalDependency: {
     observationPlaceholder:
       "Describí la dependencia financiera externa observada.",
-    evidencePlaceholder:
-      "Ej: apoyo del grupo, crédito operativo indispensable, adelantos de clientes o aportes extraordinarios.",
+    evidencePlaceholder: "Ej: crédito puente, socio aportante, cliente ancla.",
     key: "externalDependency",
     pillar: "financial",
     label: "Dependencia financiera de terceros",
@@ -339,7 +336,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre concentración de clientes.",
     evidencePlaceholder:
-      "Ej: un cliente explica gran parte de la facturación, renovación crítica o cartera poco diversificada.",
+      "Ej: cliente dominante, pocas cuentas, renovación crítica.",
     key: "clientConcentration",
     pillar: "commercial",
     label: "Concentración de clientes",
@@ -399,7 +396,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación principal sobre posicionamiento competitivo.",
     evidencePlaceholder:
-      "Ej: presión por precio, pérdida de clientes, menor diferenciación o competencia más agresiva.",
+      "Ej: baja demanda, presión en precio, pérdida de clientes.",
     key: "competitivePosition",
     pillar: "commercial",
     label: "Posicionamiento competitivo",
@@ -453,8 +450,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   sectorDependency: {
     observationPlaceholder:
       "Describí la observación sobre dependencia sectorial.",
-    evidencePlaceholder:
-      "Ej: fuerte exposición a un sector puntual, caída del nicho o baja diversificación entre industrias.",
+    evidencePlaceholder: "Ej: sector en baja, nicho estrecho, alta exposición.",
     key: "sectorDependency",
     pillar: "commercial",
     label: "Dependencia sectorial",
@@ -509,7 +505,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre generación de nuevos contratos.",
     evidencePlaceholder:
-      "Ej: pipeline más débil, menos cierres recientes, dependencia de renovaciones o menor actividad comercial efectiva.",
+      "Ej: pipeline débil, pocas propuestas, caída comercial.",
     key: "contractGeneration",
     pillar: "commercial",
     label: "Generación de nuevos contratos",
@@ -563,7 +559,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre dependencia de persona clave.",
     evidencePlaceholder:
-      "Ej: una sola persona concentra operación, ventas o conocimiento técnico sin reemplazo claro.",
+      "Ej: una sola persona clave, sin backup, salida reciente.",
     key: "keyPersonDependency",
     pillar: "operational",
     label: "Dependencia de persona clave",
@@ -623,7 +619,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre estructura organizacional.",
     evidencePlaceholder:
-      "Ej: roles poco claros, responsables difusos, escalamiento confuso o procesos todavía informales.",
+      "Ej: roles difusos, responsables poco claros, desorden.",
     key: "structureFormalization",
     pillar: "operational",
     label: "Estructura organizacional formalizada",
@@ -677,8 +673,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   operationalRisk: {
     observationPlaceholder:
       "Describí la observación principal sobre el riesgo operativo identificado.",
-    evidencePlaceholder:
-      "Ej: atraso reciente, falla de proceso, incidente logístico, dependencia tecnológica o corte operativo puntual.",
+    evidencePlaceholder: "Ej: atraso, falla de proceso, incidente logístico.",
     key: "operationalRisk",
     pillar: "operational",
     label: "Riesgo operativo identificado",
@@ -740,8 +735,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   adaptability: {
     observationPlaceholder:
       "Describí la observación sobre capacidad de adaptación.",
-    evidencePlaceholder:
-      "Ej: demora para ajustarse, dificultad ante cambios del cliente o respuesta lenta a nuevos requerimientos.",
+    evidencePlaceholder: "Ej: demora, rigidez, cambio fallido.",
     key: "adaptability",
     pillar: "operational",
     label: "Capacidad de adaptación",
@@ -795,7 +789,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación principal sobre cumplimiento regulatorio.",
     evidencePlaceholder:
-      "Ej: licencia pendiente, certificado vencido, documentación incompleta u observación regulatoria reciente.",
+      "Ej: licencia vencida, certificado faltante, trámite pendiente.",
     key: "compliance",
     pillar: "legal",
     label: "Cumplimiento regulatorio",
@@ -854,8 +848,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   litigation: {
     observationPlaceholder:
       "Describí la observación sobre litigios o contingencias legales.",
-    evidencePlaceholder:
-      "Ej: reclamo abierto, litigio en curso, sanción reciente o contingencia con posible impacto.",
+    evidencePlaceholder: "Ej: reclamo activo, sanción, litigio recurrente.",
     key: "litigation",
     pillar: "legal",
     label: "Litigios activos",
@@ -910,7 +903,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre formalización contractual.",
     evidencePlaceholder:
-      "Ej: contrato vencido, anexo pendiente, cláusula faltante o marco contractual ambiguo.",
+      "Ej: contrato vencido, anexo faltante, cláusula ambigua.",
     key: "contractFormalization",
     pillar: "legal",
     label: "Formalización contractual",
@@ -966,7 +959,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre riesgo regulatorio futuro.",
     evidencePlaceholder:
-      "Ej: cambio normativo esperado, dependencia de licencia o preparación insuficiente ante una nueva exigencia.",
+      "Ej: cambio normativo, licencia crítica, baja preparación.",
     key: "regulatoryRisk",
     pillar: "legal",
     label: "Riesgo regulatorio futuro",
@@ -1020,7 +1013,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre claridad estratégica.",
     evidencePlaceholder:
-      "Ej: prioridades cambiantes, falta de foco, decisiones inconsistentes o rumbo poco claro.",
+      "Ej: rumbo difuso, prioridades cambiantes, ejecución errática.",
     key: "strategicClarity",
     pillar: "strategic",
     label: "Claridad estratégica",
@@ -1074,8 +1067,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
   macroDependency: {
     observationPlaceholder:
       "Describí la observación sobre dependencia macroeconómica.",
-    evidencePlaceholder:
-      "Ej: sensibilidad al dólar, inflación, tasas, consumo o importaciones que ya impacta la operación.",
+    evidencePlaceholder: "Ej: dólar, inflación, caída de consumo.",
     key: "macroDependency",
     pillar: "strategic",
     label: "Dependencia macroeconómica",
@@ -1131,7 +1123,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre inversión en mejora o innovación.",
     evidencePlaceholder:
-      "Ej: mejoras demoradas, poco presupuesto, atraso tecnológico o reacción solo cuando aparece un problema.",
+      "Ej: estancamiento, mejora reactiva, atraso tecnológico.",
     key: "innovationLevel",
     pillar: "strategic",
     label: "Inversión en mejora / innovación",
@@ -1186,7 +1178,7 @@ export const FIELD_METADATA: Record<FieldKey, FieldMetadata> = {
     observationPlaceholder:
       "Describí la observación sobre resiliencia ante shocks.",
     evidencePlaceholder:
-      "Ej: dificultades para recuperarse, dependencia alta, fragilidad operativa o mala respuesta a un evento reciente.",
+      "Ej: recuperación lenta, fragilidad alta, dependencia externa.",
     key: "resilience",
     pillar: "strategic",
     label: "Resiliencia ante shocks",
