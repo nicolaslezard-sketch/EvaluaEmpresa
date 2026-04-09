@@ -38,20 +38,6 @@ function getAssessmentValue(
   return field?.value;
 }
 
-function hasPreviousCycleData(fd: EvaluationFormData | null | undefined) {
-  if (!fd) return false;
-
-  return PILLAR_ORDER.some((pillar) => {
-    const pillarData = fd[pillar] as
-      | Record<string, FieldAssessment | undefined>
-      | undefined;
-
-    return FIELDS_BY_PILLAR[pillar].some((fieldKey) =>
-      isFiniteNum(getAssessmentValue(pillarData?.[fieldKey])),
-    );
-  });
-}
-
 function allComplete(fd: EvaluationFormData) {
   return PILLAR_ORDER.every(
     (pillar) =>
@@ -337,11 +323,6 @@ export default function EvaluationEditor(props: {
     [data],
   );
 
-  const showPreviousCycleBanner = useMemo(
-    () => hasPreviousCycleData(props.previousFormData ?? null),
-    [props.previousFormData],
-  );
-
   const canFinalize =
     allComplete(data) && conditionalValidationErrors.length === 0;
   const sectionStatuses = [
@@ -605,14 +586,6 @@ export default function EvaluationEditor(props: {
               prefix="Δ "
             />
           </div>
-
-          {props.deltas.overall === null ? (
-            <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-              Esta es la primera evaluación finalizada de esta empresa. Las
-              variaciones entre ciclos se mostrarán a partir del segundo ciclo
-              finalizado.
-            </div>
-          ) : null}
 
           <div className="mt-6 h-2 w-full rounded-full bg-zinc-100">
             <div
@@ -963,14 +936,12 @@ export default function EvaluationEditor(props: {
         </div>
       </div>
 
-      {showPreviousCycleBanner ? (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-          Esta revisión fue precargada con la información del último ciclo
-          finalizado. Confirmá si cada campo se mantiene igual o cambió, y
-          justificá toda observación, debilidad o criticidad con una señal
-          concreta.
-        </div>
-      ) : null}
+      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+        Esta revisión fue precargada con la información del último ciclo
+        finalizado. Confirmá si cada campo se mantiene igual o cambió, y
+        justificá toda observación, debilidad o criticidad con una señal
+        concreta.
+      </div>
 
       <div className="grid gap-4">
         {PILLAR_ORDER.map((pillar) => {
@@ -1195,15 +1166,16 @@ function PillarFields({
         const previousValueLabel = fieldLevelLabel(previous?.value);
         const previousRationale = previous?.rationale?.trim();
         const previousEvidence = previous?.evidenceNote?.trim();
-        const inputHelpers = FIELD_INPUT_HELPERS[key];
 
         const hasChangedFromPrevious =
           typeof selectedValue === "number" &&
           typeof previous?.value === "number" &&
           selectedValue !== previous.value;
 
-        const showRationale =
-          typeof selectedValue === "number" && selectedValue <= 60;
+        const showRationale = requiresRationale(
+          selectedValue,
+          meta.requiresRationaleAtOrBelow,
+        );
 
         const showConditional = requiresRationale(
           selectedValue,
@@ -1395,11 +1367,8 @@ function PillarFields({
               <div className="mt-5 space-y-4 rounded-2xl border border-sky-100 bg-sky-50/40 p-4">
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-sky-900">
-                    {selectedValue === 60
-                      ? "Observación breve"
-                      : "¿Qué situación explica esta evaluación?"}
+                    ¿Qué situación explica esta evaluación?
                     {rationaleRequired ? " *" : ""}
-                    {selectedValue === 60 ? " (opcional)" : ""}
                   </label>
 
                   <textarea
@@ -1414,21 +1383,14 @@ function PillarFields({
                     className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
                     placeholder={
                       selectedValue === 60
-                        ? inputHelpers.observationPlaceholder
+                        ? FIELD_INPUT_HELPERS[key].observationPlaceholder
                         : selectedValue === 40
-                          ? inputHelpers.weaknessPlaceholder
-                          : inputHelpers.criticalPlaceholder
+                          ? FIELD_INPUT_HELPERS[key].weaknessPlaceholder
+                          : FIELD_INPUT_HELPERS[key].criticalPlaceholder
                     }
                   />
-                  <div className="mt-1 flex items-center justify-between gap-3">
-                    <div className="text-xs text-zinc-500">
-                      {selectedValue === 60
-                        ? "Podés dejar una observación breve si querés registrar un seguimiento menor."
-                        : "Explicá la situación detectada en forma concreta y breve."}
-                    </div>
-                    <div className="text-xs text-zinc-500">
-                      {(current?.rationale ?? "").length}/280
-                    </div>
+                  <div className="mt-1 text-right text-xs text-zinc-500">
+                    {(current?.rationale ?? "").length}/280
                   </div>
                 </div>
 
@@ -1449,7 +1411,9 @@ function PillarFields({
                       }
                       maxLength={140}
                       className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                      placeholder={inputHelpers.evidencePlaceholder}
+                      placeholder={
+                        FIELD_INPUT_HELPERS[key].evidencePlaceholder
+                      }
                     />
                     <div className="mt-1 text-right text-xs text-zinc-500">
                       {(current?.evidenceNote ?? "").length}/140
