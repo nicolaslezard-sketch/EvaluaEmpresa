@@ -37,6 +37,20 @@ function getAssessmentValue(
   return field?.value;
 }
 
+function hasPreviousCycleData(fd: EvaluationFormData | null | undefined) {
+  if (!fd) return false;
+
+  return PILLAR_ORDER.some((pillar) => {
+    const pillarData = fd[pillar] as
+      | Record<string, FieldAssessment | undefined>
+      | undefined;
+
+    return FIELDS_BY_PILLAR[pillar].some((fieldKey) =>
+      isFiniteNum(getAssessmentValue(pillarData?.[fieldKey])),
+    );
+  });
+}
+
 function allComplete(fd: EvaluationFormData) {
   return PILLAR_ORDER.every(
     (pillar) =>
@@ -320,6 +334,11 @@ export default function EvaluationEditor(props: {
   const conditionalValidationErrors = useMemo(
     () => getConditionalValidationErrors(data),
     [data],
+  );
+
+  const showPreviousCycleBanner = useMemo(
+    () => hasPreviousCycleData(props.previousFormData ?? null),
+    [props.previousFormData],
   );
 
   const canFinalize =
@@ -935,12 +954,14 @@ export default function EvaluationEditor(props: {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-        Esta revisión fue precargada con la información del último ciclo
-        finalizado. Confirmá si cada campo se mantiene igual o cambió, y
-        justificá toda observación, debilidad o criticidad con una señal
-        concreta.
-      </div>
+      {showPreviousCycleBanner ? (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          Esta revisión fue precargada con la información del último ciclo
+          finalizado. Confirmá si cada campo se mantiene igual o cambió, y
+          justificá toda observación, debilidad o criticidad con una señal
+          concreta.
+        </div>
+      ) : null}
 
       <div className="grid gap-4">
         {PILLAR_ORDER.map((pillar) => {

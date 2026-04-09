@@ -100,7 +100,7 @@ export function DeleteCompanyCard({ companyId, companyName }: Props) {
       </div>
 
       {deleteModalOpen ? (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/55 px-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-zinc-950/55 px-4">
           <div className="w-full max-w-lg rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="text-lg font-semibold text-zinc-900">
               Confirmar eliminación de empresa

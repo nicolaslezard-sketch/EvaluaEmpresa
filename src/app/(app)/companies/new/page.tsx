@@ -35,6 +35,8 @@ async function createCompanyAction(
   const size = String(formData.get("size") ?? "");
   const description = String(formData.get("description") ?? "");
 
+  let companyId: string;
+
   try {
     const company = await createCompany({
       ownerId: session.user.id,
@@ -45,7 +47,7 @@ async function createCompanyAction(
       description,
     });
 
-    redirect(`/companies/${company.id}/evaluations/new`);
+    companyId = company.id;
   } catch (err) {
     if (!(err instanceof Error)) {
       return {
@@ -109,6 +111,8 @@ async function createCompanyAction(
         };
     }
   }
+
+  redirect(`/companies/${companyId}`);
 }
 
 /* =========================
