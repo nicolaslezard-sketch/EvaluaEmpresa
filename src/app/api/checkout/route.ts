@@ -9,6 +9,15 @@ import { getEvaluationAccess } from "@/lib/access/getEvaluationAccess";
 import { createMercadoPagoCheckout } from "@/lib/payments/mp";
 import { createLemonCheckout } from "@/lib/payments/lemon";
 import type { OneTimeEvaluationMetadata } from "@/lib/payments/mp";
+import type { Region } from "@/lib/pricing/config";
+
+function resolveRegion(req: NextRequest, requestedRegion: unknown): Region {
+  if (requestedRegion === "AR" || requestedRegion === "INTL") {
+    return requestedRegion;
+  }
+
+  return detectRegion(req);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     const kind = body.kind as "subscription" | "one_time";
-    const region = detectRegion(req);
+    const region = resolveRegion(req, body.region);
 
     if (kind === "subscription") {
       const plan = body.plan as "PRO" | "BUSINESS";
@@ -35,10 +44,18 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
       }
 
+      if (!session.user.email) {
+        return NextResponse.json(
+          { error: "User email is required for subscription checkout" },
+          { status: 400 },
+        );
+      }
+
       const checkoutUrl =
         region === "AR"
           ? await createMpSubscriptionCheckout({
               userId: session.user.id,
+              payerEmail: session.user.email,
               plan,
               period,
             })
