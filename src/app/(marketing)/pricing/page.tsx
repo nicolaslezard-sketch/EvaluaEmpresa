@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { PRICING } from "@/lib/pricing/config";
+import { useEffect, useState } from "react";
+import { PRICING, type Region } from "@/lib/pricing/config";
 
 function formatArs(amount: number) {
   return new Intl.NumberFormat("es-AR", {
@@ -18,15 +21,24 @@ function formatUsd(amount: number) {
   }).format(amount);
 }
 
-const arPro = formatArs(PRICING.AR.subscription.PRO.monthly.amount);
-const arBusiness = formatArs(PRICING.AR.subscription.BUSINESS.monthly.amount);
-const arOneTime = formatArs(PRICING.AR.oneTime.EVALUACION_UNICA.amount);
+function detectInitialRegion(): Region {
+  if (typeof window === "undefined") return "AR";
 
-const usdPro = formatUsd(PRICING.INTL.subscription.PRO.monthly.amount);
-const usdBusiness = formatUsd(
-  PRICING.INTL.subscription.BUSINESS.monthly.amount,
-);
-const usdOneTime = formatUsd(PRICING.INTL.oneTime.EVALUACION_UNICA.amount);
+  const saved = window.localStorage.getItem("ee_pricing_region");
+  if (saved === "AR" || saved === "INTL") {
+    return saved;
+  }
+
+  const language = navigator.language || "";
+  const timezone =
+    Intl.DateTimeFormat().resolvedOptions().timeZone?.toLowerCase() || "";
+
+  const isArgentinaLanguage = language.toLowerCase() === "es-ar";
+  const isArgentinaTimezone =
+    timezone.includes("argentina") || timezone.includes("buenos_aires");
+
+  return isArgentinaLanguage || isArgentinaTimezone ? "AR" : "INTL";
+}
 
 const plans = [
   {
@@ -40,9 +52,14 @@ const plans = [
       "Score general y categoría ejecutiva",
       "Ideal para conocer el sistema",
     ],
-    priceAr: "Gratis",
-    priceIntl: "Free",
-    billingNote: "Sin cargo",
+    priceByRegion: {
+      AR: "Gratis",
+      INTL: "Free",
+    },
+    billingNoteByRegion: {
+      AR: "Sin cargo",
+      INTL: "Free",
+    },
     ctaLabel: "Comenzar gratis",
     ctaHref: "/login",
   },
@@ -58,9 +75,14 @@ const plans = [
       "PDF ejecutivo",
       "Pago único",
     ],
-    priceAr: arOneTime,
-    priceIntl: usdOneTime,
-    billingNote: "Pago único",
+    priceByRegion: {
+      AR: formatArs(PRICING.AR.oneTime.EVALUACION_UNICA.amount),
+      INTL: formatUsd(PRICING.INTL.oneTime.EVALUACION_UNICA.amount),
+    },
+    billingNoteByRegion: {
+      AR: "Pago único",
+      INTL: "One-time",
+    },
     ctaLabel: "Empezar evaluación",
     ctaHref: "/login",
   },
@@ -77,9 +99,14 @@ const plans = [
       "PDF ejecutivo",
       "Tendencia histórica de hasta 3 ciclos",
     ],
-    priceAr: arPro,
-    priceIntl: usdPro,
-    billingNote: "por mes",
+    priceByRegion: {
+      AR: formatArs(PRICING.AR.subscription.PRO.monthly.amount),
+      INTL: formatUsd(PRICING.INTL.subscription.PRO.monthly.amount),
+    },
+    billingNoteByRegion: {
+      AR: "por mes",
+      INTL: "per month",
+    },
     ctaLabel: "Ver plan Pro",
     ctaHref: "/billing",
   },
@@ -95,13 +122,18 @@ const plans = [
       "Alertas persistidas activas",
       "Monitoreo más profundo de deterioros y riesgos no resueltos",
     ],
-    priceAr: arBusiness,
-    priceIntl: usdBusiness,
-    billingNote: "por mes",
+    priceByRegion: {
+      AR: formatArs(PRICING.AR.subscription.BUSINESS.monthly.amount),
+      INTL: formatUsd(PRICING.INTL.subscription.BUSINESS.monthly.amount),
+    },
+    billingNoteByRegion: {
+      AR: "por mes",
+      INTL: "per month",
+    },
     ctaLabel: "Ver plan Business",
     ctaHref: "/billing",
   },
-];
+] as const;
 
 const faqs = [
   {
@@ -137,11 +169,20 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  const [region, setRegion] = useState<Region>(() => detectInitialRegion());
+
+  useEffect(() => {
+    window.localStorage.setItem("ee_pricing_region", region);
+  }, [region]);
+
+  const regionLabel =
+    region === "AR" ? "Argentina (ARS)" : "Internacional (USD)";
+
   return (
     <div>
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
         <div className="container-page py-20">
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
               Planes y acceso
             </p>
@@ -156,6 +197,38 @@ export default function PricingPage() {
               puntual o trabajar con planes pensados para una práctica más
               continua y comparable.
             </p>
+
+            <div className="mt-8 inline-flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <div className="text-sm font-medium text-zinc-900">
+                Mostrando precios para {regionLabel}
+              </div>
+
+              <div className="inline-flex rounded-xl border border-zinc-200 bg-zinc-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => setRegion("AR")}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                    region === "AR"
+                      ? "bg-white text-zinc-900 shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-900"
+                  }`}
+                >
+                  Argentina (ARS)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRegion("INTL")}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                    region === "INTL"
+                      ? "bg-white text-zinc-900 shadow-sm"
+                      : "text-zinc-600 hover:text-zinc-900"
+                  }`}
+                >
+                  Internacional (USD)
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -235,16 +308,12 @@ export default function PricingPage() {
 
                     <div className="mt-5">
                       <div className="text-3xl font-semibold tracking-tight text-zinc-900">
-                        {plan.priceAr}
+                        {plan.priceByRegion[region]}
                       </div>
                       <div className="mt-1 text-sm text-zinc-500">
-                        Argentina · {plan.billingNote}
-                      </div>
-                      <div className="mt-3 text-lg font-medium text-zinc-700">
-                        {plan.priceIntl}
-                      </div>
-                      <div className="mt-1 text-sm text-zinc-500">
-                        Internacional · {plan.billingNote}
+                        {region === "AR"
+                          ? `Argentina · ${plan.billingNoteByRegion.AR}`
+                          : `Internacional · ${plan.billingNoteByRegion.INTL}`}
                       </div>
                     </div>
 
