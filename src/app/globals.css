@@ -37,7 +37,7 @@ body {
 
 /* ---------- App UI primitives ---------- */
 .container-page {
-  @apply mx-auto max-w-6xl px-6;
+  @apply mx-auto max-w-6xl px-4 sm:px-6;
 }
 
 .input {
@@ -54,7 +54,7 @@ body {
 }
 
 .btn {
-  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition;
+  @apply inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium transition;
   @apply focus:outline-none focus:ring-4 focus:ring-sky-100;
 }
 
