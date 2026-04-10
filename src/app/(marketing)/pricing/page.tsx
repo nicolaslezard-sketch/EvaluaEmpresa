@@ -86,12 +86,9 @@ const plans = [
       INTL: "One-time",
     },
     ctaLabel: "Empezar evaluación",
-    ctaHref: null,
+    ctaHref: "/login",
     tone: "single",
-    checkout: {
-      kind: "one_time" as const,
-      plan: "EVALUACION_UNICA" as const,
-    },
+    checkout: null,
   },
   {
     name: "Pro",
@@ -231,7 +228,10 @@ export default function PricingPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(plan.checkout),
+        body: JSON.stringify({
+          ...plan.checkout,
+          region,
+        }),
       });
 
       const data = await res.json();
