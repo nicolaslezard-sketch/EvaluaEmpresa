@@ -62,6 +62,7 @@ const plans = [
     ctaLabel: "Comenzar gratis",
     ctaHref: "/login",
     tone: "default",
+    checkout: null,
   },
   {
     name: "Evaluación única",
@@ -85,8 +86,12 @@ const plans = [
       INTL: "One-time",
     },
     ctaLabel: "Empezar evaluación",
-    ctaHref: "/login",
+    ctaHref: null,
     tone: "single",
+    checkout: {
+      kind: "one_time" as const,
+      plan: "EVALUACION_UNICA" as const,
+    },
   },
   {
     name: "Pro",
@@ -111,8 +116,13 @@ const plans = [
       INTL: "per month",
     },
     ctaLabel: "Elegir Pro",
-    ctaHref: "/login",
+    ctaHref: null,
     tone: "pro",
+    checkout: {
+      kind: "subscription" as const,
+      plan: "PRO" as const,
+      period: "monthly" as const,
+    },
   },
   {
     name: "Business",
@@ -136,8 +146,13 @@ const plans = [
       INTL: "per month",
     },
     ctaLabel: "Elegir Business",
-    ctaHref: "/login",
+    ctaHref: null,
     tone: "business",
+    checkout: {
+      kind: "subscription" as const,
+      plan: "BUSINESS" as const,
+      period: "monthly" as const,
+    },
   },
 ] as const;
 
@@ -204,6 +219,38 @@ export default function PricingPage() {
 
   const regionLabel =
     region === "AR" ? "Argentina (ARS)" : "Internacional (USD)";
+
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  async function handleCheckout(plan: (typeof plans)[number]) {
+    if (!plan.checkout) return;
+
+    try {
+      setLoadingPlan(plan.name);
+
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(plan.checkout),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Checkout failed");
+      }
+
+      if (!data?.checkoutUrl) {
+        throw new Error("Checkout URL missing");
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Checkout failed");
+    } finally {
+      setLoadingPlan(null);
+    }
+  }
 
   return (
     <div className="bg-white">
@@ -357,9 +404,25 @@ export default function PricingPage() {
                   </div>
 
                   <div className="mt-8 pt-2">
-                    <Link href={plan.ctaHref} className={buttonClass}>
-                      {plan.ctaLabel}
-                    </Link>
+                    {plan.checkout ? (
+                      <button
+                        type="button"
+                        onClick={() => handleCheckout(plan)}
+                        disabled={loadingPlan === plan.name}
+                        className={buttonClass}
+                      >
+                        {loadingPlan === plan.name
+                          ? "Redirigiendo..."
+                          : plan.ctaLabel}
+                      </button>
+                    ) : (
+                      <Link
+                        href={plan.ctaHref ?? "/login"}
+                        className={buttonClass}
+                      >
+                        {plan.ctaLabel}
+                      </Link>
+                    )}
                   </div>
                 </div>
               );
