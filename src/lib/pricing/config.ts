@@ -10,24 +10,24 @@ export const PRICING = {
     subscription: {
       PRO: {
         monthly: {
-          amount: 95000,
+          amount: 24900,
           mp_preapproval_plan_id: process.env.MP_PRO_MONTHLY_PLAN_ID || "",
           lemon_price_id: "", // no aplica
         },
       },
       BUSINESS: {
         monthly: {
-          amount: 210000,
+          amount: 54900,
           mp_preapproval_plan_id: process.env.MP_BUSINESS_MONTHLY_PLAN_ID || "",
-          lemon_price_id: "",
+          lemon_price_id: "", // no aplica
         },
       },
     },
     oneTime: {
       EVALUACION_UNICA: {
-        amount: 45000,
+        amount: 14900,
         mp_preference_sku: "mp_evaluacion_unica",
-        lemon_price_id: "",
+        lemon_price_id: "", // no aplica
       },
     },
   },
@@ -36,14 +36,14 @@ export const PRICING = {
     subscription: {
       PRO: {
         monthly: {
-          amount: 119,
+          amount: 19,
           mp_preapproval_plan_id: "",
           lemon_price_id: process.env.LEMON_PRO_MONTHLY_PRICE_ID || "",
         },
       },
       BUSINESS: {
         monthly: {
-          amount: 249,
+          amount: 49,
           mp_preapproval_plan_id: "",
           lemon_price_id: process.env.LEMON_BUSINESS_MONTHLY_PRICE_ID || "",
         },
@@ -51,7 +51,7 @@ export const PRICING = {
     },
     oneTime: {
       EVALUACION_UNICA: {
-        amount: 59,
+        amount: 9.99,
         mp_preference_sku: "",
         lemon_price_id: process.env.LEMON_EVALUACION_UNICA_PRICE_ID || "",
       },

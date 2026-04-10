@@ -1,4 +1,32 @@
 import Link from "next/link";
+import { PRICING } from "@/lib/pricing/config";
+
+function formatArs(amount: number) {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function formatUsd(amount: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+const arPro = formatArs(PRICING.AR.subscription.PRO.monthly.amount);
+const arBusiness = formatArs(PRICING.AR.subscription.BUSINESS.monthly.amount);
+const arOneTime = formatArs(PRICING.AR.oneTime.EVALUACION_UNICA.amount);
+
+const usdPro = formatUsd(PRICING.INTL.subscription.PRO.monthly.amount);
+const usdBusiness = formatUsd(
+  PRICING.INTL.subscription.BUSINESS.monthly.amount,
+);
+const usdOneTime = formatUsd(PRICING.INTL.oneTime.EVALUACION_UNICA.amount);
 
 const plans = [
   {
@@ -12,6 +40,9 @@ const plans = [
       "Score general y categoría ejecutiva",
       "Ideal para conocer el sistema",
     ],
+    priceAr: "Gratis",
+    priceIntl: "Free",
+    billingNote: "Sin cargo",
     ctaLabel: "Comenzar gratis",
     ctaHref: "/login",
   },
@@ -27,6 +58,9 @@ const plans = [
       "PDF ejecutivo",
       "Pago único",
     ],
+    priceAr: arOneTime,
+    priceIntl: usdOneTime,
+    billingNote: "Pago único",
     ctaLabel: "Empezar evaluación",
     ctaHref: "/login",
   },
@@ -43,6 +77,9 @@ const plans = [
       "PDF ejecutivo",
       "Tendencia histórica de hasta 3 ciclos",
     ],
+    priceAr: arPro,
+    priceIntl: usdPro,
+    billingNote: "por mes",
     ctaLabel: "Ver plan Pro",
     ctaHref: "/billing",
   },
@@ -58,6 +95,9 @@ const plans = [
       "Alertas persistidas activas",
       "Monitoreo más profundo de deterioros y riesgos no resueltos",
     ],
+    priceAr: arBusiness,
+    priceIntl: usdBusiness,
+    billingNote: "por mes",
     ctaLabel: "Ver plan Business",
     ctaHref: "/billing",
   },
@@ -99,7 +139,6 @@ const faqs = [
 export default function PricingPage() {
   return (
     <div>
-      {/* HERO */}
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
         <div className="container-page py-20">
           <div className="max-w-3xl">
@@ -121,7 +160,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* POSICIONAMIENTO */}
       <section className="bg-white py-16">
         <div className="container-page grid gap-6 md:grid-cols-3">
           <div className="card p-6">
@@ -158,7 +196,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* PRICING GRID */}
       <section className="border-y border-zinc-200 bg-zinc-50 py-20">
         <div className="container-page">
           <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-4">
@@ -174,7 +211,9 @@ export default function PricingPage() {
                   ? "rounded-3xl border border-amber-200 bg-white p-8 shadow-[0_12px_32px_rgba(245,158,11,0.08)]"
                   : isPro
                     ? "rounded-3xl border border-sky-200 bg-white p-8 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
-                    : "rounded-3xl border border-emerald-200 bg-white p-8 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
+                    : isBusiness
+                      ? "rounded-3xl border border-emerald-200 bg-white p-8 shadow-[0_12px_32px_rgba(16,185,129,0.08)]"
+                      : "rounded-3xl border border-zinc-200 bg-white p-8 shadow-[0_8px_24px_rgba(15,23,42,0.05)]";
 
               const nameClass = isFree
                 ? "text-sm font-medium text-zinc-900"
@@ -182,7 +221,9 @@ export default function PricingPage() {
                   ? "text-sm font-semibold text-amber-700"
                   : isPro
                     ? "text-sm font-semibold text-sky-900"
-                    : "text-sm font-semibold text-emerald-800";
+                    : isBusiness
+                      ? "text-sm font-semibold text-emerald-800"
+                      : "text-sm font-medium text-zinc-900";
 
               return (
                 <div
@@ -192,7 +233,22 @@ export default function PricingPage() {
                   <div>
                     <p className={nameClass}>{plan.name}</p>
 
-                    <p className="mt-4 text-2xl font-semibold leading-[1.35] tracking-tight text-zinc-900">
+                    <div className="mt-5">
+                      <div className="text-3xl font-semibold tracking-tight text-zinc-900">
+                        {plan.priceAr}
+                      </div>
+                      <div className="mt-1 text-sm text-zinc-500">
+                        Argentina · {plan.billingNote}
+                      </div>
+                      <div className="mt-3 text-lg font-medium text-zinc-700">
+                        {plan.priceIntl}
+                      </div>
+                      <div className="mt-1 text-sm text-zinc-500">
+                        Internacional · {plan.billingNote}
+                      </div>
+                    </div>
+
+                    <p className="mt-6 text-2xl font-semibold leading-[1.35] tracking-tight text-zinc-900">
                       {isFree
                         ? "Para explorar el producto"
                         : isSingle
@@ -203,60 +259,26 @@ export default function PricingPage() {
                     </p>
 
                     <p className="mt-4 text-base leading-7 text-zinc-600">
-                      {isFree
-                        ? "Conocé el flujo y completá una primera evaluación."
-                        : isSingle
-                          ? "Resultado completo sin compromiso mensual."
-                          : isPro
-                            ? "Más empresas, más evaluaciones y comparativa entre ciclos."
-                            : "Más capacidad, tendencia extendida y alertas para una operación más activa."}
+                      {plan.description}
                     </p>
 
-                    <ul className="mt-6 space-y-3 text-sm text-zinc-600">
-                      {plan.features.map((feature) => {
-                        const highlight =
-                          (isFree &&
-                            (feature.includes("Carga de empresa") ||
-                              feature.includes("Vista parcial"))) ||
-                          (isSingle &&
-                            (feature.includes("Resultado completo") ||
-                              feature.includes("PDF ejecutivo"))) ||
-                          (isPro &&
-                            (feature.includes("Acceso completo") ||
-                              feature.includes("Comparativa") ||
-                              feature.includes("Histórico"))) ||
-                          (isBusiness &&
-                            (feature.includes("Mayor capacidad") ||
-                              feature.includes("Más empresas") ||
-                              feature.includes("Alertas") ||
-                              feature.includes("Tendencia")));
-
-                        return (
-                          <li key={feature}>
-                            •{" "}
-                            <span
-                              className={
-                                highlight
-                                  ? "font-semibold text-zinc-900"
-                                  : "text-zinc-600"
-                              }
-                            >
-                              {feature}
-                            </span>
-                          </li>
-                        );
-                      })}
+                    <ul className="mt-6 space-y-3">
+                      {plan.features.map((feature) => (
+                        <li
+                          key={feature}
+                          className="flex items-start gap-3 text-sm leading-6 text-zinc-700"
+                        >
+                          <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-zinc-900" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
 
-                  <div className="mt-8">
+                  <div className="mt-8 pt-2">
                     <Link
                       href={plan.ctaHref}
-                      className={
-                        isPro || isSingle
-                          ? "btn btn-primary w-full"
-                          : "btn btn-secondary w-full"
-                      }
+                      className="btn btn-primary w-full"
                     >
                       {plan.ctaLabel}
                     </Link>
@@ -281,7 +303,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* COMPARACIÓN DE ESCENARIOS */}
       <section className="bg-white py-20">
         <div className="container-page">
           <div className="max-w-3xl">
@@ -333,7 +354,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="border-y border-zinc-200 bg-zinc-50 py-20">
         <div className="container-page">
           <div className="max-w-3xl">
@@ -360,7 +380,6 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
       <section className="bg-white py-20">
         <div className="container-page text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
