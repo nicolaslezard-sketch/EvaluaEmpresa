@@ -43,7 +43,6 @@ function detectInitialRegion(): Region {
 const plans = [
   {
     name: "Free",
-    headline: "Para conocer el flujo y probar una primera evaluación",
     description:
       "Ideal para entender cómo funciona la plataforma antes de pasar a un resultado completo o a un seguimiento recurrente.",
     features: [
@@ -65,7 +64,6 @@ const plans = [
   },
   {
     name: "Evaluación única",
-    headline: "Para obtener un resultado completo sin suscripción",
     description:
       "La mejor opción si necesitás resolver una evaluación puntual con salida ejecutiva y PDF, sin compromiso mensual.",
     features: [
@@ -88,7 +86,6 @@ const plans = [
   },
   {
     name: "Pro",
-    headline: "Para seguimiento completo de una cartera chica",
     description:
       "Pensado para quienes necesitan evaluar, comparar ciclos y sostener seguimiento recurrente sobre pocos terceros estratégicos.",
     features: [
@@ -112,7 +109,6 @@ const plans = [
   },
   {
     name: "Business",
-    headline: "Para monitoreo continuo de una cartera más amplia",
     description:
       "La opción para quienes necesitan más capacidad, más profundidad histórica y alertas persistidas para seguir riesgos no resueltos entre ciclos.",
     features: [
@@ -182,7 +178,7 @@ export default function PricingPage() {
     <div>
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
         <div className="container-page py-20">
-          <div className="max-w-4xl">
+          <div className="max-w-3xl">
             <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
               Planes y acceso
             </p>
@@ -197,38 +193,6 @@ export default function PricingPage() {
               puntual o trabajar con planes pensados para una práctica más
               continua y comparable.
             </p>
-
-            <div className="mt-8 inline-flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-              <div className="text-sm font-medium text-zinc-900">
-                Mostrando precios para {regionLabel}
-              </div>
-
-              <div className="inline-flex rounded-xl border border-zinc-200 bg-zinc-50 p-1">
-                <button
-                  type="button"
-                  onClick={() => setRegion("AR")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                    region === "AR"
-                      ? "bg-white text-zinc-900 shadow-sm"
-                      : "text-zinc-600 hover:text-zinc-900"
-                  }`}
-                >
-                  Argentina (ARS)
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setRegion("INTL")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                    region === "INTL"
-                      ? "bg-white text-zinc-900 shadow-sm"
-                      : "text-zinc-600 hover:text-zinc-900"
-                  }`}
-                >
-                  Internacional (USD)
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -269,8 +233,53 @@ export default function PricingPage() {
         </div>
       </section>
 
+      <section className="bg-white py-8">
+        <div className="container-page">
+          <div className="inline-flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+            <div className="text-sm font-medium text-zinc-900">
+              Mostrando precios para {regionLabel}
+            </div>
+
+            <div className="inline-flex rounded-xl border border-zinc-200 bg-zinc-50 p-1">
+              <button
+                type="button"
+                onClick={() => setRegion("AR")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  region === "AR"
+                    ? "bg-white text-zinc-900 shadow-sm"
+                    : "text-zinc-600 hover:text-zinc-900"
+                }`}
+              >
+                Argentina (ARS)
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRegion("INTL")}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  region === "INTL"
+                    ? "bg-white text-zinc-900 shadow-sm"
+                    : "text-zinc-600 hover:text-zinc-900"
+                }`}
+              >
+                Internacional (USD)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-zinc-200 bg-zinc-50 py-20">
         <div className="container-page">
+          <div className="mb-10 max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
+              Planes disponibles
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+              Elegí la modalidad que mejor encaje con tu forma de evaluar hoy
+            </h2>
+          </div>
+
           <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan) => {
               const isFree = plan.name === "Free";
