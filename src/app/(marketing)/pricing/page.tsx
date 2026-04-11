@@ -86,7 +86,7 @@ const plans = [
       INTL: "One-time",
     },
     ctaLabel: "Empezar evaluación",
-    ctaHref: "/login",
+    ctaHref: "/companies/new",
     tone: "single",
     checkout: null,
   },

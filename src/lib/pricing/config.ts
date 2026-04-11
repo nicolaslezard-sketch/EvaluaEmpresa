@@ -12,6 +12,7 @@ export const PRICING = {
         monthly: {
           amount: 24900,
           mp_preapproval_plan_id: process.env.MP_PRO_MONTHLY_PLAN_ID || "",
+          mp_checkout_url: process.env.MP_PRO_MONTHLY_CHECKOUT_URL || "",
           lemon_price_id: "", // no aplica
         },
       },
@@ -19,6 +20,7 @@ export const PRICING = {
         monthly: {
           amount: 54900,
           mp_preapproval_plan_id: process.env.MP_BUSINESS_MONTHLY_PLAN_ID || "",
+          mp_checkout_url: process.env.MP_BUSINESS_MONTHLY_CHECKOUT_URL || "",
           lemon_price_id: "", // no aplica
         },
       },
@@ -38,6 +40,7 @@ export const PRICING = {
         monthly: {
           amount: 19,
           mp_preapproval_plan_id: "",
+          mp_checkout_url: "",
           lemon_price_id: process.env.LEMON_PRO_MONTHLY_PRICE_ID || "",
         },
       },
@@ -45,6 +48,7 @@ export const PRICING = {
         monthly: {
           amount: 49,
           mp_preapproval_plan_id: "",
+          mp_checkout_url: "",
           lemon_price_id: process.env.LEMON_BUSINESS_MONTHLY_PRICE_ID || "",
         },
       },
