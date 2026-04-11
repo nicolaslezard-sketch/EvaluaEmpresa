@@ -1,84 +1,41 @@
 import Link from "next/link";
 
-const problems = [
-  {
-    title: "Evaluaciones dispersas",
-    description:
-      "Cuando cada revisión queda en planillas, mails o documentos sueltos, sostener criterio común se vuelve difícil.",
-  },
-  {
-    title: "Poca comparabilidad entre ciclos",
-    description:
-      "Sin una estructura estable, cuesta ver con claridad qué empeoró, qué mejoró y qué sigue igual.",
-  },
-  {
-    title: "Decisiones menos defendibles",
-    description:
-      "Si el resultado no termina en una salida ejecutiva consistente, justificar continuidad, revisión o escalamiento cuesta más.",
-  },
-];
-
 const outputs = [
   {
     title: "Score general",
     description:
-      "Una lectura rápida del nivel de exposición actual del tercero.",
+      "Un puntaje consolidado para entender rápidamente el nivel de exposición actual de cada tercero.",
   },
   {
     title: "Categoría ejecutiva",
     description:
-      "Una síntesis clara para comunicar prioridad y nivel de atención requerido.",
+      "Una síntesis clara del estado general para comunicar prioridad y nivel de atención requerido.",
   },
   {
     title: "Radar por 5 pilares",
     description:
-      "Visibilidad por dimensión para detectar dónde se concentra la fragilidad.",
+      "Visibilidad por dimensión para detectar con rapidez dónde se concentra el deterioro o la fragilidad.",
   },
   {
-    title: "Comparativa entre ciclos",
+    title: "Cambios entre ciclos",
     description:
-      "Cambios frente a evaluaciones anteriores para detectar deterioros o mejoras.",
+      "Comparativa contra evaluaciones anteriores para ver qué empeoró, qué mejoró y qué sigue igual.",
   },
   {
     title: "Hallazgos priorizados",
     description:
-      "Señales ordenadas por impacto para enfocar seguimiento en lo que más importa.",
+      "Señales relevantes ordenadas por impacto para no perder foco en lo que realmente requiere seguimiento.",
   },
   {
-    title: "Acción sugerida y PDF ejecutivo",
+    title: "Acción sugerida",
     description:
-      "Una salida concreta para compartir internamente y respaldar mejor cada decisión.",
-  },
-];
-
-const useCases = [
-  {
-    title: "Revisión de proveedores críticos",
-    description:
-      "Ordená continuidad, revisión o escalamiento con una metodología consistente.",
+      "Orientación concreta para continuar, revisar, reforzar monitoreo o escalar internamente el caso.",
   },
   {
-    title: "Seguimiento de clientes o contrapartes",
+    title: "PDF ejecutivo",
     description:
-      "Detectá cambios entre ciclos sin depender de memoria, criterio informal o archivos dispersos.",
+      "Una salida clara para compartir internamente y respaldar decisiones con mejor trazabilidad.",
   },
-  {
-    title: "Soporte para decisiones internas",
-    description:
-      "Compartí una salida ejecutiva clara con score, hallazgos y señales de cambio.",
-  },
-  {
-    title: "Monitoreo de cartera evaluada",
-    description:
-      "Centralizá evaluaciones y mantené trazabilidad sobre qué cambió en cada caso.",
-  },
-];
-
-const audience = [
-  "Compras y abastecimiento",
-  "Administración y finanzas",
-  "Riesgos y control interno",
-  "Dirección y seguimiento ejecutivo",
 ];
 
 const faqs = [
@@ -90,33 +47,63 @@ const faqs = [
   {
     question: "¿Qué obtengo al finalizar una evaluación?",
     answer:
-      "Score general, categoría ejecutiva, radar por 5 pilares, comparativa entre ciclos, hallazgos priorizados, acción sugerida y PDF ejecutivo.",
+      "Score general, categoría ejecutiva, radar por 5 pilares, cambios entre ciclos, hallazgos priorizados, acción sugerida y PDF ejecutivo.",
   },
   {
     question: "¿Sirve para una revisión puntual o para seguimiento continuo?",
     answer:
-      "Ambas. Podés usarlo para resolver un caso puntual o para sostener seguimiento recurrente sobre proveedores, clientes o contrapartes.",
+      "Sirve para ambas cosas, pero su mayor valor aparece cuando lo usás de forma recurrente para comparar ciclos y detectar deterioros antes.",
   },
   {
     question: "¿Qué tipo de terceros puedo evaluar?",
     answer:
-      "Proveedores, clientes, contrapartes u otras relaciones que necesiten una revisión estructurada y comparable en el tiempo.",
+      "Proveedores, clientes, contrapartes u otras relaciones que necesiten una evaluación estructurada y comparable en el tiempo.",
   },
   {
-    question: "¿Qué diferencia hay entre Free, Pro y Business?",
+    question: "¿Cómo funciona la prueba gratuita?",
     answer:
-      "Free sirve para conocer el flujo. Pro permite trabajar de forma recurrente con más profundidad. Business suma más capacidad, más histórico y alertas persistidas.",
+      "Podés probar EvaluaEmpresa durante 21 días para conocer el flujo, cargar empresas y entender cómo funciona el monitoreo antes de pasar a un plan pago.",
   },
   {
-    question: "¿Existe una opción sin suscripción?",
+    question: "¿Qué diferencia hay entre Pro y Business?",
     answer:
-      "Sí. La evaluación única sirve para resolver una necesidad puntual con resultado completo y PDF ejecutivo, sin pasar a un plan mensual.",
+      "Pro está pensado para seguimiento completo de una cartera chica. Business suma más capacidad, más profundidad histórica y monitoreo más activo.",
   },
+];
+
+const useCases = [
+  {
+    title: "Revisión de proveedores críticos",
+    description:
+      "Detectá señales de deterioro y dejá una base más clara para continuidad, revisión o escalamiento.",
+  },
+  {
+    title: "Seguimiento recurrente de clientes o contrapartes",
+    description:
+      "Compará ciclos y registrá cómo evoluciona cada caso sin depender de memoria, planillas sueltas o criterio informal.",
+  },
+  {
+    title: "Soporte para decisiones internas",
+    description:
+      "Compartí una salida ejecutiva con score, categoría, hallazgos y señales de cambio para respaldar mejor cada decisión.",
+  },
+  {
+    title: "Orden de cartera evaluada",
+    description:
+      "Centralizá revisiones y evitá que cada análisis quede perdido en documentos aislados o archivos dispersos.",
+  },
+];
+
+const audience = [
+  "Compras y abastecimiento",
+  "Administración y finanzas",
+  "Riesgos y control interno",
+  "Dirección y seguimiento ejecutivo",
 ];
 
 export default function HomePage() {
   return (
-    <div className="bg-white">
+    <div>
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-zinc-50 to-white">
         <div className="container-page py-12 sm:py-16 lg:py-20">
           <div className="max-w-4xl">
@@ -149,7 +136,7 @@ export default function HomePage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/login" className="btn btn-primary w-full sm:w-auto">
-                Empezar evaluación
+                Comenzar prueba gratis
               </Link>
 
               <Link
@@ -161,21 +148,21 @@ export default function HomePage() {
             </div>
 
             <p className="mt-4 max-w-2xl text-sm leading-6 text-zinc-500">
-              Probalo con una empresa y entendé rápido qué cambió, qué requiere
+              Probalo durante 21 días y entendé rápido qué cambió, qué requiere
               atención y qué conviene revisar ahora.
             </p>
           </div>
         </div>
       </section>
 
-      <section id="metodologia" className="bg-white py-14 sm:py-16 lg:py-20">
-        <div className="container-page">
-          <div className="max-w-3xl">
+      <section id="metodologia" className="bg-white py-20">
+        <div className="container-page grid gap-12 md:grid-cols-[1fr_1fr] md:items-start">
+          <div className="max-w-2xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               El problema
             </p>
 
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Evaluar terceros sin una estructura común suele terminar en
               revisiones difíciles de comparar y decisiones poco defendibles.
             </h2>
@@ -188,28 +175,47 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {problems.map((item) => (
-              <div key={item.title} className="card p-6">
-                <p className="text-base font-medium text-zinc-900">
-                  {item.title}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-zinc-600">
-                  {item.description}
-                </p>
-              </div>
-            ))}
+          <div className="grid gap-4">
+            <div className="card p-6">
+              <p className="text-sm font-medium text-zinc-900">
+                Evaluaciones dispersas y poco comparables
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">
+                Cada revisión queda armada distinto y cuesta sostener un
+                criterio común entre casos y entre ciclos.
+              </p>
+            </div>
+
+            <div className="card p-6">
+              <p className="text-sm font-medium text-zinc-900">
+                Poco seguimiento entre un ciclo y otro
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">
+                No siempre queda claro qué empeoró, qué mejoró y dónde conviene
+                intervenir antes de que el problema crezca.
+              </p>
+            </div>
+
+            <div className="card p-6">
+              <p className="text-sm font-medium text-zinc-900">
+                Menos claridad al momento de decidir
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">
+                Sin una salida ejecutiva consistente, respaldar internamente una
+                decisión se vuelve más difícil.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-sky-100 bg-sky-50/40 py-14 sm:py-16 lg:py-20">
+      <section className="border-y border-sky-100 bg-sky-50/40 py-20">
         <div className="container-page">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
-              Qué obtenés en cada evaluación
+              Qué podés detectar
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Cada evaluación te deja una lectura clara del estado actual y de
               su evolución.
             </h2>
@@ -238,13 +244,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white py-14 sm:py-16 lg:py-20">
+      <section className="bg-white py-20">
         <div className="container-page">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               Cómo funciona
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Un proceso simple para ordenar evaluaciones y seguir su evolución
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
@@ -260,8 +266,8 @@ export default function HomePage() {
                 Creá la empresa
               </p>
               <p className="mt-3 text-sm leading-6 text-zinc-600">
-                Registrá el tercero que querés evaluar y centralizá su
-                seguimiento en un solo lugar.
+                Registrá el tercero que querés seguir y centralizá su evaluación
+                en un solo lugar.
               </p>
             </div>
 
@@ -282,8 +288,8 @@ export default function HomePage() {
                 Detectá cambios y decidí mejor
               </p>
               <p className="mt-3 text-sm leading-6 text-zinc-600">
-                Recibí score, categoría, comparativa entre ciclos, hallazgos
-                priorizados y un PDF ejecutivo listo para compartir.
+                Recibí score, categoría, cambios entre ciclos, hallazgos
+                priorizados y una salida ejecutiva lista para compartir.
               </p>
             </div>
           </div>
@@ -295,100 +301,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-zinc-200 bg-zinc-50 py-14 sm:py-16 lg:py-20">
-        <div className="container-page grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
-              Informe modelo
-            </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-              El resultado completo merece su propia página, no el hero.
-            </h2>
-            <p className="mt-4 text-base leading-7 text-zinc-600">
-              Por eso el home explica el valor del producto y el informe modelo
-              muestra cómo se ve la salida final: score, categoría ejecutiva,
-              radar por pilares, hallazgos, recomendaciones y comparativa entre
-              ciclos.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/informe-modelo"
-                className="btn btn-primary w-full sm:w-auto"
-              >
-                Ver informe modelo
-              </Link>
-              <Link
-                href="/login"
-                className="btn btn-secondary w-full sm:w-auto"
-              >
-                Empezar evaluación
-              </Link>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] sm:p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  Lectura general
-                </p>
-                <p className="mt-2 text-sm font-semibold text-zinc-900">
-                  Score + categoría ejecutiva
-                </p>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
-                  Ubicás rápido el nivel de exposición y la prioridad del caso.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  Evolución
-                </p>
-                <p className="mt-2 text-sm font-semibold text-zinc-900">
-                  Comparativa entre ciclos
-                </p>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
-                  Entendés qué cambió y si el riesgo se está deteriorando o
-                  estabilizando.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  Profundidad
-                </p>
-                <p className="mt-2 text-sm font-semibold text-zinc-900">
-                  Radar por 5 pilares
-                </p>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
-                  Detectás en qué dimensiones se concentra la fragilidad.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs uppercase tracking-wide text-zinc-500">
-                  Acción
-                </p>
-                <p className="mt-2 text-sm font-semibold text-zinc-900">
-                  Hallazgos + recomendación
-                </p>
-                <p className="mt-2 text-sm leading-6 text-zinc-600">
-                  Pasás de datos sueltos a una decisión más clara y comunicable.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-14 sm:py-16 lg:py-20">
+      <section className="border-y border-sky-100 bg-sky-50/40 py-20">
         <div className="container-page">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               Casos de uso
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Casos donde una evaluación estructurada realmente hace diferencia
             </h2>
           </div>
@@ -411,15 +330,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-sky-100 bg-sky-50/40 py-14 sm:py-16 lg:py-20">
+      <section className="bg-white py-20">
         <div className="container-page grid gap-10 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <div className="max-w-2xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               Para quién sirve
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-              Pensado para equipos que necesitan evaluar terceros con más orden
-              y menos criterio informal
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
+              Pensado para quienes necesitan evaluar terceros con más orden y
+              menos criterio informal
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
               EvaluaEmpresa ayuda a aplicar una estructura común en cada
@@ -438,41 +357,48 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="planes" className="bg-white py-14 sm:py-16 lg:py-20">
+      <section
+        id="planes"
+        className="border-y border-zinc-200 bg-slate-50 py-20"
+      >
         <div className="container-page">
           <div className="max-w-4xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               Planes
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Elegí el nivel de seguimiento que necesitás para tu cartera
             </h2>
             <p className="mt-4 text-base leading-8 text-zinc-600">
-              <span className="font-semibold text-zinc-900">Free</span> sirve
-              para conocer el flujo.{" "}
+              <span className="font-semibold text-zinc-900">
+                Prueba gratuita
+              </span>{" "}
+              te permite conocer el flujo durante 21 días.{" "}
               <span className="font-semibold text-sky-900">Pro</span> está
-              pensado para seguimiento recurrente con comparativa entre ciclos.{" "}
+              pensado para seguimiento completo de una cartera chica.{" "}
               <span className="font-semibold text-emerald-800">Business</span>{" "}
-              suma más capacidad, más histórico y alertas persistidas para un
-              monitoreo más activo.
+              suma más capacidad, más profundidad histórica y alertas
+              persistidas para un monitoreo más activo.
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <div className="rounded-3xl border border-zinc-200 bg-white p-7 shadow-[0_8px_24px_rgba(15,23,42,0.05)]">
-              <p className="text-sm font-medium text-zinc-900">Free</p>
+              <p className="text-sm font-medium text-zinc-900">
+                Prueba gratuita
+              </p>
               <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
-                Para conocer cómo funciona
+                21 días para conocer cómo funciona
               </p>
               <p className="mt-3 text-base leading-7 text-zinc-600">
-                Ideal para entender la metodología y probar el flujo con una
-                primera empresa.
+                Probá el flujo, cargá empresas y entendé cómo se ordena el
+                seguimiento de terceros antes de elegir un plan.
               </p>
 
               <ul className="mt-6 space-y-3 text-sm text-zinc-600">
-                <li>• 1 empresa</li>
-                <li>• Vista parcial del resultado</li>
-                <li>• Ideal para conocer el sistema</li>
+                <li>• Acceso de prueba por 21 días</li>
+                <li>• Ideal para validar el flujo</li>
+                <li>• Conocer el producto antes de pagar</li>
               </ul>
 
               <Link href="/pricing" className="btn btn-secondary mt-8 w-full">
@@ -497,8 +423,18 @@ export default function HomePage() {
               </p>
 
               <ul className="mt-6 space-y-3 text-sm text-zinc-600">
-                <li>• Hasta 3 empresas</li>
-                <li>• Reporte completo y PDF ejecutivo</li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Hasta 3 empresas
+                  </span>
+                </li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Reporte completo y PDF ejecutivo
+                  </span>
+                </li>
                 <li>• Comparativa entre ciclos</li>
                 <li>• Tendencia histórica de hasta 3 ciclos</li>
               </ul>
@@ -511,15 +447,20 @@ export default function HomePage() {
             <div className="rounded-3xl border border-emerald-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,185,129,0.08)]">
               <p className="text-sm font-semibold text-emerald-800">Business</p>
               <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900">
-                Para monitoreo continuo de cartera más amplia
+                Para monitoreo continuo con más profundidad
               </p>
               <p className="mt-3 text-base leading-7 text-zinc-600">
                 Sumá más capacidad, más memoria histórica y alertas persistidas
-                para seguir riesgos que no se resolvieron entre ciclos.
+                para seguir riesgos no resueltos entre ciclos.
               </p>
 
               <ul className="mt-6 space-y-3 text-sm text-zinc-600">
-                <li>• Hasta 15 empresas</li>
+                <li>
+                  •{" "}
+                  <span className="font-semibold text-zinc-900">
+                    Hasta 15 empresas
+                  </span>
+                </li>
                 <li>• Todo lo incluido en Pro</li>
                 <li>• Tendencia histórica extendida de hasta 6 ciclos</li>
                 <li>• Alertas persistidas activas</li>
@@ -533,21 +474,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        id="faq"
-        className="border-y border-zinc-200 bg-zinc-50 py-14 sm:py-16 lg:py-20"
-      >
+      <section id="faq" className="bg-white py-20">
         <div className="container-page">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-zinc-500">
               Preguntas frecuentes
             </p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900">
               Lo importante antes de empezar
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              Respuestas rápidas para entender cómo encaja EvaluaEmpresa en una
-              evaluación puntual o en un seguimiento más continuo de terceros.
+              Respuestas rápidas para entender cómo encaja EvaluaEmpresa en un
+              seguimiento más claro y comparable de terceros.
             </p>
           </div>
 
@@ -566,20 +504,21 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="cta-final" className="bg-white py-14 sm:py-16 lg:py-20">
+      <section className="border-t border-zinc-200 bg-linear-to-b from-white to-sky-50/40 py-20">
         <div className="container-page text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-            Pasá de revisiones aisladas a un seguimiento más claro y comparable.
+          <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+            Empezá con una prueba gratuita y pasá a seguimiento continuo cuando
+            lo necesites.
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-zinc-600">
-            Ordená cómo evaluás terceros, detectá deterioros entre ciclos y
-            respaldá mejor cada decisión con una salida ejecutiva consistente.
+            Probá el producto, entendé el flujo y elegí el plan que mejor encaje
+            con tu nivel de seguimiento cuando realmente lo necesites.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/login" className="btn btn-primary w-full sm:w-auto">
-              Empezar evaluación
+              Comenzar prueba gratis
             </Link>
             <Link
               href="/pricing"

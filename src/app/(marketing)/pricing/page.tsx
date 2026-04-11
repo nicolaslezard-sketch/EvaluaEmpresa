@@ -40,16 +40,16 @@ function detectInitialRegion(): Region {
 
 const plans = [
   {
-    name: "Free",
-    eyebrow: "Para probar",
-    headline: "Conocé el flujo antes de pagar",
+    name: "Prueba gratuita",
+    eyebrow: "21 días gratis",
+    headline: "Probá EvaluaEmpresa antes de elegir un plan",
     description:
-      "Ideal para entender cómo funciona la plataforma antes de pasar a un resultado completo o a un seguimiento recurrente.",
+      "Ideal para conocer el flujo, cargar empresas y entender cómo se ve el monitoreo antes de pasar a un plan pago.",
     features: [
-      "1 empresa",
-      "Vista parcial del resultado",
-      "Score general y categoría ejecutiva",
-      "Ideal para conocer el sistema",
+      "Acceso de prueba por 21 días",
+      "Ideal para validar el flujo",
+      "Carga de empresas y evaluaciones",
+      "Perfecto para conocer el sistema antes de pagar",
     ],
     priceByRegion: {
       AR: "Gratis",
@@ -59,35 +59,9 @@ const plans = [
       AR: "Sin cargo",
       INTL: "Free",
     },
-    ctaLabel: "Comenzar gratis",
+    ctaLabel: "Comenzar prueba",
     ctaHref: "/login",
     tone: "default",
-    checkout: null,
-  },
-  {
-    name: "Evaluación única",
-    eyebrow: "Caso puntual",
-    headline: "Resolvé una evaluación completa sin suscripción",
-    description:
-      "La mejor opción si necesitás resolver una evaluación puntual con salida ejecutiva y PDF, sin compromiso mensual.",
-    features: [
-      "Resultado completo",
-      "Hallazgos y recomendaciones",
-      "Cambios del ciclo evaluado",
-      "PDF ejecutivo",
-      "Pago único",
-    ],
-    priceByRegion: {
-      AR: formatArs(PRICING.AR.oneTime.EVALUACION_UNICA.amount),
-      INTL: formatUsd(PRICING.INTL.oneTime.EVALUACION_UNICA.amount),
-    },
-    billingNoteByRegion: {
-      AR: "Pago único",
-      INTL: "One-time",
-    },
-    ctaLabel: "Empezar evaluación",
-    ctaHref: "/companies/new",
-    tone: "single",
     checkout: null,
   },
   {
@@ -157,17 +131,12 @@ const faqs = [
   {
     question: "¿Puedo probar EvaluaEmpresa antes de pagar?",
     answer:
-      "Sí. El plan Free te permite conocer el flujo de carga y ver una parte del resultado antes de avanzar a una evaluación completa o a un plan recurrente.",
+      "Sí. La prueba gratuita de 21 días te permite conocer el flujo, cargar empresas y entender cómo funciona el monitoreo antes de pasar a un plan pago.",
   },
   {
-    question: "¿Cuándo conviene elegir una evaluación única?",
+    question: "¿Cuándo conviene pasar a Pro?",
     answer:
-      "Cuando necesitás una revisión puntual con resultado completo, hallazgos, recomendaciones y PDF ejecutivo, pero no querés asumir una suscripción mensual.",
-  },
-  {
-    question: "¿Cuándo conviene pasar a Pro o Business?",
-    answer:
-      "Cuando la evaluación de terceros deja de ser algo aislado y pasa a formar parte de un seguimiento más frecuente, con comparativa entre ciclos, histórico y mayor capacidad de monitoreo.",
+      "Cuando la evaluación de terceros deja de ser algo aislado y pasa a formar parte de un seguimiento más frecuente, con comparativa entre ciclos, histórico y resultado completo.",
   },
   {
     question: "¿Qué diferencia hay entre Pro y Business?",
@@ -184,16 +153,17 @@ const faqs = [
     answer:
       "Hoy Business está orientado a quienes necesitan seguir una cartera más amplia con mayor profundidad histórica y alertas persistidas. La colaboración entre múltiples usuarios puede sumarse más adelante.",
   },
+  {
+    question: "¿Puedo cambiar de plan más adelante?",
+    answer:
+      "Sí. Podés empezar probando el producto y pasar a Pro o Business cuando realmente necesites más capacidad y seguimiento continuo.",
+  },
 ];
 
 const decisionCards = [
   {
-    title: "Solo quiero probar",
-    answer: "Empezá con Free.",
-  },
-  {
-    title: "Necesito resolver un caso puntual",
-    answer: "Elegí Evaluación única.",
+    title: "Quiero probar antes de pagar",
+    answer: "Empezá con la prueba gratuita de 21 días.",
   },
   {
     title: "Quiero seguimiento recurrente de pocos terceros",
@@ -207,17 +177,13 @@ const decisionCards = [
 
 export default function PricingPage() {
   const [region, setRegion] = useState<Region>(() => detectInitialRegion());
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("ee_pricing_region", region);
     }
   }, [region]);
-
-  const regionLabel =
-    region === "AR" ? "Argentina (ARS)" : "Internacional (USD)";
-
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   async function handleCheckout(plan: (typeof plans)[number]) {
     if (!plan.checkout) return;
@@ -252,6 +218,9 @@ export default function PricingPage() {
     }
   }
 
+  const regionLabel =
+    region === "AR" ? "Argentina (ARS)" : "Internacional (USD)";
+
   return (
     <div className="bg-white">
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
@@ -267,9 +236,9 @@ export default function PricingPage() {
               </h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8">
-                Podés empezar gratis, resolver una evaluación puntual o trabajar
-                con un plan pensado para seguimiento continuo y comparativa
-                entre ciclos.
+                Podés empezar con una prueba gratuita de 21 días y pasar a un
+                plan pago cuando realmente necesites seguimiento continuo y
+                comparativa entre ciclos.
               </p>
             </div>
 
@@ -318,33 +287,28 @@ export default function PricingPage() {
               Elegí la modalidad que mejor encaje con tu forma de evaluar hoy
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              Free sirve para probar. Evaluación única resuelve un caso puntual.
-              Pro es la opción principal para seguimiento recurrente. Business
-              amplía capacidad y profundidad.
+              Empezá con una prueba gratuita de 21 días. Pro es la opción
+              principal para seguimiento recurrente. Business amplía capacidad,
+              histórico y profundidad de monitoreo.
             </p>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-4">
+          <div className="grid gap-6 lg:grid-cols-3">
             {plans.map((plan) => {
               const isFree = plan.tone === "default";
-              const isSingle = plan.tone === "single";
               const isPro = plan.tone === "pro";
 
               const cardClass = isFree
                 ? "rounded-3xl border border-zinc-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
-                : isSingle
-                  ? "rounded-3xl border border-amber-200 bg-white p-6 shadow-[0_12px_32px_rgba(245,158,11,0.08)]"
-                  : isPro
-                    ? "rounded-3xl border border-sky-200 bg-white p-6 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
-                    : "rounded-3xl border border-emerald-200 bg-white p-6 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
+                : isPro
+                  ? "rounded-3xl border border-sky-200 bg-white p-6 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
+                  : "rounded-3xl border border-emerald-200 bg-white p-6 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
 
               const eyebrowClass = isFree
                 ? "text-xs font-medium uppercase tracking-[0.18em] text-zinc-500"
-                : isSingle
-                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-amber-700"
-                  : isPro
-                    ? "text-xs font-semibold uppercase tracking-[0.18em] text-sky-900"
-                    : "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800";
+                : isPro
+                  ? "text-xs font-semibold uppercase tracking-[0.18em] text-sky-900"
+                  : "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800";
 
               const buttonClass = isPro
                 ? "btn btn-primary w-full"
@@ -442,7 +406,7 @@ export default function PricingPage() {
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {decisionCards.map((item) => (
               <div key={item.title} className="card p-6">
                 <p className="text-base font-medium text-zinc-900">
@@ -486,18 +450,18 @@ export default function PricingPage() {
       <section className="bg-white py-14 sm:py-16 lg:py-20">
         <div className="container-page text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-            Empezá gratis, resolvé un caso puntual o pasá a seguimiento
-            continuo.
+            Empezá con una prueba gratuita y pasá a seguimiento continuo cuando
+            lo necesites.
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-zinc-600">
-            Elegí la modalidad que mejor encaje con tu forma de evaluar terceros
-            hoy y escalá cuando realmente lo necesites.
+            Probá el producto, entendé el flujo y elegí el plan que mejor encaje
+            con tu nivel de seguimiento cuando realmente lo necesites.
           </p>
 
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/login" className="btn btn-primary w-full sm:w-auto">
-              Comenzar gratis
+              Comenzar prueba
             </Link>
             <Link href="/" className="btn btn-secondary w-full sm:w-auto">
               Volver al inicio

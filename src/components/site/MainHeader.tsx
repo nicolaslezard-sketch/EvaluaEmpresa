@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
+import { prisma } from "@/lib/prisma";
 import { UserMenu } from "@/components/app/UserMenu";
 
 type MainHeaderProps = {
@@ -11,8 +11,8 @@ type MainHeaderProps = {
 
 const marketingNavItems = [
   { href: "/#metodologia", label: "Metodología" },
-  { href: "/informe-modelo", label: "Informe modelo" },
   { href: "/pricing", label: "Planes" },
+  { href: "/informe-modelo", label: "Informe modelo" },
   { href: "/#faq", label: "FAQ" },
 ];
 
@@ -23,7 +23,7 @@ function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
     case "BUSINESS":
       return "Business";
     default:
-      return "Free";
+      return "Prueba";
   }
 }
 
@@ -74,7 +74,7 @@ export async function MainHeader({ mode }: MainHeaderProps) {
 
     const planStatusLabel =
       isTrialActive && trialEndsAtLabel
-        ? `Trial activo hasta ${trialEndsAtLabel}`
+        ? `Prueba activa hasta ${trialEndsAtLabel}`
         : entitlements.plan === "FREE"
           ? "Plan base activo"
           : "Suscripción activa";
@@ -90,8 +90,8 @@ export async function MainHeader({ mode }: MainHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/90 backdrop-blur">
-      <div className="container-page flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="min-w-0 flex items-center gap-3">
+      <div className="container-page flex h-16 items-center justify-between gap-6">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
           {mode === "marketing" ? (
             <>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-semibold text-white">
@@ -128,76 +128,39 @@ export async function MainHeader({ mode }: MainHeaderProps) {
         )}
 
         {session?.user?.id && userMenuProps ? (
-          <>
-            <div className="hidden items-center gap-3 md:flex">
-              {mode === "marketing" ? (
-                <Link href="/dashboard" className="btn btn-secondary">
-                  Monitoreo
-                </Link>
-              ) : null}
-
-              <Link href="/companies/new" className="btn btn-primary">
-                Nueva empresa
+          <div className="flex items-center gap-3">
+            {mode === "marketing" ? (
+              <Link href="/dashboard" className="btn btn-secondary">
+                Monitoreo
               </Link>
+            ) : null}
 
-              <UserMenu {...userMenuProps} />
-            </div>
+            <Link href="/companies/new" className="btn btn-primary">
+              Nueva empresa
+            </Link>
 
-            <div className="md:hidden">
-              <UserMenu {...userMenuProps} />
-            </div>
-          </>
+            <UserMenu {...userMenuProps} />
+          </div>
         ) : mode === "marketing" ? (
-          <div className="hidden items-center gap-3 sm:flex">
+          <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900"
+              className="hidden text-sm font-medium text-zinc-600 transition hover:text-zinc-900 sm:inline-flex"
             >
               Ingresar
             </Link>
 
             <Link href="/login" className="btn btn-primary">
-              Probar ahora
+              Comenzar prueba
             </Link>
           </div>
         ) : (
-          <div className="hidden items-center gap-3 sm:flex">
+          <div className="flex items-center gap-3">
             <Link href="/login" className="btn btn-primary">
               Ingresar
             </Link>
           </div>
         )}
-
-        {mode === "marketing" && !session?.user?.id ? (
-          <details className="relative sm:hidden">
-            <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-sm">
-              <span className="text-lg leading-none">☰</span>
-            </summary>
-
-            <div className="absolute right-0 top-12 w-[min(92vw,320px)] rounded-2xl border border-zinc-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.12)]">
-              <div className="grid gap-2">
-                {marketingNavItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="rounded-xl px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-zinc-900"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-4 grid gap-2 border-t border-zinc-100 pt-4">
-                <Link href="/login" className="btn btn-primary w-full">
-                  Probar ahora
-                </Link>
-                <Link href="/login" className="btn btn-secondary w-full">
-                  Ingresar
-                </Link>
-              </div>
-            </div>
-          </details>
-        ) : null}
       </div>
     </header>
   );
