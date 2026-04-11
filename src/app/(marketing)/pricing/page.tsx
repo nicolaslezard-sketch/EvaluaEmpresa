@@ -218,61 +218,24 @@ export default function PricingPage() {
     }
   }
 
-  const regionLabel =
-    region === "AR" ? "Argentina (ARS)" : "Internacional (USD)";
-
   return (
     <div className="bg-white">
       <section className="border-b border-zinc-200 bg-linear-to-b from-white via-sky-50/60 to-white">
         <div className="container-page py-12 sm:py-16 lg:py-20">
-          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="max-w-3xl">
-              <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 sm:text-xs">
-                Planes y acceso
-              </p>
+          <div className="max-w-3xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-500 sm:text-xs">
+              Planes y acceso
+            </p>
 
-              <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl">
-                Elegí cómo querés usar EvaluaEmpresa
-              </h1>
+            <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl">
+              Elegí cómo querés usar EvaluaEmpresa
+            </h1>
 
-              <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8">
-                Podés empezar con una prueba gratuita de 21 días y pasar a un
-                plan pago cuando realmente necesites seguimiento continuo y
-                comparativa entre ciclos.
-              </p>
-            </div>
-
-            <div className="w-full max-w-full rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm lg:w-auto">
-              <div className="text-sm font-medium text-zinc-900">
-                Mostrando precios para {regionLabel}
-              </div>
-
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:rounded-xl sm:border sm:border-zinc-200 sm:bg-zinc-50 sm:p-1">
-                <button
-                  type="button"
-                  onClick={() => setRegion("AR")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                    region === "AR"
-                      ? "bg-white text-zinc-900 shadow-sm"
-                      : "text-zinc-600 hover:text-zinc-900"
-                  }`}
-                >
-                  Argentina (ARS)
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setRegion("INTL")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                    region === "INTL"
-                      ? "bg-white text-zinc-900 shadow-sm"
-                      : "text-zinc-600 hover:text-zinc-900"
-                  }`}
-                >
-                  Internacional (USD)
-                </button>
-              </div>
-            </div>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg sm:leading-8">
+              Podés empezar con una prueba gratuita de 21 días y pasar a un plan
+              pago cuando realmente necesites seguimiento continuo y comparativa
+              entre ciclos.
+            </p>
           </div>
         </div>
       </section>
@@ -293,16 +256,77 @@ export default function PricingPage() {
             </p>
           </div>
 
+          <div className="mb-8 rounded-3xl border-2 border-sky-100 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+                  Moneda y checkout
+                </p>
+                <p className="mt-2 text-base font-semibold text-zinc-900">
+                  Elegí cómo querés ver los precios y pagar
+                </p>
+                <p className="mt-1 text-sm leading-6 text-zinc-600">
+                  {region === "AR"
+                    ? "Ahora estás viendo precios en ARS con checkout por Mercado Pago."
+                    : "Ahora estás viendo precios en USD con checkout por Lemon Squeezy."}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:min-w-[430px]">
+                <button
+                  type="button"
+                  onClick={() => setRegion("AR")}
+                  className={`rounded-2xl border px-4 py-4 text-left transition ${
+                    region === "AR"
+                      ? "border-sky-300 bg-sky-50 shadow-sm"
+                      : "border-zinc-200 bg-white hover:border-zinc-300"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-zinc-900">
+                    ARS · Argentina
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-600">
+                    Checkout con Mercado Pago
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setRegion("INTL")}
+                  className={`rounded-2xl border px-4 py-4 text-left transition ${
+                    region === "INTL"
+                      ? "border-sky-300 bg-sky-50 shadow-sm"
+                      : "border-zinc-200 bg-white hover:border-zinc-300"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-zinc-900">
+                    USD · Internacional
+                  </p>
+                  <p className="mt-1 text-sm text-zinc-600">
+                    Checkout con Lemon Squeezy
+                  </p>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="grid gap-6 lg:grid-cols-3">
             {plans.map((plan) => {
               const isFree = plan.tone === "default";
               const isPro = plan.tone === "pro";
+              const isBusiness = plan.tone === "business";
 
               const cardClass = isFree
-                ? "rounded-3xl border border-zinc-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
+                ? "relative rounded-3xl border border-zinc-200 bg-white p-6 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
                 : isPro
-                  ? "rounded-3xl border border-sky-200 bg-white p-6 shadow-[0_12px_32px_rgba(2,132,199,0.10)]"
-                  : "rounded-3xl border border-emerald-200 bg-white p-6 shadow-[0_12px_32px_rgba(16,185,129,0.08)]";
+                  ? "relative rounded-3xl border-2 border-sky-300 bg-white p-6 shadow-[0_14px_36px_rgba(2,132,199,0.12)]"
+                  : "relative rounded-3xl border-2 border-emerald-300 bg-white p-6 shadow-[0_14px_36px_rgba(16,185,129,0.10)]";
+
+              const topAccentClass = isFree
+                ? "bg-zinc-100"
+                : isPro
+                  ? "bg-sky-100"
+                  : "bg-emerald-100";
 
               const eyebrowClass = isFree
                 ? "text-xs font-medium uppercase tracking-[0.18em] text-zinc-500"
@@ -310,15 +334,27 @@ export default function PricingPage() {
                   ? "text-xs font-semibold uppercase tracking-[0.18em] text-sky-900"
                   : "text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800";
 
-              const buttonClass = isPro
-                ? "btn btn-primary w-full"
-                : "btn btn-secondary w-full";
+              const priceWrapClass = isFree
+                ? ""
+                : isPro
+                  ? "rounded-2xl border border-sky-100 bg-sky-50/70 p-4"
+                  : "rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4";
+
+              const buttonClass = isFree
+                ? "btn btn-secondary w-full"
+                : isPro
+                  ? "btn btn-primary w-full"
+                  : "inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-emerald-300 bg-white px-4 py-2.5 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-100";
 
               return (
                 <div
                   key={plan.name}
                   className={`${cardClass} flex h-full flex-col`}
                 >
+                  <div
+                    className={`absolute inset-x-6 top-0 h-1 rounded-b-full ${topAccentClass}`}
+                  />
+
                   <div>
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -332,10 +368,14 @@ export default function PricingPage() {
                         <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[11px] font-semibold text-sky-900">
                           Más elegido
                         </span>
+                      ) : isBusiness ? (
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold text-emerald-800">
+                          Escala
+                        </span>
                       ) : null}
                     </div>
 
-                    <div className="mt-5">
+                    <div className={`mt-5 ${priceWrapClass}`}>
                       <div className="text-3xl font-semibold tracking-tight text-zinc-900">
                         {plan.priceByRegion[region]}
                       </div>
