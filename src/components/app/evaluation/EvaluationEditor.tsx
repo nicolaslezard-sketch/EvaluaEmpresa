@@ -546,15 +546,15 @@ export default function EvaluationEditor(props: {
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-8 shadow-sm">
-          <div className="grid gap-6 md:grid-cols-3">
-            <div>
+        <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6 md:p-8">
+          <div className="grid gap-3 sm:gap-4 md:grid-cols-3 md:gap-6">
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 md:border-0 md:bg-transparent md:p-0">
               <div className="text-sm text-zinc-700">Score general</div>
-              <div className="mt-2 text-5xl font-semibold text-zinc-900">
+              <div className="mt-2 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
                 {props.overallScore?.toFixed(1) ?? "—"}
               </div>
               <div
-                className={`mt-3 text-sm font-medium ${deltaStyles(
+                className={`mt-2 text-sm font-medium ${deltaStyles(
                   props.deltas.overall,
                 )}`}
               >
@@ -564,30 +564,36 @@ export default function EvaluationEditor(props: {
               </div>
             </div>
 
-            <MetricCard
-              title="Financiero"
-              value={props.deltas.financial}
-              prefix="Δ "
-            />
-            <MetricCard
-              title="Comercial"
-              value={props.deltas.commercial}
-              prefix="Δ "
-            />
-            <MetricCard
-              title="Operativo"
-              value={props.deltas.operational}
-              prefix="Δ "
-            />
-            <MetricCard title="Legal" value={props.deltas.legal} prefix="Δ " />
-            <MetricCard
-              title="Estratégico"
-              value={props.deltas.strategic}
-              prefix="Δ "
-            />
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:col-span-2 md:grid-cols-2 lg:grid-cols-3">
+              <MetricCard
+                title="Financiero"
+                value={props.deltas.financial}
+                prefix="Δ "
+              />
+              <MetricCard
+                title="Comercial"
+                value={props.deltas.commercial}
+                prefix="Δ "
+              />
+              <MetricCard
+                title="Operativo"
+                value={props.deltas.operational}
+                prefix="Δ "
+              />
+              <MetricCard
+                title="Legal"
+                value={props.deltas.legal}
+                prefix="Δ "
+              />
+              <MetricCard
+                title="Estratégico"
+                value={props.deltas.strategic}
+                prefix="Δ "
+              />
+            </div>
           </div>
 
-          <div className="mt-6 h-2 w-full rounded-full bg-zinc-100">
+          <div className="mt-4 h-2 w-full rounded-full bg-zinc-100 sm:mt-6">
             <div
               className="h-2 rounded-full bg-zinc-900 transition-all"
               style={{
@@ -1024,7 +1030,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
       <h2 className="mb-4 text-base font-medium text-zinc-900">{title}</h2>
       {children}
     </div>
@@ -1411,9 +1417,7 @@ function PillarFields({
                       }
                       maxLength={140}
                       className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-sky-400 focus:ring-4 focus:ring-sky-100"
-                      placeholder={
-                        FIELD_INPUT_HELPERS[key].evidencePlaceholder
-                      }
+                      placeholder={FIELD_INPUT_HELPERS[key].evidencePlaceholder}
                     />
                     <div className="mt-1 text-right text-xs text-zinc-500">
                       {(current?.evidenceNote ?? "").length}/140

@@ -57,7 +57,7 @@ export function UserMenu({
 
     if (primary) {
       return [
-        "block rounded-2xl px-4 py-3 text-sm font-medium transition",
+        "block rounded-2xl px-4 py-2.5 text-sm font-medium transition",
         active
           ? "bg-zinc-100 text-zinc-900"
           : "bg-zinc-50 text-zinc-900 hover:bg-zinc-100",
@@ -65,7 +65,7 @@ export function UserMenu({
     }
 
     return [
-      "mt-1 block rounded-2xl px-4 py-3 text-sm transition",
+      "mt-1 block rounded-2xl px-4 py-2.5 text-sm transition",
       active
         ? "bg-zinc-100 font-medium text-zinc-900"
         : "text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900",
@@ -79,7 +79,7 @@ export function UserMenu({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-3 rounded-2xl border border-sky-600 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-sky-700 hover:bg-sky-50/40"
+        className="flex items-center gap-2 rounded-2xl border border-sky-600 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-sky-700 hover:bg-sky-50/40"
       >
         {image ? (
           <Image
@@ -87,10 +87,10 @@ export function UserMenu({
             src={image}
             width={32}
             height={32}
-            className="h-8 w-8 rounded-full object-cover"
+            className="h-8 w-8 rounded-full object-cover sm:h-9 sm:w-9"
           />
         ) : (
-          <div className="grid h-8 w-8 place-items-center rounded-full bg-zinc-900 text-xs font-semibold text-white">
+          <div className="grid h-8 w-8 place-items-center rounded-full bg-zinc-900 text-xs font-semibold text-white sm:h-9 sm:w-9">
             {initials(name ?? email)}
           </div>
         )}
@@ -142,13 +142,16 @@ export function UserMenu({
                 </p>
 
                 {planLabel ? (
-                  <div className="mt-3 rounded-2xl border border-sky-100 bg-sky-50 px-3 py-2">
-                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-sky-800">
-                      Plan actual
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-zinc-900">
-                      {planLabel}
-                    </p>
+                  <div className="mt-2 rounded-2xl border border-sky-100 bg-sky-50 px-3 py-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-sky-800">
+                        Plan actual
+                      </p>
+                      <span className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-zinc-900">
+                        {planLabel}
+                      </span>
+                    </div>
+
                     {planStatusLabel ? (
                       <p className="mt-1 text-xs leading-5 text-zinc-600">
                         {planStatusLabel}
@@ -189,7 +192,7 @@ export function UserMenu({
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+                className="w-full rounded-2xl px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
               >
                 Cerrar sesión
               </button>
