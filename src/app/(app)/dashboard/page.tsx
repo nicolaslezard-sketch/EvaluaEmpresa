@@ -430,65 +430,73 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-            Monitoreo actual
-          </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-900">
-            Qué requiere atención, qué empeoró y qué quedó fuera de revisión
-          </h1>
-          <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-600">
-            Priorizá rápido las empresas que necesitan revisión, muestran
-            deterioro reciente o acumulan señales activas.
-          </p>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+              Monitoreo actual
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+              Qué requiere atención, qué empeoró y qué quedó fuera de revisión
+            </h1>
+            <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-600">
+              Priorizá rápido las empresas que necesitan revisión, muestran
+              deterioro reciente o acumulan señales activas.
+            </p>
+          </div>
         </div>
 
-        <div className="rounded-2xl border bg-white px-5 py-4 shadow-sm">
-          <div className="text-sm text-zinc-600">Uso del plan</div>
-          <div className="mt-1 text-2xl font-semibold text-zinc-900">
-            {activeCompanyCount}/{ent.maxCompanies}
-          </div>
-          <div className="mt-1 text-sm text-zinc-500">Empresas activas</div>
-          <div className="mt-3 text-sm font-medium text-zinc-900">
-            {subscriptionPresentation.usagePlanLabel}
-          </div>
-          {subscriptionPresentation.usagePlanSubLabel ? (
-            <div className="mt-1 text-xs leading-5 text-zinc-500">
-              {subscriptionPresentation.usagePlanSubLabel}
+        <section className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+          <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
+            <div className="text-sm text-zinc-600">Uso del plan</div>
+            <div className="mt-2 text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">
+              {activeCompanyCount}/{ent.maxCompanies}
             </div>
-          ) : null}
-        </div>
-      </div>
+            <div className="mt-2 text-sm text-zinc-500">Empresas activas</div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="text-sm text-zinc-600">Empresas activas</div>
-          <div className="mt-2 text-3xl font-semibold text-zinc-900">
-            {activeCompanyCount}/{ent.maxCompanies}
-          </div>
-        </div>
+            <div className="mt-4">
+              <span className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-900">
+                {subscriptionPresentation.usagePlanLabel}
+              </span>
+            </div>
 
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="text-sm text-zinc-600">Actualizadas</div>
-          <div className="mt-2 text-3xl font-semibold text-zinc-900">
-            {updatedCount}
+            {subscriptionPresentation.usagePlanSubLabel ? (
+              <div className="mt-2 text-xs leading-5 text-zinc-500">
+                {subscriptionPresentation.usagePlanSubLabel}
+              </div>
+            ) : null}
           </div>
-        </div>
 
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="text-sm text-zinc-600">Revisar pronto</div>
-          <div className="mt-2 text-3xl font-semibold text-zinc-900">
-            {reviewSoonCount}
-          </div>
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
+              <div className="text-sm text-zinc-600">Empresas activas</div>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+                {activeCompanyCount}/{ent.maxCompanies}
+              </div>
+            </div>
 
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
-          <div className="text-sm text-zinc-600">Vencidas</div>
-          <div className="mt-2 text-3xl font-semibold text-zinc-900">
-            {overdueCount}
+            <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
+              <div className="text-sm text-zinc-600">Actualizadas</div>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+                {updatedCount}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
+              <div className="text-sm text-zinc-600">Revisar pronto</div>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+                {reviewSoonCount}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
+              <div className="text-sm text-zinc-600">Vencidas</div>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
+                {overdueCount}
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
@@ -508,7 +516,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          {" "}
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-5">
             <div className="text-sm text-zinc-600">Requieren acción ahora</div>
             <div className="mt-2 text-3xl font-semibold text-zinc-900">
@@ -518,7 +527,6 @@ export default async function DashboardPage() {
               vencidas, con deterioro o alertas activas
             </div>
           </div>
-
           <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
             <div className="text-sm text-red-700">Empeoraron</div>
             <div className="mt-2 text-3xl font-semibold text-red-700">
@@ -528,7 +536,6 @@ export default async function DashboardPage() {
               empresas con cambios negativos en el último ciclo
             </div>
           </div>
-
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
             <div className="text-sm text-amber-700">Vencidas</div>
             <div className="mt-2 text-3xl font-semibold text-amber-700">
@@ -538,7 +545,6 @@ export default async function DashboardPage() {
               fuera de la frecuencia mensual esperada
             </div>
           </div>
-
           <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
             <div className="text-sm text-orange-700">Con alertas</div>
             <div className="mt-2 text-3xl font-semibold text-orange-700">
