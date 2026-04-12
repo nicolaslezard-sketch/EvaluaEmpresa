@@ -288,11 +288,12 @@ function CompanyCard({
     ? criticalityLabel(company.criticality)
     : null;
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className="rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
+      {" "}
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-lg font-semibold tracking-tight text-zinc-900">
+            <h3 className="truncate text-base font-semibold tracking-tight text-zinc-900 sm:text-lg">
               {company.name}
             </h3>
 
@@ -307,7 +308,7 @@ function CompanyCard({
             ) : null}
 
             {company.relationshipImportanceLabel ? (
-              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
+              <span className="hidden rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700 sm:inline-flex">
                 Relación estratégica: {company.relationshipImportanceLabel}
               </span>
             ) : null}
@@ -333,27 +334,52 @@ function CompanyCard({
             ) : null}
           </div>
 
-          <p className="mt-4 text-sm leading-6 text-zinc-600">
+          <div className="mt-3 flex flex-wrap gap-2 sm:hidden">
+            {typeof score === "number" ? (
+              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
+                Score: {score.toFixed(1)}
+              </span>
+            ) : null}
+
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700">
+              Δ {formatDelta(company.scoreDelta)}
+            </span>
+
+            {worsenedCount > 0 ? (
+              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                {worsenedCount} cambio{worsenedCount === 1 ? "" : "s"} negativo
+                {worsenedCount === 1 ? "" : "s"}
+              </span>
+            ) : null}
+
+            {canSeeAlerts && alertsCount > 0 ? (
+              <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-700">
+                {alertsCount} alerta{alertsCount === 1 ? "" : "s"}
+              </span>
+            ) : null}
+          </div>
+
+          <p className="mt-3 text-sm leading-5 text-zinc-600 sm:mt-4 sm:leading-6">
             {getAttentionReason(company)}
           </p>
         </div>
 
-        <div className="grid min-w-45 gap-3 sm:grid-cols-2 md:grid-cols-1">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <div className="text-xs uppercase tracking-wide text-zinc-500">
-              Score actual
+        <div className="grid grid-cols-2 gap-3 md:min-w-45 md:grid-cols-1">
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 sm:p-4">
+            <div className="text-[11px] uppercase tracking-wide text-zinc-500">
+              Score
             </div>
-            <div className="mt-2 text-2xl font-semibold text-zinc-900">
+            <div className="mt-1 text-xl font-semibold text-zinc-900 sm:mt-2 sm:text-2xl">
               {score !== null ? score.toFixed(1) : "—"}
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <div className="text-xs uppercase tracking-wide text-zinc-500">
+          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 sm:p-4">
+            <div className="text-[11px] uppercase tracking-wide text-zinc-500">
               Variación
             </div>
             <div
-              className={`mt-2 text-2xl font-semibold ${deltaStyles(
+              className={`mt-1 text-xl font-semibold sm:mt-2 sm:text-2xl ${deltaStyles(
                 company.scoreDelta,
               )}`}
             >
@@ -362,9 +388,8 @@ function CompanyCard({
           </div>
         </div>
       </div>
-
       {worsenedCount > 0 ? (
-        <div className="mt-5">
+        <div className="mt-4 hidden sm:block">
           <div className="mb-2 text-xs uppercase tracking-wide text-zinc-500">
             Cambios negativos
           </div>
@@ -389,9 +414,8 @@ function CompanyCard({
           </div>
         </div>
       ) : null}
-
       <div
-        className={`mt-5 grid gap-4 ${
+        className={`mt-5 hidden gap-4 sm:grid ${
           canSeeAlerts ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2"
         }`}
       >
@@ -433,14 +457,19 @@ function CompanyCard({
           </div>
         </div>
       </div>
-
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Link href={primaryAction.href} className="btn btn-primary">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <Link
+          href={primaryAction.href}
+          className="btn btn-primary w-full sm:w-auto"
+        >
           {primaryAction.label}
         </Link>
 
         {secondaryAction ? (
-          <Link href={secondaryAction.href} className="btn btn-secondary">
+          <Link
+            href={secondaryAction.href}
+            className="hidden sm:inline-flex btn btn-secondary"
+          >
             {secondaryAction.label}
           </Link>
         ) : null}
