@@ -85,8 +85,8 @@ export function UserMenu({
           <Image
             alt={name ?? email ?? "Usuario"}
             src={image}
-            width={32}
-            height={32}
+            width={36}
+            height={36}
             className="h-8 w-8 rounded-full object-cover sm:h-9 sm:w-9"
           />
         ) : (
@@ -116,24 +116,24 @@ export function UserMenu({
       </button>
 
       {open ? (
-        <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.14)]">
-          <div className="border-b border-zinc-100 px-5 py-4">
-            <div className="flex items-center gap-3">
+        <div className="absolute right-0 mt-2 w-[320px] max-w-[calc(100vw-24px)] overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.14)] sm:mt-3 sm:w-72">
+          <div className="border-b border-zinc-100 px-4 py-4 sm:px-5">
+            <div className="flex items-start gap-3">
               {image ? (
                 <Image
                   alt={name ?? email ?? "Usuario"}
                   src={image}
                   width={40}
                   height={40}
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-9 w-9 rounded-full object-cover sm:h-10 sm:w-10"
                 />
               ) : (
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-zinc-900 text-sm font-semibold text-white">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-zinc-900 text-sm font-semibold text-white sm:h-10 sm:w-10">
                   {initials(name ?? email)}
                 </div>
               )}
 
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-zinc-900">
                   {name ?? "Usuario"}
                 </p>
