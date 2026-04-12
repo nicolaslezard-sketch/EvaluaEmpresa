@@ -14,9 +14,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EvaluaEmpresa — Informe Ejecutivo de Riesgo Empresarial",
+  metadataBase: new URL("https://www.evaluaempresa.com"),
+  title: {
+    default:
+      "EvaluaEmpresa | Evaluación de proveedores y monitoreo de terceros",
+    template: "%s | EvaluaEmpresa",
+  },
   description:
-    "Informe ejecutivo estructurado para decisiones comerciales, basado en metodología E-Score™.",
+    "Software para evaluar proveedores, clientes y contrapartes con una metodología estructurada, comparativa entre ciclos y salida ejecutiva clara.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "EvaluaEmpresa | Evaluación de proveedores y monitoreo de terceros",
+    description:
+      "Ordená la evaluación de terceros, compará ciclos y detectá deterioros antes de que se conviertan en un problema real.",
+    url: "https://www.evaluaempresa.com",
+    siteName: "EvaluaEmpresa",
+    locale: "es_AR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EvaluaEmpresa | Evaluación de proveedores y monitoreo de terceros",
+    description:
+      "Evaluación estructurada de terceros con comparativa entre ciclos y salida ejecutiva clara.",
+  },
 };
 
 export default function RootLayout({

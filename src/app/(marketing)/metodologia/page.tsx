@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Metodología de evaluación de terceros",
+  description:
+    "Conocé la metodología de EvaluaEmpresa para evaluar terceros con pilares, criterios estructurados, comparativa entre ciclos y hallazgos priorizados.",
+  alternates: {
+    canonical: "/metodologia",
+  },
+};
+
 export default function MetodologiaPage() {
   const pillars = [
     {

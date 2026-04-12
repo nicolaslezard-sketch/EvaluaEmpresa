@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+
+  async redirects() {
+    return [
+      {
+        source: "/demo",
+        destination: "/informe-modelo",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
