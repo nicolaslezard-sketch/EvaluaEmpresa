@@ -119,3 +119,35 @@ export async function assignCompanyToWorkSite(params: {
     },
   });
 }
+
+export async function removeCompanyFromWorkSite(params: {
+  ownerId: string;
+  workSiteId: string;
+  companyId: string;
+}) {
+  const assignment = await prisma.workSiteCompany.findFirst({
+    where: {
+      workSiteId: params.workSiteId,
+      companyId: params.companyId,
+      workSite: {
+        ownerId: params.ownerId,
+      },
+      company: {
+        ownerId: params.ownerId,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!assignment) throw new Error("WORK_SITE_COMPANY_NOT_FOUND");
+
+  return prisma.workSiteCompany.update({
+    where: { id: assignment.id },
+    data: {
+      active: false,
+      endedAt: new Date(),
+    },
+  });
+}
