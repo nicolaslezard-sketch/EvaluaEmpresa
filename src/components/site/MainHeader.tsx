@@ -16,6 +16,11 @@ const marketingNavItems = [
   { href: "/#faq", label: "FAQ" },
 ];
 
+const appNavItems = [
+  { href: "/dashboard", label: "Inicio" },
+  { href: "/works", label: "Obras" },
+];
+
 function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
   switch (plan) {
     case "PRO":
@@ -23,7 +28,7 @@ function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
     case "BUSINESS":
       return "Business";
     default:
-      return "Prueba";
+      return "Base";
   }
 }
 
@@ -91,7 +96,7 @@ export async function MainHeader({ mode }: MainHeaderProps) {
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-white/90 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between gap-6">
-        <Link href="/" className="flex min-w-0 items-center gap-3">
+        <Link href={mode === "app" ? "/dashboard" : "/"} className="flex min-w-0 items-center gap-3">
           {mode === "marketing" ? (
             <>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-sm font-semibold text-white">
@@ -102,7 +107,7 @@ export async function MainHeader({ mode }: MainHeaderProps) {
                   EvaluaEmpresa
                 </p>
                 <p className="mt-1 hidden text-[11px] leading-none text-zinc-500 sm:block">
-                  Evaluación estructurada de terceros
+                  Control de proveedores y contratistas
                 </p>
               </div>
             </>
@@ -124,19 +129,29 @@ export async function MainHeader({ mode }: MainHeaderProps) {
             ))}
           </nav>
         ) : (
-          <div />
+          <nav className="hidden items-center gap-6 md:flex">
+            {appNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         )}
 
         {session?.user?.id && userMenuProps ? (
           <div className="flex items-center gap-3">
             {mode === "marketing" ? (
               <Link href="/dashboard" className="btn btn-secondary">
-                Monitoreo
+                Ingresar al sistema
               </Link>
             ) : null}
 
             <Link href="/companies/new" className="btn btn-primary">
-              Nueva empresa
+              Nuevo tercero
             </Link>
 
             <UserMenu {...userMenuProps} />
@@ -151,7 +166,7 @@ export async function MainHeader({ mode }: MainHeaderProps) {
             </Link>
 
             <Link href="/login" className="btn btn-primary">
-              Comenzar prueba
+              Solicitar acceso
             </Link>
           </div>
         ) : (
