@@ -124,7 +124,7 @@ async function createCompanyAction(
     }
   }
 
-  redirect(`/companies/${companyId}`);
+  redirect(`/third-parties/${companyId}`);
 }
 
 export default async function NewCompanyPage() {
