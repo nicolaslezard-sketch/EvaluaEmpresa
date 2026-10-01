@@ -7,6 +7,7 @@ import { getActiveCompanies } from "@/lib/services/companies";
 import {
   assignCompanyToWorkSite,
   getWorkSite,
+  removeCompanyFromWorkSite,
 } from "@/lib/services/workSites";
 
 async function assignCompanyAction(workSiteId: string, formData: FormData) {
@@ -30,6 +31,25 @@ async function assignCompanyAction(workSiteId: string, formData: FormData) {
   revalidatePath(`/third-parties/${companyId}`);
 }
 
+async function removeCompanyAction(
+  workSiteId: string,
+  companyId: string,
+) {
+  "use server";
+
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) redirect("/login");
+
+  await removeCompanyFromWorkSite({
+    ownerId: session.user.id,
+    workSiteId,
+    companyId,
+  });
+
+  revalidatePath(`/works/${workSiteId}`);
+  revalidatePath(`/third-parties/${companyId}`);
+}
+
 function statusLabel(status: "PLANNED" | "ACTIVE" | "PAUSED" | "FINISHED") {
   switch (status) {
     case "PLANNED":
@@ -40,6 +60,17 @@ function statusLabel(status: "PLANNED" | "ACTIVE" | "PAUSED" | "FINISHED") {
       return "Finalizada";
     default:
       return "Activa";
+  }
+}
+
+function criticalityLabel(level: "LOW" | "MEDIUM" | "HIGH") {
+  switch (level) {
+    case "HIGH":
+      return "Alta";
+    case "LOW":
+      return "Baja";
+    default:
+      return "Media";
   }
 }
 
@@ -60,23 +91,36 @@ export default async function WorkDetailPage({
   if (!work) notFound();
 
   const assignedIds = new Set(work.companies.map((item) => item.companyId));
-  const availableCompanies = companies.filter((company) => !assignedIds.has(company.id));
+  const availableCompanies = companies.filter(
+    (company) => !assignedIds.has(company.id),
+  );
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <Link href="/works" className="text-sm font-medium text-sky-800 hover:underline">
+          <Link
+            href="/works"
+            className="text-sm font-medium text-sky-800 hover:underline"
+          >
             ← Volver a obras
           </Link>
-          <div className="mt-5 text-sm font-medium text-sky-800">{statusLabel(work.status)}</div>
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-900">{work.name}</h1>
-          {work.address ? <p className="mt-3 text-zinc-600">{work.address}</p> : null}
+          <div className="mt-5 text-sm font-medium text-sky-800">
+            {statusLabel(work.status)}
+          </div>
+          <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-900">
+            {work.name}
+          </h1>
+          {work.address ? (
+            <p className="mt-3 text-zinc-600">{work.address}</p>
+          ) : null}
         </div>
 
         <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-4 shadow-sm">
           <div className="text-sm text-zinc-500">Terceros activos</div>
-          <div className="mt-1 text-3xl font-semibold text-zinc-900">{work.companies.length}</div>
+          <div className="mt-1 text-3xl font-semibold text-zinc-900">
+            {work.companies.length}
+          </div>
         </div>
       </div>
 
@@ -84,10 +128,16 @@ export default async function WorkDetailPage({
         <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold text-zinc-900">Proveedores y contratistas</h2>
-              <p className="mt-1 text-sm text-zinc-500">Terceros actualmente asociados a esta obra.</p>
+              <h2 className="text-xl font-semibold text-zinc-900">
+                Proveedores y contratistas
+              </h2>
+              <p className="mt-1 text-sm text-zinc-500">
+                Terceros actualmente asociados a esta obra.
+              </p>
             </div>
-            <Link href="/companies/new" className="btn btn-secondary">Nuevo tercero</Link>
+            <Link href="/companies/new" className="btn btn-secondary">
+              Nuevo tercero
+            </Link>
           </div>
 
           {work.companies.length === 0 ? (
@@ -97,22 +147,51 @@ export default async function WorkDetailPage({
           ) : (
             <div className="mt-6 divide-y divide-zinc-100">
               {work.companies.map((item) => (
-                <Link
+                <div
                   key={item.id}
-                  href={`/third-parties/${item.company.id}`}
-                  className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                  className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div>
-                    <div className="font-medium text-zinc-900">{item.company.name}</div>
-                    <div className="mt-1 text-sm text-zinc-500">
-                      {item.trade || item.company.trade || item.role || "Sin rubro definido"}
+                  <Link
+                    href={`/third-parties/${item.company.id}`}
+                    className="min-w-0 flex-1"
+                  >
+                    <div className="font-medium text-zinc-900 hover:underline">
+                      {item.company.name}
                     </div>
+                    <div className="mt-1 text-sm text-zinc-500">
+                      {item.trade ||
+                        item.company.trade ||
+                        item.role ||
+                        "Sin rubro definido"}
+                    </div>
+                  </Link>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-xs uppercase tracking-wide text-zinc-400">
+                        Criticidad
+                      </div>
+                      <div className="mt-1 text-sm font-medium text-zinc-700">
+                        {criticalityLabel(item.company.criticality)}
+                      </div>
+                    </div>
+
+                    <form
+                      action={removeCompanyAction.bind(
+                        null,
+                        work.id,
+                        item.company.id,
+                      )}
+                    >
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-zinc-300 px-3 py-2 text-xs font-medium text-zinc-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                      >
+                        Quitar
+                      </button>
+                    </form>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs uppercase tracking-wide text-zinc-400">Criticidad</div>
-                    <div className="mt-1 text-sm font-medium text-zinc-700">{item.company.criticality}</div>
-                  </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
@@ -120,7 +199,9 @@ export default async function WorkDetailPage({
 
         <section className="space-y-6">
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900">Asociar tercero existente</h2>
+            <h2 className="text-lg font-semibold text-zinc-900">
+              Asociar tercero existente
+            </h2>
             <p className="mt-2 text-sm leading-6 text-zinc-500">
               Vinculá un proveedor o contratista ya cargado a esta obra.
             </p>
@@ -130,7 +211,10 @@ export default async function WorkDetailPage({
                 No hay terceros disponibles para asociar.
               </div>
             ) : (
-              <form action={assignCompanyAction.bind(null, work.id)} className="mt-5 space-y-4">
+              <form
+                action={assignCompanyAction.bind(null, work.id)}
+                className="mt-5 space-y-4"
+              >
                 <select
                   name="companyId"
                   required
@@ -138,7 +222,9 @@ export default async function WorkDetailPage({
                 >
                   <option value="">Seleccionar tercero</option>
                   {availableCompanies.map((company) => (
-                    <option key={company.id} value={company.id}>{company.name}</option>
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
                   ))}
                 </select>
 
@@ -154,25 +240,39 @@ export default async function WorkDetailPage({
                   placeholder="Rubro, ej: Hormigón"
                 />
 
-                <button type="submit" className="btn btn-primary w-full">Asociar a la obra</button>
+                <button type="submit" className="btn btn-primary w-full">
+                  Asociar a la obra
+                </button>
               </form>
             )}
           </div>
 
           <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6">
-            <h2 className="text-sm font-semibold text-zinc-900">Datos de la obra</h2>
+            <h2 className="text-sm font-semibold text-zinc-900">
+              Datos de la obra
+            </h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-4">
                 <dt className="text-zinc-500">Responsable</dt>
-                <dd className="text-right font-medium text-zinc-800">{work.responsibleName || "Sin definir"}</dd>
+                <dd className="text-right font-medium text-zinc-800">
+                  {work.responsibleName || "Sin definir"}
+                </dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-zinc-500">Inicio</dt>
-                <dd className="text-right font-medium text-zinc-800">{work.startDate ? work.startDate.toLocaleDateString("es-AR") : "Sin definir"}</dd>
+                <dd className="text-right font-medium text-zinc-800">
+                  {work.startDate
+                    ? work.startDate.toLocaleDateString("es-AR")
+                    : "Sin definir"}
+                </dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-zinc-500">Fin estimado</dt>
-                <dd className="text-right font-medium text-zinc-800">{work.expectedEndDate ? work.expectedEndDate.toLocaleDateString("es-AR") : "Sin definir"}</dd>
+                <dd className="text-right font-medium text-zinc-800">
+                  {work.expectedEndDate
+                    ? work.expectedEndDate.toLocaleDateString("es-AR")
+                    : "Sin definir"}
+                </dd>
               </div>
             </dl>
           </div>
