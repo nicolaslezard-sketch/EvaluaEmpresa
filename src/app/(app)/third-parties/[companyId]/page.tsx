@@ -69,6 +69,39 @@ function workSiteStatusLabel(status: string) {
   }
 }
 
+function incidentStatusLabel(status: string) {
+  switch (status) {
+    case "FOLLOW_UP":
+      return "En seguimiento";
+    case "RESOLVED":
+      return "Resuelta";
+    default:
+      return "Abierta";
+  }
+}
+
+function incidentSeverityLabel(severity: string) {
+  switch (severity) {
+    case "CRITICAL":
+      return "Crítica";
+    case "MINOR":
+      return "Menor";
+    default:
+      return "Relevante";
+  }
+}
+
+function incidentSeverityClass(severity: string) {
+  switch (severity) {
+    case "CRITICAL":
+      return "bg-red-100 text-red-700";
+    case "MINOR":
+      return "bg-zinc-100 text-zinc-600";
+    default:
+      return "bg-amber-100 text-amber-700";
+  }
+}
+
 export default async function ThirdPartyDetailPage({
   params,
 }: {
@@ -95,9 +128,16 @@ export default async function ThirdPartyDetailPage({
       evaluations: {
         orderBy: { createdAt: "desc" },
         take: 12,
+      },
+      incidents: {
+        orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
+        take: 10,
         include: {
-          alerts: {
-            orderBy: { createdAt: "desc" },
+          workSite: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
       },
@@ -114,7 +154,12 @@ export default async function ThirdPartyDetailPage({
   const activeWorks = company.workSites.filter(
     (assignment) => assignment.workSite.status !== "FINISHED",
   );
-  const alerts = latestFinalized?.alerts ?? [];
+  const openIncidents = company.incidents.filter(
+    (incident) => incident.status !== "RESOLVED",
+  );
+  const criticalOpenIncidents = openIncidents.filter(
+    (incident) => incident.severity === "CRITICAL",
+  );
 
   return (
     <div className="space-y-8">
@@ -147,6 +192,13 @@ export default async function ThirdPartyDetailPage({
                 {latestFinalized.executiveCategory}
               </span>
             ) : null}
+            {criticalOpenIncidents.length > 0 ? (
+              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
+                {criticalOpenIncidents.length} incidencia
+                {criticalOpenIncidents.length === 1 ? "" : "s"} crítica
+                {criticalOpenIncidents.length === 1 ? "" : "s"}
+              </span>
+            ) : null}
           </div>
 
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900">
@@ -160,6 +212,12 @@ export default async function ThirdPartyDetailPage({
         </div>
 
         <div className="flex flex-wrap gap-3">
+          <Link
+            href={`/incidents/new?companyId=${company.id}`}
+            className="btn btn-secondary"
+          >
+            Registrar incidencia
+          </Link>
           {activeDraft ? (
             <Link
               href={`/companies/${company.id}/evaluations/${activeDraft.id}`}
@@ -215,13 +273,21 @@ export default async function ThirdPartyDetailPage({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="text-sm text-zinc-500">Alertas del último ciclo</div>
+        <div
+          className={`rounded-2xl border p-5 ${
+            criticalOpenIncidents.length > 0
+              ? "border-red-200 bg-red-50/50"
+              : "border-zinc-200 bg-white shadow-sm"
+          }`}
+        >
+          <div className="text-sm text-zinc-500">Incidencias abiertas</div>
           <div className="mt-2 text-3xl font-semibold text-zinc-900">
-            {alerts.length}
+            {openIncidents.length}
           </div>
           <div className="mt-2 text-sm text-zinc-500">
-            {alerts.length > 0 ? "Requiere revisión" : "Sin alertas registradas"}
+            {criticalOpenIncidents.length > 0
+              ? `${criticalOpenIncidents.length} crítica${criticalOpenIncidents.length === 1 ? "" : "s"}`
+              : "Sin críticas abiertas"}
           </div>
         </div>
 
@@ -325,6 +391,66 @@ export default async function ThirdPartyDetailPage({
           ) : null}
         </section>
       </div>
+
+      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-zinc-900">
+              Incidencias recientes
+            </h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              Antecedentes operativos registrados para este tercero.
+            </p>
+          </div>
+          <Link
+            href={`/incidents/new?companyId=${company.id}`}
+            className="btn btn-secondary"
+          >
+            Registrar incidencia
+          </Link>
+        </div>
+
+        {company.incidents.length === 0 ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-600">
+            Todavía no hay incidencias registradas para este tercero.
+          </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            {company.incidents.slice(0, 6).map((incident) => (
+              <div
+                key={incident.id}
+                className="rounded-2xl border border-zinc-200 p-4"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${incidentSeverityClass(
+                          incident.severity,
+                        )}`}
+                      >
+                        {incidentSeverityLabel(incident.severity)}
+                      </span>
+                      <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">
+                        {incidentStatusLabel(incident.status)}
+                      </span>
+                    </div>
+                    <div className="mt-3 font-medium text-zinc-900">
+                      {incident.title}
+                    </div>
+                    <div className="mt-1 text-sm text-zinc-500">
+                      {incident.workSite ? incident.workSite.name : "Sin obra específica"}
+                    </div>
+                  </div>
+                  <div className="text-sm text-zinc-500">
+                    {new Date(incident.occurredAt).toLocaleDateString("es-AR")}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
