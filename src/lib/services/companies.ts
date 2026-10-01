@@ -1,4 +1,8 @@
-import { Prisma, type CriticalityLevel } from "@prisma/client";
+import {
+  Prisma,
+  type CriticalityLevel,
+  type ThirdPartyType,
+} from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getUserEntitlements } from "@/lib/access/getEntitlements";
 
@@ -28,16 +32,38 @@ function isKnownPrismaError(
   return error instanceof Prisma.PrismaClientKnownRequestError;
 }
 
+function legacyRelationType(thirdPartyType?: ThirdPartyType | null) {
+  switch (thirdPartyType) {
+    case "SUPPLIER":
+      return "PROVEEDOR";
+    case "CONTRACTOR":
+      return "CONTRATISTA";
+    case "SUBCONTRACTOR":
+      return "SUBCONTRATISTA";
+    case "OTHER":
+      return "OTRO";
+    default:
+      return null;
+  }
+}
+
 function validateCreateCompanyInput(params: {
   name: string;
-  relationType: string;
+  relationType?: string | null;
+  thirdPartyType?: ThirdPartyType | null;
+  trade?: string | null;
+  taxId?: string | null;
   sector?: string | null;
   size?: string | null;
   criticality?: CriticalityLevel;
   description?: string | null;
 }) {
   const name = sanitizeCompanyName(params.name);
-  const relationType = compactWhitespace(params.relationType ?? "");
+  const relationType = compactWhitespace(
+    params.relationType ?? legacyRelationType(params.thirdPartyType) ?? "",
+  );
+  const trade = sanitizeCompanyDescription(params.trade ?? null);
+  const taxId = sanitizeCompanyDescription(params.taxId ?? null);
   const sector = sanitizeCompanyDescription(params.sector ?? null);
   const size = sanitizeCompanyDescription(params.size ?? null);
   const description = sanitizeCompanyDescription(params.description ?? null);
@@ -58,6 +84,9 @@ function validateCreateCompanyInput(params: {
     name,
     normalizedName: normalizeCompanyName(name),
     relationType,
+    thirdPartyType: params.thirdPartyType ?? null,
+    trade,
+    taxId,
     sector,
     size,
     criticality: params.criticality ?? "MEDIUM",
@@ -99,7 +128,10 @@ export async function getActiveCompanyUsage(ownerId: string) {
 export async function createCompany(params: {
   ownerId: string;
   name: string;
-  relationType: string;
+  relationType?: string | null;
+  thirdPartyType?: ThirdPartyType | null;
+  trade?: string | null;
+  taxId?: string | null;
   sector?: string | null;
   size?: string | null;
   criticality?: CriticalityLevel;
@@ -129,6 +161,9 @@ export async function createCompany(params: {
               name: data.name,
               normalizedName: data.normalizedName,
               relationType: data.relationType,
+              thirdPartyType: data.thirdPartyType,
+              trade: data.trade,
+              taxId: data.taxId,
               sector: data.sector,
               size: data.size,
               criticality: data.criticality,

@@ -19,6 +19,8 @@ model User {
   proTrialUsedAt  DateTime?
   accounts        Account[]
   companies       Company[]
+  workSites       WorkSite[]
+  incidents       Incident[]
   oneTimeAccesses OneTimeEvaluationAccess[]
   sessions        Session[]
   subscription    Subscription?
@@ -94,16 +96,89 @@ model Company {
   criticality    CriticalityLevel @default(MEDIUM)
   description    String?
   status         CompanyStatus    @default(ACTIVE)
+  thirdPartyType ThirdPartyType?
+  trade          String?
+  taxId          String?
   ownerId        String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   alerts         Alert[]
   owner          User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   evaluations    Evaluation[]
+  workSites      WorkSiteCompany[]
+  incidents      Incident[]
 
   @@unique([ownerId, normalizedName])
   @@index([ownerId])
   @@index([status])
+  @@index([thirdPartyType])
+}
+
+model WorkSite {
+  id              String         @id @default(cuid())
+  name            String
+  address         String?
+  responsibleName String?
+  status          WorkSiteStatus @default(ACTIVE)
+  startDate       DateTime?
+  expectedEndDate DateTime?
+  description     String?
+  ownerId         String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  owner     User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  companies WorkSiteCompany[]
+  incidents Incident[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+model WorkSiteCompany {
+  id         String   @id @default(cuid())
+  workSiteId String
+  companyId  String
+  role       String?
+  trade      String?
+  active     Boolean  @default(true)
+  startedAt  DateTime?
+  endedAt    DateTime?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  workSite WorkSite @relation(fields: [workSiteId], references: [id], onDelete: Cascade)
+  company  Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([workSiteId, companyId])
+  @@index([companyId])
+  @@index([workSiteId, active])
+}
+
+model Incident {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  type        IncidentType
+  severity    IncidentSeverity @default(RELEVANT)
+  status      IncidentStatus   @default(OPEN)
+  occurredAt  DateTime         @default(now())
+  resolvedAt  DateTime?
+  ownerId     String
+  companyId   String
+  workSiteId  String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  workSite WorkSite? @relation(fields: [workSiteId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId, status])
+  @@index([companyId, status])
+  @@index([workSiteId, status])
+  @@index([occurredAt])
 }
 
 model Evaluation {
@@ -224,6 +299,43 @@ enum CompanyStatus {
   ACTIVE
   ARCHIVED
   ARCHIVED_BY_PLAN
+}
+
+enum ThirdPartyType {
+  SUPPLIER
+  CONTRACTOR
+  SUBCONTRACTOR
+  OTHER
+}
+
+enum WorkSiteStatus {
+  PLANNED
+  ACTIVE
+  PAUSED
+  FINISHED
+}
+
+enum IncidentType {
+  DELAY
+  QUALITY
+  DELIVERY
+  DOCUMENTATION
+  SAFETY
+  COMMUNICATION
+  CONTRACTUAL
+  OTHER
+}
+
+enum IncidentSeverity {
+  MINOR
+  RELEVANT
+  CRITICAL
+}
+
+enum IncidentStatus {
+  OPEN
+  FOLLOW_UP
+  RESOLVED
 }
 
 enum EvaluationStatus {
