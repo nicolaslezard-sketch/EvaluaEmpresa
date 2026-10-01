@@ -19,6 +19,7 @@ const marketingNavItems = [
 const appNavItems = [
   { href: "/dashboard", label: "Inicio" },
   { href: "/works", label: "Obras" },
+  { href: "/third-parties", label: "Terceros" },
 ];
 
 function planLabel(plan: "FREE" | "PRO" | "BUSINESS") {
