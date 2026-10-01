@@ -27,6 +27,7 @@ async function assignCompanyAction(workSiteId: string, formData: FormData) {
   });
 
   revalidatePath(`/works/${workSiteId}`);
+  revalidatePath(`/third-parties/${companyId}`);
 }
 
 function statusLabel(status: "PLANNED" | "ACTIVE" | "PAUSED" | "FINISHED") {
@@ -98,7 +99,7 @@ export default async function WorkDetailPage({
               {work.companies.map((item) => (
                 <Link
                   key={item.id}
-                  href={`/companies/${item.company.id}`}
+                  href={`/third-parties/${item.company.id}`}
                   className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
                 >
                   <div>
